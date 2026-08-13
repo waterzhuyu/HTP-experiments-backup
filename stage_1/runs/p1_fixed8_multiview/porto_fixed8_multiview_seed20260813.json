@@ -1,0 +1,688 @@
+{
+  "schema_version": 1,
+  "status": "pilot",
+  "method": "released fixed-8 HTP RQ-VAE fine-tuned with per-view reconstruction/quantization plus exact-anchor pre-quant cosine consistency",
+  "config": {
+    "city": "porto",
+    "seed": 20260813,
+    "train_examples": 8192,
+    "epochs": 15,
+    "batch_size": 32,
+    "learning_rate": 1e-05,
+    "consistency_weight": 1.0,
+    "checkpoint": "/workspace/guozuyu/HTP-main/reproduction/runs/porto/repro_full_100epoch_seed42_20260716/rqvae/rqvae.pt"
+  },
+  "checkpoint": "stage_1/runs/p1_fixed8_multiview/porto_fixed8_multiview_seed20260813.pt",
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 1.411927061388269,
+      "reconstruction": 0.915423461003229,
+      "quantization": 0.1774349152110517,
+      "consistency": 0.3190686868620105
+    },
+    {
+      "epoch": 2,
+      "loss": 1.0862154762726277,
+      "reconstruction": 0.8318849778734148,
+      "quantization": 0.16798525070771575,
+      "consistency": 0.08634524913213681
+    },
+    {
+      "epoch": 3,
+      "loss": 1.002541169989854,
+      "reconstruction": 0.7897984152659774,
+      "quantization": 0.1486540473997593,
+      "consistency": 0.0640887047193246
+    },
+    {
+      "epoch": 4,
+      "loss": 0.9573242750484496,
+      "reconstruction": 0.767759284703061,
+      "quantization": 0.13438350238720886,
+      "consistency": 0.05518148704140913
+    },
+    {
+      "epoch": 5,
+      "loss": 0.920737843727693,
+      "reconstruction": 0.7482848889194429,
+      "quantization": 0.12346622699988075,
+      "consistency": 0.04898672967101447
+    },
+    {
+      "epoch": 6,
+      "loss": 0.8928794192615896,
+      "reconstruction": 0.7339912715833634,
+      "quantization": 0.1137133652518969,
+      "consistency": 0.045174782106187195
+    },
+    {
+      "epoch": 7,
+      "loss": 0.8746608728542924,
+      "reconstruction": 0.7219144913833588,
+      "quantization": 0.11027188840671442,
+      "consistency": 0.04247449626564048
+    },
+    {
+      "epoch": 8,
+      "loss": 0.860805326839909,
+      "reconstruction": 0.7131503871642053,
+      "quantization": 0.10657049616565928,
+      "consistency": 0.041084445772867184
+    },
+    {
+      "epoch": 9,
+      "loss": 0.8451028703711927,
+      "reconstruction": 0.7038335661636665,
+      "quantization": 0.10203421380720101,
+      "consistency": 0.039235091950104106
+    },
+    {
+      "epoch": 10,
+      "loss": 0.8340887052472681,
+      "reconstruction": 0.6959911949234083,
+      "quantization": 0.10057308155228384,
+      "consistency": 0.03752443152916385
+    },
+    {
+      "epoch": 11,
+      "loss": 0.8238791606854647,
+      "reconstruction": 0.6891900093760341,
+      "quantization": 0.0983653940493241,
+      "consistency": 0.03632375858433079
+    },
+    {
+      "epoch": 12,
+      "loss": 0.8147568050771952,
+      "reconstruction": 0.68365806969814,
+      "quantization": 0.09587926272070035,
+      "consistency": 0.03521947604895104
+    },
+    {
+      "epoch": 13,
+      "loss": 0.8072082041762769,
+      "reconstruction": 0.6776822957908735,
+      "quantization": 0.0949168357765302,
+      "consistency": 0.03460907565749949
+    },
+    {
+      "epoch": 14,
+      "loss": 0.7985161019023508,
+      "reconstruction": 0.6719064892968163,
+      "quantization": 0.09299216227373108,
+      "consistency": 0.033617452390899416
+    },
+    {
+      "epoch": 15,
+      "loss": 0.7933147763833404,
+      "reconstruction": 0.6698606605641544,
+      "quantization": 0.09056785178836435,
+      "consistency": 0.03288626583525911
+    }
+  ],
+  "baseline": {
+    "checkpoint": "/workspace/guozuyu/HTP-main/reproduction/runs/porto/repro_full_100epoch_seed42_20260716/rqvae/rqvae.pt",
+    "agreement": {
+      "downsample_2x": {
+        "pairs": 4510,
+        "tuple_agreement": 0.0,
+        "layer_1": {
+          "agreement": 0.12195121951219512,
+          "nmi": 0.32322842576731964,
+          "ari": 0.10578011962491497
+        },
+        "layer_2": {
+          "agreement": 0.03370288248337029,
+          "nmi": 0.15403191752492798,
+          "ari": 0.008552340446178858
+        },
+        "layer_3": {
+          "agreement": 0.011751662971175166,
+          "nmi": 0.28497285404241485,
+          "ari": 0.0008702355513898096
+        },
+        "layer_4": {
+          "agreement": 0.003547671840354767,
+          "nmi": 0.45174752627241477,
+          "ari": 0.000559998482005746
+        }
+      },
+      "downsample_3x": {
+        "pairs": 3233,
+        "tuple_agreement": 0.0,
+        "layer_1": {
+          "agreement": 0.08629755644911846,
+          "nmi": 0.22641840870093544,
+          "ari": 0.03977344546339104
+        },
+        "layer_2": {
+          "agreement": 0.024126198577172905,
+          "nmi": 0.1704063502221803,
+          "ari": 0.0038173106682538012
+        },
+        "layer_3": {
+          "agreement": 0.009897927621404269,
+          "nmi": 0.3254175846725308,
+          "ari": 0.0006862587474369624
+        },
+        "layer_4": {
+          "agreement": 0.004330343334364367,
+          "nmi": 0.474045544305967,
+          "ari": 4.145589838889612e-05
+        }
+      },
+      "phase_shift": {
+        "pairs": 4426,
+        "tuple_agreement": 0.0,
+        "layer_1": {
+          "agreement": 0.10777225485765929,
+          "nmi": 0.283319870713736,
+          "ari": 0.08213536875350087
+        },
+        "layer_2": {
+          "agreement": 0.02869408043380027,
+          "nmi": 0.146558402916418,
+          "ari": 0.006656429013412598
+        },
+        "layer_3": {
+          "agreement": 0.012652507907817443,
+          "nmi": 0.2850667445836618,
+          "ari": 0.0004940287348215952
+        },
+        "layer_4": {
+          "agreement": 0.002937189335743335,
+          "nmi": 0.45073658955646156,
+          "ari": -0.0002946433458902912
+        }
+      },
+      "missing_20pct": {
+        "pairs": 6786,
+        "tuple_agreement": 0.0038314176245210726,
+        "layer_1": {
+          "agreement": 0.20512820512820512,
+          "nmi": 0.19825904330731328,
+          "ari": 0.09350461293438753
+        },
+        "layer_2": {
+          "agreement": 0.07117595048629531,
+          "nmi": 0.10338985300477857,
+          "ari": 0.006690934196384882
+        },
+        "layer_3": {
+          "agreement": 0.027409372236958444,
+          "nmi": 0.22515043300173057,
+          "ari": 0.00020804489730498062
+        },
+        "layer_4": {
+          "agreement": 0.011199528440907752,
+          "nmi": 0.39528771827353676,
+          "ari": -5.6106045466666694e-05
+        }
+      },
+      "noise_10m": {
+        "pairs": 8404,
+        "tuple_agreement": 0.06627796287482152,
+        "layer_1": {
+          "agreement": 0.848286530223703,
+          "nmi": 0.7858488556511202,
+          "ari": 0.7243681235864725
+        },
+        "layer_2": {
+          "agreement": 0.552594002855783,
+          "nmi": 0.4818135407161425,
+          "ari": 0.3134704949977309
+        },
+        "layer_3": {
+          "agreement": 0.25095192765349833,
+          "nmi": 0.33456287634206766,
+          "ari": 0.06182674626250947
+        },
+        "layer_4": {
+          "agreement": 0.0796049500237982,
+          "nmi": 0.37031915630076495,
+          "ari": 0.006332421628229732
+        }
+      }
+    },
+    "selective_invariance": {
+      "positive_same_motion_2x_mean": 0.21994224575970373,
+      "hard_negative_same_road_mean": 0.23918554026333336,
+      "hard_negative_pairs": 683
+    },
+    "behavior_and_identity_probes": {
+      "layer_1": {
+        "speed_state": {
+          "macro_f1": 0.44841471266368893,
+          "majority_macro_f1": 0.14822079013729336,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "accel_state": {
+          "macro_f1": 0.2864713452948747,
+          "majority_macro_f1": 0.2864713452948747,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "stop": {
+          "macro_f1": 0.6617150717567644,
+          "majority_macro_f1": 0.43573033707865166,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "turn": {
+          "macro_f1": 0.4077830188679245,
+          "majority_macro_f1": 0.4077830188679245,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "grid": {
+          "macro_f1": 0.02748974101389299,
+          "majority_macro_f1": 0.003517215845982969,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "road_top32": {
+          "macro_f1": 0.04683021091731887,
+          "majority_macro_f1": 0.00641025641025641,
+          "coverage": 1.0,
+          "samples": 315
+        }
+      },
+      "layer_2": {
+        "speed_state": {
+          "macro_f1": 0.27118977006000056,
+          "majority_macro_f1": 0.14822079013729336,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "accel_state": {
+          "macro_f1": 0.2864713452948747,
+          "majority_macro_f1": 0.2864713452948747,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "stop": {
+          "macro_f1": 0.43573033707865166,
+          "majority_macro_f1": 0.43573033707865166,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "turn": {
+          "macro_f1": 0.4077830188679245,
+          "majority_macro_f1": 0.4077830188679245,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "grid": {
+          "macro_f1": 0.025613868464694805,
+          "majority_macro_f1": 0.003517215845982969,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "road_top32": {
+          "macro_f1": 0.04854142039195769,
+          "majority_macro_f1": 0.00641025641025641,
+          "coverage": 1.0,
+          "samples": 315
+        }
+      },
+      "tuple": {
+        "speed_state": {
+          "macro_f1": 0.1559474076016783,
+          "majority_macro_f1": 0.14822079013729336,
+          "coverage": 0.0027877339705296694,
+          "samples": 2511
+        },
+        "accel_state": {
+          "macro_f1": 0.2864713452948747,
+          "majority_macro_f1": 0.2864713452948747,
+          "coverage": 0.0027877339705296694,
+          "samples": 2511
+        },
+        "stop": {
+          "macro_f1": 0.4392776762057469,
+          "majority_macro_f1": 0.43573033707865166,
+          "coverage": 0.0027877339705296694,
+          "samples": 2511
+        },
+        "turn": {
+          "macro_f1": 0.40764331210191085,
+          "majority_macro_f1": 0.4077830188679245,
+          "coverage": 0.0027877339705296694,
+          "samples": 2511
+        },
+        "grid": {
+          "macro_f1": 0.003953705290008185,
+          "majority_macro_f1": 0.003517215845982969,
+          "coverage": 0.0027877339705296694,
+          "samples": 2511
+        },
+        "road_top32": {
+          "macro_f1": 0.00641025641025641,
+          "majority_macro_f1": 0.00641025641025641,
+          "coverage": 0.0031746031746031746,
+          "samples": 315
+        }
+      }
+    },
+    "layer_1_nmi": {
+      "speed_state": 0.12317676435300391,
+      "accel_state": 0.046243273269232374,
+      "stop": 0.09252983593587866,
+      "turn": 0.004936309280237493,
+      "road": 0.39895712911093084,
+      "grid": 0.05420378685701709
+    },
+    "codebook": {
+      "unique_code_tuples": 334971,
+      "layers": [
+        {
+          "codebook_size": 32,
+          "used_codes": 32,
+          "normalized_perplexity": 0.9646749447775521,
+          "max_code_share": 0.06844264064591339
+        },
+        {
+          "codebook_size": 64,
+          "used_codes": 64,
+          "normalized_perplexity": 0.9484798435984825,
+          "max_code_share": 0.04769511966955946
+        },
+        {
+          "codebook_size": 128,
+          "used_codes": 128,
+          "normalized_perplexity": 0.9511422407821308,
+          "max_code_share": 0.012693752428651613
+        },
+        {
+          "codebook_size": 256,
+          "used_codes": 256,
+          "normalized_perplexity": 0.8946046721474734,
+          "max_code_share": 0.005820128664565433
+        }
+      ]
+    }
+  },
+  "multiview": {
+    "agreement": {
+      "downsample_2x": {
+        "pairs": 4510,
+        "tuple_agreement": 0.0008869179600886918,
+        "layer_1": {
+          "agreement": 0.912860310421286,
+          "nmi": 0.4321590440158652,
+          "ari": 0.659666608127716
+        },
+        "layer_2": {
+          "agreement": 0.23680709534368072,
+          "nmi": 0.24655485687941933,
+          "ari": 0.19906234825258998
+        },
+        "layer_3": {
+          "agreement": 0.04767184035476718,
+          "nmi": 0.2670252743324481,
+          "ari": 0.04214011503956449
+        },
+        "layer_4": {
+          "agreement": 0.006873614190687362,
+          "nmi": 0.41645507519115904,
+          "ari": 0.0006748926220356778
+        }
+      },
+      "downsample_3x": {
+        "pairs": 3233,
+        "tuple_agreement": 0.0003093102381688834,
+        "layer_1": {
+          "agreement": 0.8784410763996289,
+          "nmi": 0.2907594726125991,
+          "ari": 0.523190694120304
+        },
+        "layer_2": {
+          "agreement": 0.15805753170429943,
+          "nmi": 0.2034087330418907,
+          "ari": 0.09241483842973283
+        },
+        "layer_3": {
+          "agreement": 0.027837921435199506,
+          "nmi": 0.29732797405325867,
+          "ari": 0.020093358830200497
+        },
+        "layer_4": {
+          "agreement": 0.005567584287039901,
+          "nmi": 0.4744001652826326,
+          "ari": 0.0009406048830311476
+        }
+      },
+      "phase_shift": {
+        "pairs": 4426,
+        "tuple_agreement": 0.0018075011296882061,
+        "layer_1": {
+          "agreement": 0.9150474469046543,
+          "nmi": 0.3884865660698107,
+          "ari": 0.624723845726016
+        },
+        "layer_2": {
+          "agreement": 0.20063262539539087,
+          "nmi": 0.2292679787112514,
+          "ari": 0.15870327408554422
+        },
+        "layer_3": {
+          "agreement": 0.04541346588341618,
+          "nmi": 0.2664955415775019,
+          "ari": 0.03712102624290502
+        },
+        "layer_4": {
+          "agreement": 0.008133755083596927,
+          "nmi": 0.418945326706989,
+          "ari": 0.0005485790768556654
+        }
+      },
+      "missing_20pct": {
+        "pairs": 6786,
+        "tuple_agreement": 0.012231063955201887,
+        "layer_1": {
+          "agreement": 0.9130562923666372,
+          "nmi": 0.36914414174829857,
+          "ari": 0.6296806885799339
+        },
+        "layer_2": {
+          "agreement": 0.24344238137341587,
+          "nmi": 0.18225808503539848,
+          "ari": 0.15255036473706843
+        },
+        "layer_3": {
+          "agreement": 0.0649867374005305,
+          "nmi": 0.20892487007559676,
+          "ari": 0.023527793233274433
+        },
+        "layer_4": {
+          "agreement": 0.01856763925729443,
+          "nmi": 0.34915216379611075,
+          "ari": 0.000337450669088509
+        }
+      },
+      "noise_10m": {
+        "pairs": 8404,
+        "tuple_agreement": 0.2890290337934317,
+        "layer_1": {
+          "agreement": 0.9747739171822941,
+          "nmi": 0.757551801733192,
+          "ari": 0.9072202044652012
+        },
+        "layer_2": {
+          "agreement": 0.8175868633983817,
+          "nmi": 0.7166251508762486,
+          "ari": 0.7761496753152274
+        },
+        "layer_3": {
+          "agreement": 0.558305568776773,
+          "nmi": 0.5430640105027582,
+          "ari": 0.4000158068834811
+        },
+        "layer_4": {
+          "agreement": 0.2912898619704902,
+          "nmi": 0.4422940085462549,
+          "ari": 0.09028678736154071
+        }
+      }
+    },
+    "selective_invariance": {
+      "positive_same_motion_2x_mean": 0.9406137076229711,
+      "hard_negative_same_road_mean": 0.921491414380497,
+      "hard_negative_pairs": 683
+    },
+    "behavior_and_identity_probes": {
+      "layer_1": {
+        "speed_state": {
+          "macro_f1": 0.25207662371534323,
+          "majority_macro_f1": 0.14822079013729336,
+          "coverage": 0.9992035045798486,
+          "samples": 2511
+        },
+        "accel_state": {
+          "macro_f1": 0.2864713452948747,
+          "majority_macro_f1": 0.2864713452948747,
+          "coverage": 0.9992035045798486,
+          "samples": 2511
+        },
+        "stop": {
+          "macro_f1": 0.6312425704334472,
+          "majority_macro_f1": 0.43573033707865166,
+          "coverage": 0.9992035045798486,
+          "samples": 2511
+        },
+        "turn": {
+          "macro_f1": 0.5173019996254935,
+          "majority_macro_f1": 0.4077830188679245,
+          "coverage": 0.9992035045798486,
+          "samples": 2511
+        },
+        "grid": {
+          "macro_f1": 0.01775434914827906,
+          "majority_macro_f1": 0.003517215845982969,
+          "coverage": 0.9992035045798486,
+          "samples": 2511
+        },
+        "road_top32": {
+          "macro_f1": 0.01649317328993173,
+          "majority_macro_f1": 0.00641025641025641,
+          "coverage": 1.0,
+          "samples": 315
+        }
+      },
+      "layer_2": {
+        "speed_state": {
+          "macro_f1": 0.32380102994633564,
+          "majority_macro_f1": 0.14822079013729336,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "accel_state": {
+          "macro_f1": 0.288492023632674,
+          "majority_macro_f1": 0.2864713452948747,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "stop": {
+          "macro_f1": 0.6391211079926201,
+          "majority_macro_f1": 0.43573033707865166,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "turn": {
+          "macro_f1": 0.40774010711483816,
+          "majority_macro_f1": 0.4077830188679245,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "grid": {
+          "macro_f1": 0.023369096294708683,
+          "majority_macro_f1": 0.003517215845982969,
+          "coverage": 1.0,
+          "samples": 2511
+        },
+        "road_top32": {
+          "macro_f1": 0.052127069817390556,
+          "majority_macro_f1": 0.00641025641025641,
+          "coverage": 0.9873015873015873,
+          "samples": 315
+        }
+      },
+      "tuple": {
+        "speed_state": {
+          "macro_f1": 0.31045416302002743,
+          "majority_macro_f1": 0.14822079013729336,
+          "coverage": 0.19155714854639586,
+          "samples": 2511
+        },
+        "accel_state": {
+          "macro_f1": 0.32539124237672884,
+          "majority_macro_f1": 0.2864713452948747,
+          "coverage": 0.19155714854639586,
+          "samples": 2511
+        },
+        "stop": {
+          "macro_f1": 0.491222734962811,
+          "majority_macro_f1": 0.43573033707865166,
+          "coverage": 0.19155714854639586,
+          "samples": 2511
+        },
+        "turn": {
+          "macro_f1": 0.4577780480389176,
+          "majority_macro_f1": 0.4077830188679245,
+          "coverage": 0.19155714854639586,
+          "samples": 2511
+        },
+        "grid": {
+          "macro_f1": 0.03385340504226521,
+          "majority_macro_f1": 0.003517215845982969,
+          "coverage": 0.19155714854639586,
+          "samples": 2511
+        },
+        "road_top32": {
+          "macro_f1": 0.06185069151961919,
+          "majority_macro_f1": 0.00641025641025641,
+          "coverage": 0.14603174603174604,
+          "samples": 315
+        }
+      }
+    },
+    "layer_1_nmi": {
+      "speed_state": 0.08610519174143753,
+      "accel_state": 0.020961618922605278,
+      "stop": 0.09775763710305298,
+      "turn": 0.019209465637722634,
+      "road": 0.14887334788968198,
+      "grid": 0.03342064213715313
+    },
+    "codebook": {
+      "tokens": 8404,
+      "layers": [
+        {
+          "codebook_size": 32,
+          "used_codes": 12,
+          "normalized_perplexity": 0.050225887938437075,
+          "max_code_share": 0.8936220847215611
+        },
+        {
+          "codebook_size": 64,
+          "used_codes": 64,
+          "normalized_perplexity": 0.3475594860426709,
+          "max_code_share": 0.22179914326511185
+        },
+        {
+          "codebook_size": 128,
+          "used_codes": 124,
+          "normalized_perplexity": 0.6803498437581335,
+          "max_code_share": 0.04735840076154212
+        },
+        {
+          "codebook_size": 256,
+          "used_codes": 227,
+          "normalized_perplexity": 0.7287688614699729,
+          "max_code_share": 0.010352213231794383
+        }
+      ]
+    }
+  }
+}
