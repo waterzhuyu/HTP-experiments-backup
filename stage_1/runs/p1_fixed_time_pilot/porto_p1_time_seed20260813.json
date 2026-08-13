@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "status": "pilot",
+  "config": {
+    "city": "porto",
+    "variant": "p1_time",
+    "seed": 20260813,
+    "window_seconds": 120,
+    "train_windows": 8192,
+    "test_windows": 2048,
+    "epochs": 15,
+    "batch_size": 128,
+    "learning_rate": 0.0003,
+    "consistency_weight": 1.0
+  },
+  "train_examples": 8192,
+  "test_examples": 2048,
+  "checkpoint": "stage_1/runs/p1_fixed_time_pilot/porto_p1_time_seed20260813.pt",
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 0.5416526501066983,
+      "reconstruction": 0.16799608781002462,
+      "vq": 0.36150196578819305,
+      "consistency": 0.012154594587627798
+    },
+    {
+      "epoch": 2,
+      "loss": 1.4619065057486296,
+      "reconstruction": 0.10601424693595618,
+      "vq": 1.3481826363131404,
+      "consistency": 0.0077096229797462
+    },
+    {
+      "epoch": 3,
+      "loss": 1.3702330077067018,
+      "reconstruction": 0.06420287094078958,
+      "vq": 1.2902149008587003,
+      "consistency": 0.015815247839782387
+    },
+    {
+      "epoch": 4,
+      "loss": 1.330026620067656,
+      "reconstruction": 0.056308311177417636,
+      "vq": 1.2574606826528907,
+      "consistency": 0.01625762971525546
+    },
+    {
+      "epoch": 5,
+      "loss": 1.2810641191899776,
+      "reconstruction": 0.04962288565002382,
+      "vq": 1.2166817151010036,
+      "consistency": 0.014759523546672426
+    },
+    {
+      "epoch": 6,
+      "loss": 1.312161449342966,
+      "reconstruction": 0.046622630732599646,
+      "vq": 1.2525977464392781,
+      "consistency": 0.01294107289868407
+    },
+    {
+      "epoch": 7,
+      "loss": 1.3061883598566055,
+      "reconstruction": 0.043776243226602674,
+      "vq": 1.2512043179012835,
+      "consistency": 0.011207789808395319
+    },
+    {
+      "epoch": 8,
+      "loss": 1.2549109673127532,
+      "reconstruction": 0.04236255382420495,
+      "vq": 1.2029220145195723,
+      "consistency": 0.00962640851503238
+    },
+    {
+      "epoch": 9,
+      "loss": 1.2303092600777745,
+      "reconstruction": 0.04222385928733274,
+      "vq": 1.1796578620560467,
+      "consistency": 0.008427546570601407
+    },
+    {
+      "epoch": 10,
+      "loss": 1.1084072859957814,
+      "reconstruction": 0.04109092598082498,
+      "vq": 1.0599471777677536,
+      "consistency": 0.00736917930044001
+    },
+    {
+      "epoch": 11,
+      "loss": 1.017915792297572,
+      "reconstruction": 0.04054215902579017,
+      "vq": 0.970816548448056,
+      "consistency": 0.006557091357535683
+    },
+    {
+      "epoch": 12,
+      "loss": 0.9162479371298105,
+      "reconstruction": 0.04019730619620532,
+      "vq": 0.870229045394808,
+      "consistency": 0.0058215862372890115
+    },
+    {
+      "epoch": 13,
+      "loss": 0.8518644215073436,
+      "reconstruction": 0.040459535899572074,
+      "vq": 0.8060435513034463,
+      "consistency": 0.005361341929528862
+    },
+    {
+      "epoch": 14,
+      "loss": 0.8061799560673535,
+      "reconstruction": 0.03918408238678239,
+      "vq": 0.761948773637414,
+      "consistency": 0.005047102749813348
+    },
+    {
+      "epoch": 15,
+      "loss": 0.7472704527899623,
+      "reconstruction": 0.03771251245052554,
+      "vq": 0.7048748163506389,
+      "consistency": 0.004683121991547523
+    }
+  ],
+  "metrics": {
+    "native_reconstruction_mse": 0.03542258217930794,
+    "codebook": {
+      "layers": [
+        {
+          "used_codes": 4,
+          "normalized_perplexity": 0.10443978307461471,
+          "max_code_share": 0.49853515625
+        },
+        {
+          "used_codes": 6,
+          "normalized_perplexity": 0.1376925205394859,
+          "max_code_share": 0.49658203125
+        }
+      ]
+    },
+    "speed_probe": {
+      "macro_f1": 0.33674242270927357,
+      "majority_macro_f1": 0.18932038834951456
+    },
+    "stop_probe": {
+      "macro_f1": 0.4748717948717949,
+      "majority_macro_f1": 0.4748717948717949
+    },
+    "views": {
+      "downsample_2x": {
+        "pre_quant": {
+          "cosine_mean": 0.999463677406311,
+          "cosine_median": 0.9997377395629883,
+          "normalized_l2_mean": 0.02749706245958805,
+          "retrieval_top1": 0.57177734375,
+          "retrieval_top5": 0.9306640625,
+          "retrieval_mrr": 0.7202597173767267,
+          "random_top1": 0.00048828125,
+          "different_speed_cosine_mean": 0.46014851331710815,
+          "selective_margin_mean": 0.5393151044845581,
+          "selective_pairwise_accuracy": 1.0
+        },
+        "quantized": {
+          "cosine_mean": 0.9903956651687622,
+          "cosine_median": 1.0,
+          "normalized_l2_mean": 0.029770322144031525,
+          "retrieval_top1": 0.00927734375,
+          "retrieval_top5": 0.04345703125,
+          "retrieval_mrr": 0.04183596334782387,
+          "random_top1": 0.00048828125,
+          "different_speed_cosine_mean": 0.5052762627601624,
+          "selective_margin_mean": 0.48511937260627747,
+          "selective_pairwise_accuracy": 0.93310546875
+        },
+        "layer_1_agreement": 0.98388671875,
+        "tuple_agreement": 0.9501953125,
+        "reconstruction_mse": 0.03484039008617401
+      },
+      "downsample_3x": {
+        "pre_quant": {
+          "cosine_mean": 0.9977960586547852,
+          "cosine_median": 0.9988464117050171,
+          "normalized_l2_mean": 0.05607049912214279,
+          "retrieval_top1": 0.248046875,
+          "retrieval_top5": 0.62255859375,
+          "retrieval_mrr": 0.4171532036878252,
+          "random_top1": 0.00048828125,
+          "different_speed_cosine_mean": 0.46014851331710815,
+          "selective_margin_mean": 0.5376474857330322,
+          "selective_pairwise_accuracy": 0.99658203125
+        },
+        "quantized": {
+          "cosine_mean": 0.9775703549385071,
+          "cosine_median": 1.0,
+          "normalized_l2_mean": 0.06944719702005386,
+          "retrieval_top1": 0.005859375,
+          "retrieval_top5": 0.0361328125,
+          "retrieval_mrr": 0.03568925845857211,
+          "random_top1": 0.00048828125,
+          "different_speed_cosine_mean": 0.5052762627601624,
+          "selective_margin_mean": 0.4722940921783447,
+          "selective_pairwise_accuracy": 0.9208984375
+        },
+        "layer_1_agreement": 0.95849609375,
+        "tuple_agreement": 0.884765625,
+        "reconstruction_mse": 0.034875739365816116
+      }
+    }
+  }
+}
