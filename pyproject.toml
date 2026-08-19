@@ -1,0 +1,18 @@
+[project]
+name = "htp-multiview-pattern"
+version = "0.1.0"
+description = "Independent GPS/Grid/Road tokenizer correlation experiments for HTP"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "numpy==2.5.1",
+  "scikit-learn==1.8.0",
+  "scipy==1.18.0",
+  "torch==2.12.1",
+]
+
+[dependency-groups]
+dev = ["pytest==9.1.1"]
+
+[tool.pytest.ini_options]
+testpaths = ["stage_1/tests"]
+pythonpath = ["stage_1/src"]

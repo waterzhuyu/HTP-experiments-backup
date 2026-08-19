@@ -1,0 +1,21 @@
+{
+  "experiment_id": "porto_independent_tokenizers_v1_20260819",
+  "views": ["gps", "grid", "road"],
+  "excluded_views": ["poi"],
+  "encoder_families": ["transformer", "gru"],
+  "seeds": [42, 314159, 20260819],
+  "epochs": 3,
+  "batch_size": 256,
+  "learning_rate": 0.0002,
+  "weight_decay": 0.0001,
+  "hidden_dim": 64,
+  "latent_dim": 64,
+  "codebook_size": 256,
+  "vq_beta": 0.25,
+  "dropout": 0.1,
+  "usage_weight": 0.05,
+  "gradient_clip_norm": 1.0,
+  "precision": "bf16",
+  "probe_train_trajectories": 20000,
+  "bootstrap_replicates": 200
+}
