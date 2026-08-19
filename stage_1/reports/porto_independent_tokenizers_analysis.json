@@ -1,0 +1,4298 @@
+{
+  "metadata": {
+    "git_revision": "03d6d7fb3567e6c838910b37d8cf3e05003a2fb5",
+    "run_dir": "/workspace/guozuyu/HTP-multiview-independent/stage_1/runs/independent_tokenizers/porto",
+    "output_dir": "/workspace/guozuyu/HTP-multiview-independent/stage_1/runs/independent_tokenizers/porto/analysis",
+    "data_dir": "/workspace/guozuyu/HTP-main/reproduction/runs/multiview_vq/porto/data",
+    "bootstrap_replicates": 200,
+    "global_shuffle": {
+      "same_trajectory_fraction": 1.1513607645035476e-05
+    },
+    "conditional_shuffle": {
+      "groups": 1936,
+      "singleton_events": 42,
+      "same_trajectory_fraction": 0.0019055020652533714
+    },
+    "seeds": [
+      42,
+      314159,
+      20260819
+    ],
+    "codebook_size": 256
+  },
+  "validity": [
+    {
+      "family": "transformer",
+      "seed": 42,
+      "view": "gps",
+      "active_codes": 190,
+      "active_fraction": 0.7421875,
+      "perplexity": 137.5272754548894,
+      "max_token_share": 0.018744153246117754,
+      "reconstruction": 0.0008098647380486513,
+      "passed": true,
+      "runtime_seconds": 185.60182332992554
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "view": "grid",
+      "active_codes": 228,
+      "active_fraction": 0.890625,
+      "perplexity": 146.47973072355768,
+      "max_token_share": 0.022339277233280084,
+      "reconstruction": 0.0009043656406987809,
+      "passed": true,
+      "runtime_seconds": 175.9165165424347
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "view": "road",
+      "active_codes": 241,
+      "active_fraction": 0.94140625,
+      "perplexity": 213.20292705413198,
+      "max_token_share": 0.010759466344285653,
+      "reconstruction": 0.0029759509508840293,
+      "passed": true,
+      "runtime_seconds": 186.14885139465332
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "view": "gps",
+      "active_codes": 201,
+      "active_fraction": 0.78515625,
+      "perplexity": 140.2541175418011,
+      "max_token_share": 0.022160816314782034,
+      "reconstruction": 0.0008180990857947777,
+      "passed": true,
+      "runtime_seconds": 177.87511038780212
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "view": "grid",
+      "active_codes": 221,
+      "active_fraction": 0.86328125,
+      "perplexity": 152.91992774994927,
+      "max_token_share": 0.019285292805434423,
+      "reconstruction": 0.000908690101504883,
+      "passed": true,
+      "runtime_seconds": 170.37167882919312
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "view": "road",
+      "active_codes": 249,
+      "active_fraction": 0.97265625,
+      "perplexity": 229.25501082232228,
+      "max_token_share": 0.009118777254868097,
+      "reconstruction": 0.002940131769252893,
+      "passed": true,
+      "runtime_seconds": 171.15581560134888
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "view": "gps",
+      "active_codes": 186,
+      "active_fraction": 0.7265625,
+      "perplexity": 127.07871596366888,
+      "max_token_share": 0.019708417886389478,
+      "reconstruction": 0.0008393958443278272,
+      "passed": true,
+      "runtime_seconds": 168.7988178730011
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "view": "grid",
+      "active_codes": 207,
+      "active_fraction": 0.80859375,
+      "perplexity": 131.5230608021476,
+      "max_token_share": 0.024860757307542853,
+      "reconstruction": 0.00096815771698896,
+      "passed": true,
+      "runtime_seconds": 170.74262714385986
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "view": "road",
+      "active_codes": 202,
+      "active_fraction": 0.7890625,
+      "perplexity": 179.0371378216622,
+      "max_token_share": 0.013269432810903387,
+      "reconstruction": 0.003058448336365768,
+      "passed": true,
+      "runtime_seconds": 165.13801956176758
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "view": "gps",
+      "active_codes": 207,
+      "active_fraction": 0.80859375,
+      "perplexity": 144.69024139893705,
+      "max_token_share": 0.020330152699221393,
+      "reconstruction": 0.0008329883815808238,
+      "passed": true,
+      "runtime_seconds": 432.0235526561737
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "view": "grid",
+      "active_codes": 222,
+      "active_fraction": 0.8671875,
+      "perplexity": 164.15637063122495,
+      "max_token_share": 0.018056215189326884,
+      "reconstruction": 0.0009457380530766697,
+      "passed": true,
+      "runtime_seconds": 441.8372085094452
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "view": "road",
+      "active_codes": 248,
+      "active_fraction": 0.96875,
+      "perplexity": 228.30503905686462,
+      "max_token_share": 0.00842220399234345,
+      "reconstruction": 0.0029759449370874045,
+      "passed": true,
+      "runtime_seconds": 428.98562240600586
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "view": "gps",
+      "active_codes": 210,
+      "active_fraction": 0.8203125,
+      "perplexity": 148.70520579302124,
+      "max_token_share": 0.01878732927478664,
+      "reconstruction": 0.000822431216828334,
+      "passed": true,
+      "runtime_seconds": 421.3198847770691
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "view": "grid",
+      "active_codes": 226,
+      "active_fraction": 0.8828125,
+      "perplexity": 164.3773095572731,
+      "max_token_share": 0.017368277132536015,
+      "reconstruction": 0.0009314620088284406,
+      "passed": true,
+      "runtime_seconds": 436.1143579483032
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "view": "road",
+      "active_codes": 232,
+      "active_fraction": 0.90625,
+      "perplexity": 208.25740629608777,
+      "max_token_share": 0.010814155980599571,
+      "reconstruction": 0.0030120005940572703,
+      "passed": true,
+      "runtime_seconds": 433.6435389518738
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "view": "gps",
+      "active_codes": 198,
+      "active_fraction": 0.7734375,
+      "perplexity": 131.465717330922,
+      "max_token_share": 0.0216311903631104,
+      "reconstruction": 0.0009190426240416451,
+      "passed": true,
+      "runtime_seconds": 431.09939074516296
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "view": "grid",
+      "active_codes": 233,
+      "active_fraction": 0.91015625,
+      "perplexity": 165.88678310572428,
+      "max_token_share": 0.018082120806528216,
+      "reconstruction": 0.0009466378027215027,
+      "passed": true,
+      "runtime_seconds": 453.327330827713
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "view": "road",
+      "active_codes": 231,
+      "active_fraction": 0.90234375,
+      "perplexity": 198.14112014053893,
+      "max_token_share": 0.010045622670293453,
+      "reconstruction": 0.003037863354294155,
+      "passed": true,
+      "runtime_seconds": 433.2475311756134
+    }
+  ],
+  "same_view": [
+    {
+      "family": "transformer",
+      "view": "gps",
+      "left_seed": 42,
+      "right_seed": 314159,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 190,
+          "active_right": 201,
+          "optimal_match_rate": 0.6292474418203013,
+          "mutual_information": 4.148848066994993,
+          "adjusted_mutual_information": 0.8393632372824426,
+          "normalized_mutual_information": 0.8409322631582168,
+          "h_left": 4.9238222643791545,
+          "h_right": 4.943455902558668,
+          "h_right_given_left": 0.7946078355636752,
+          "h_left_given_right": 0.7749741973841617,
+          "normalized_h_right_given_left": 0.1432970979774034,
+          "normalized_h_left_given_right": 0.13975642892287934,
+          "variation_of_information": 1.569582032947837
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "view": "gps",
+      "left_seed": 42,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 190,
+          "active_right": 186,
+          "optimal_match_rate": 0.6349322855950377,
+          "mutual_information": 4.10752390824674,
+          "adjusted_mutual_information": 0.8395360814143676,
+          "normalized_mutual_information": 0.8409897232105332,
+          "h_left": 4.923822264379155,
+          "h_right": 4.844806705192799,
+          "h_right_given_left": 0.7372827969460598,
+          "h_left_given_right": 0.8162983561324157,
+          "normalized_h_right_given_left": 0.13295927936085314,
+          "normalized_h_left_given_right": 0.14720869878475615,
+          "variation_of_information": 1.5535811530784756
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "view": "gps",
+      "left_seed": 314159,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 201,
+          "active_right": 186,
+          "optimal_match_rate": 0.6275146438697236,
+          "mutual_information": 4.104927315297187,
+          "adjusted_mutual_information": 0.8372535368198637,
+          "normalized_mutual_information": 0.8387874272338482,
+          "h_left": 4.943455902558668,
+          "h_right": 4.844806705192799,
+          "h_right_given_left": 0.7398793898956129,
+          "h_left_given_right": 0.8385285872614814,
+          "normalized_h_right_given_left": 0.13342754083229408,
+          "normalized_h_left_given_right": 0.15121762931072097,
+          "variation_of_information": 1.5784079771570942
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "view": "grid",
+      "left_seed": 42,
+      "right_seed": 314159,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 228,
+          "active_right": 221,
+          "optimal_match_rate": 0.519185987939496,
+          "mutual_information": 3.842329534581366,
+          "adjusted_mutual_information": 0.7646745933433102,
+          "normalized_mutual_information": 0.7671840125901227,
+          "h_left": 4.986887062049148,
+          "h_right": 5.029914436358504,
+          "h_right_given_left": 1.1875849017771376,
+          "h_left_given_right": 1.1445575274677822,
+          "normalized_h_right_given_left": 0.2141653560535604,
+          "normalized_h_left_given_right": 0.20640593361123785,
+          "variation_of_information": 2.3321424292449198
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "view": "grid",
+      "left_seed": 42,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 228,
+          "active_right": 207,
+          "optimal_match_rate": 0.5333649957543571,
+          "mutual_information": 3.7999927063111567,
+          "adjusted_mutual_information": 0.768189206499846,
+          "normalized_mutual_information": 0.7703613373881634,
+          "h_left": 4.986887062049148,
+          "h_right": 4.879182203559481,
+          "h_right_given_left": 1.0791894972483247,
+          "h_left_given_right": 1.1868943557379916,
+          "normalized_h_right_given_left": 0.19461766698245148,
+          "normalized_h_left_given_right": 0.21404082513528772,
+          "variation_of_information": 2.2660838529863163
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "view": "grid",
+      "left_seed": 314159,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 221,
+          "active_right": 207,
+          "optimal_match_rate": 0.5023991479930343,
+          "mutual_information": 3.773822900582544,
+          "adjusted_mutual_information": 0.7593560540333186,
+          "normalized_mutual_information": 0.7617767240562439,
+          "h_left": 5.029914436358504,
+          "h_right": 4.879182203559481,
+          "h_right_given_left": 1.1053593029769373,
+          "h_left_given_right": 1.2560915357759597,
+          "normalized_h_right_given_left": 0.19933704810066358,
+          "normalized_h_left_given_right": 0.22651962869582237,
+          "variation_of_information": 2.361450838752897
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "view": "road",
+      "left_seed": 42,
+      "right_seed": 314159,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 241,
+          "active_right": 249,
+          "optimal_match_rate": 0.7377113826403581,
+          "mutual_information": 4.785519867503218,
+          "adjusted_mutual_information": 0.8846485144636742,
+          "normalized_mutual_information": 0.886467136798805,
+          "h_left": 5.362244421344406,
+          "h_right": 5.434834968356034,
+          "h_right_given_left": 0.6493151008528164,
+          "h_left_given_right": 0.5767245538411885,
+          "normalized_h_right_given_left": 0.11709545949683442,
+          "normalized_h_left_given_right": 0.10400470672319782,
+          "variation_of_information": 1.2260396546940049
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "view": "road",
+      "left_seed": 42,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 241,
+          "active_right": 202,
+          "optimal_match_rate": 0.6795619072291064,
+          "mutual_information": 4.60362225310699,
+          "adjusted_mutual_information": 0.8711268049705415,
+          "normalized_mutual_information": 0.8728576430056789,
+          "h_left": 5.362244421344407,
+          "h_right": 5.187593258185064,
+          "h_right_given_left": 0.583971005078074,
+          "h_left_given_right": 0.7586221682374168,
+          "normalized_h_right_given_left": 0.10531150913113513,
+          "normalized_h_left_given_right": 0.13680755500306926,
+          "variation_of_information": 1.3425931733154908
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "view": "road",
+      "left_seed": 314159,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 249,
+          "active_right": 202,
+          "optimal_match_rate": 0.6862944892995408,
+          "mutual_information": 4.651766765653953,
+          "adjusted_mutual_information": 0.8741819899533333,
+          "normalized_mutual_information": 0.8760760189822547,
+          "h_left": 5.434834968356035,
+          "h_right": 5.187593258185064,
+          "h_right_given_left": 0.5358264925311111,
+          "h_left_given_right": 0.7830682027020819,
+          "normalized_h_right_given_left": 0.09662927794394516,
+          "normalized_h_left_given_right": 0.1412160765895159,
+          "variation_of_information": 1.318894695233193
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "view": "gps",
+      "left_seed": 42,
+      "right_seed": 314159,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 210,
+          "optimal_match_rate": 0.6152612869334946,
+          "mutual_information": 4.161195216581847,
+          "adjusted_mutual_information": 0.8324560719598392,
+          "normalized_mutual_information": 0.8341974463732613,
+          "h_left": 4.9745951911347515,
+          "h_right": 5.001965861548822,
+          "h_right_given_left": 0.840770644966975,
+          "h_left_given_right": 0.8133999745529046,
+          "normalized_h_right_given_left": 0.15162195500235875,
+          "normalized_h_left_given_right": 0.14668601369333556,
+          "variation_of_information": 1.6541706195198795
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "view": "gps",
+      "left_seed": 42,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 198,
+          "optimal_match_rate": 0.5526128693349452,
+          "mutual_information": 3.948976234483371,
+          "adjusted_mutual_information": 0.7996663529650289,
+          "normalized_mutual_information": 0.8015886110267881,
+          "h_left": 4.974595191134751,
+          "h_right": 4.878746112920622,
+          "h_right_given_left": 0.9297698784372508,
+          "h_left_given_right": 1.0256189566513796,
+          "normalized_h_right_given_left": 0.1676717990986695,
+          "normalized_h_left_given_right": 0.18495692282533227,
+          "variation_of_information": 1.9553888350886304
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "view": "gps",
+      "left_seed": 314159,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 210,
+          "active_right": 198,
+          "optimal_match_rate": 0.5461566138479916,
+          "mutual_information": 3.968524218654499,
+          "adjusted_mutual_information": 0.801348308525381,
+          "normalized_mutual_information": 0.8033495674939674,
+          "h_left": 5.001965861548822,
+          "h_right": 4.878746112920622,
+          "h_right_given_left": 0.9102218942661229,
+          "h_left_given_right": 1.033441642894323,
+          "normalized_h_right_given_left": 0.16414657662078674,
+          "normalized_h_left_given_right": 0.18636764165647285,
+          "variation_of_information": 1.9436635371604458
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "view": "grid",
+      "left_seed": 42,
+      "right_seed": 314159,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 222,
+          "active_right": 226,
+          "optimal_match_rate": 0.4946706388613042,
+          "mutual_information": 3.7353750532063863,
+          "adjusted_mutual_information": 0.7290664632536421,
+          "normalized_mutual_information": 0.7322122861187474,
+          "h_left": 5.100819453010085,
+          "h_right": 5.1021644533718655,
+          "h_right_given_left": 1.3667894001654792,
+          "h_left_given_right": 1.3654443998036987,
+          "normalized_h_right_given_left": 0.24648253619479224,
+          "normalized_h_left_given_right": 0.2462399830258004,
+          "variation_of_information": 2.732233799969178
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "view": "grid",
+      "left_seed": 42,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 222,
+          "active_right": 233,
+          "optimal_match_rate": 0.4810817034382511,
+          "mutual_information": 3.728458687090704,
+          "adjusted_mutual_information": 0.7269724260471911,
+          "normalized_mutual_information": 0.7302027071305601,
+          "h_left": 5.100819453010085,
+          "h_right": 5.11130552618504,
+          "h_right_given_left": 1.382846839094336,
+          "h_left_given_right": 1.3723607659193808,
+          "normalized_h_right_given_left": 0.24937828463379713,
+          "normalized_h_left_given_right": 0.2474872589128088,
+          "variation_of_information": 2.755207605013717
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "view": "grid",
+      "left_seed": 314159,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 226,
+          "active_right": 233,
+          "optimal_match_rate": 0.4791704445691752,
+          "mutual_information": 3.7398543959644237,
+          "adjusted_mutual_information": 0.7291306614867545,
+          "normalized_mutual_information": 0.732337961792616,
+          "h_left": 5.1021644533718655,
+          "h_right": 5.11130552618504,
+          "h_right_given_left": 1.3714511302206165,
+          "h_left_given_right": 1.3623100574074418,
+          "normalized_h_right_given_left": 0.24732321804885593,
+          "normalized_h_left_given_right": 0.24567474549685944,
+          "variation_of_information": 2.7337611876280583
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "view": "road",
+      "left_seed": 42,
+      "right_seed": 314159,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 248,
+          "active_right": 232,
+          "optimal_match_rate": 0.7143732999438711,
+          "mutual_information": 4.721438838644252,
+          "adjusted_mutual_information": 0.8749053440795893,
+          "normalized_mutual_information": 0.876852115325466,
+          "h_left": 5.430682625376547,
+          "h_right": 5.338774844861552,
+          "h_right_given_left": 0.6173360062173003,
+          "h_left_given_right": 0.7092437867322952,
+          "normalized_h_right_given_left": 0.11132844934148718,
+          "normalized_h_left_given_right": 0.12790281173749898,
+          "variation_of_information": 1.3265797929495955
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "view": "road",
+      "left_seed": 42,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 248,
+          "active_right": 231,
+          "optimal_match_rate": 0.715360591799433,
+          "mutual_information": 4.695358690331818,
+          "adjusted_mutual_information": 0.8741786040376716,
+          "normalized_mutual_information": 0.8761039153342731,
+          "h_left": 5.430682625376548,
+          "h_right": 5.288979504807086,
+          "h_right_given_left": 0.5936208144752682,
+          "h_left_given_right": 0.7353239350447298,
+          "normalized_h_right_given_left": 0.1070517256514921,
+          "normalized_h_left_given_right": 0.13260602431699875,
+          "variation_of_information": 1.328944749519998
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "view": "road",
+      "left_seed": 314159,
+      "right_seed": 20260819,
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 232,
+          "active_right": 231,
+          "optimal_match_rate": 0.7094742598909086,
+          "mutual_information": 4.646465231879652,
+          "adjusted_mutual_information": 0.872666191370038,
+          "normalized_mutual_information": 0.8744116737794353,
+          "h_left": 5.338774844861552,
+          "h_right": 5.288979504807086,
+          "h_right_given_left": 0.6425142729274338,
+          "h_left_given_right": 0.6923096129818997,
+          "normalized_h_right_given_left": 0.11586901940659834,
+          "normalized_h_left_given_right": 0.12484895567609304,
+          "variation_of_information": 1.3348238859093335
+        }
+      }
+    }
+  ],
+  "cross_view": [
+    {
+      "family": "transformer",
+      "seed": 42,
+      "left": "gps",
+      "right": "grid",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 190,
+          "active_right": 228,
+          "optimal_match_rate": 0.5827382237381805,
+          "mutual_information": 3.919363549576659,
+          "adjusted_mutual_information": 0.788876199283417,
+          "normalized_mutual_information": 0.7909510355856862,
+          "h_left": 4.923822264379155,
+          "h_right": 4.986887062049148,
+          "h_right_given_left": 1.0675235124724893,
+          "h_left_given_right": 1.0044587148024964,
+          "normalized_h_right_given_left": 0.19251385968455348,
+          "normalized_h_left_given_right": 0.1811409508279079,
+          "variation_of_information": 2.0719822272749857
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 190,
+          "active_right": 228,
+          "optimal_match_rate": 0.011870529482031576,
+          "mutual_information": 0.04869375692484064,
+          "adjusted_mutual_information": 7.549705126848533e-05,
+          "normalized_mutual_information": 0.009826691752139304,
+          "h_left": 4.923822264379155,
+          "h_right": 4.986887062049148,
+          "h_right_given_left": 4.938193305124308,
+          "h_left_given_right": 4.875128507454315,
+          "normalized_h_right_given_left": 0.8905383740317399,
+          "normalized_h_left_given_right": 0.8791654651750943,
+          "variation_of_information": 9.813321812578623
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 190,
+          "active_right": 228,
+          "optimal_match_rate": 0.06776909459867882,
+          "mutual_information": 0.8728036196076132,
+          "adjusted_mutual_information": 0.16802018704644672,
+          "normalized_mutual_information": 0.17613699725970633,
+          "h_left": 4.923822264379155,
+          "h_right": 4.98688706204915,
+          "h_right_given_left": 4.114083442441537,
+          "h_left_given_right": 4.051018644771542,
+          "normalized_h_right_given_left": 0.7419209725267251,
+          "normalized_h_left_given_right": 0.7305480636700791,
+          "variation_of_information": 8.165102087213079
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.6208560122369703,
+          "optimal_match_rate": 0.5149691291395017,
+          "right_given_left_entropy_reduction": 0.5494071128421716,
+          "left_given_right_entropy_reduction": 0.5494071128421711
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7915660307756659,
+            "lower_95": 0.7908878624094897,
+            "upper_95": 0.7922351748613081
+          },
+          "optimal_match_rate": {
+            "mean": 0.5827872678647448,
+            "lower_95": 0.5812883210766181,
+            "upper_95": 0.5842981416356005
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.19196254638986227,
+            "lower_95": 0.19124442898397698,
+            "upper_95": 0.19261788579645447
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.1805641869123098,
+            "lower_95": 0.17991490855651932,
+            "upper_95": 0.18125526613253753
+          }
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "left": "gps",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 190,
+          "active_right": 241,
+          "optimal_match_rate": 0.45686282975691894,
+          "mutual_information": 4.047622436778767,
+          "adjusted_mutual_information": 0.7844700767337904,
+          "normalized_mutual_information": 0.7877265940156862,
+          "h_left": 4.9238222643791545,
+          "h_right": 5.362244421344406,
+          "h_right_given_left": 1.3146219845656386,
+          "h_left_given_right": 0.8761998276003871,
+          "normalized_h_right_given_left": 0.23707482722205678,
+          "normalized_h_left_given_right": 0.15801114326335539,
+          "variation_of_information": 2.1908218121660257
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 190,
+          "active_right": 241,
+          "optimal_match_rate": 0.00974914727343379,
+          "mutual_information": 0.06095924655909875,
+          "adjusted_mutual_information": 6.560649826115138e-05,
+          "normalized_mutual_information": 0.011863561983804147,
+          "h_left": 4.9238222643791545,
+          "h_right": 5.362244421344407,
+          "h_right_given_left": 5.301285174785308,
+          "h_left_given_right": 4.862863017820056,
+          "normalized_h_right_given_left": 0.9560172290001182,
+          "normalized_h_left_given_right": 0.8769535450414166,
+          "variation_of_information": 10.164148192605364
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 190,
+          "active_right": 241,
+          "optimal_match_rate": 0.055351668753508054,
+          "mutual_information": 0.9274077350497573,
+          "adjusted_mutual_information": 0.1705455380029441,
+          "normalized_mutual_information": 0.18048712492461078,
+          "h_left": 4.923822264379155,
+          "h_right": 5.36224442134441,
+          "h_right_given_left": 4.434836686294652,
+          "h_left_given_right": 3.9964145293293982,
+          "normalized_h_right_given_left": 0.7997646118087173,
+          "normalized_h_left_given_right": 0.7207009278500155,
+          "variation_of_information": 8.43125121562405
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.6139245387308463,
+          "optimal_match_rate": 0.4015111610034109,
+          "right_given_left_entropy_reduction": 0.5626897845866605,
+          "left_given_right_entropy_reduction": 0.5626897845866601
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7880727035098412,
+            "lower_95": 0.7875602311113102,
+            "upper_95": 0.7886004659002309
+          },
+          "optimal_match_rate": {
+            "mean": 0.4569025112584015,
+            "lower_95": 0.4554409677732791,
+            "upper_95": 0.4585195124688468
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.2367380582764268,
+            "lower_95": 0.23617577062972717,
+            "upper_95": 0.23728810049331547
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.15767218645516132,
+            "lower_95": 0.15715897502817305,
+            "upper_95": 0.15817023183735723
+          }
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "left": "grid",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 228,
+          "active_right": 241,
+          "optimal_match_rate": 0.4275491846926586,
+          "mutual_information": 3.8752749402676088,
+          "adjusted_mutual_information": 0.7458353741695406,
+          "normalized_mutual_information": 0.7494013144024515,
+          "h_left": 4.9868870620491474,
+          "h_right": 5.362244421344407,
+          "h_right_given_left": 1.4869694810767982,
+          "h_left_given_right": 1.1116121217815387,
+          "normalized_h_right_given_left": 0.2681554370378415,
+          "normalized_h_left_given_right": 0.20046466193578555,
+          "variation_of_information": 2.598581602858337
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 228,
+          "active_right": 241,
+          "optimal_match_rate": 0.009881553761351698,
+          "mutual_information": 0.06311729036685744,
+          "adjusted_mutual_information": 0.00010884272024609313,
+          "normalized_mutual_information": 0.012205632140045738,
+          "h_left": 4.986887062049148,
+          "h_right": 5.362244421344407,
+          "h_right_given_left": 5.299127130977549,
+          "h_left_given_right": 4.923769771682291,
+          "normalized_h_right_given_left": 0.9556280541126838,
+          "normalized_h_left_given_right": 0.887937279010628,
+          "variation_of_information": 10.22289690265984
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 228,
+          "active_right": 241,
+          "optimal_match_rate": 0.0529482031576069,
+          "mutual_information": 0.9251166040280678,
+          "adjusted_mutual_information": 0.16873139648713512,
+          "normalized_mutual_information": 0.17889920321015756,
+          "h_left": 4.9868870620491474,
+          "h_right": 5.362244421344409,
+          "h_right_given_left": 4.437127817316341,
+          "h_left_given_right": 4.06177045802108,
+          "normalized_h_right_given_left": 0.8001777872290945,
+          "normalized_h_left_given_right": 0.7324870121270382,
+          "variation_of_information": 8.498898275337421
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.5771039776824055,
+          "optimal_match_rate": 0.3746009815350517,
+          "right_given_left_entropy_reduction": 0.532022350191253,
+          "left_given_right_entropy_reduction": 0.5320223501912527
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7501545510500338,
+            "lower_95": 0.7493955804592417,
+            "upper_95": 0.7508416451858125
+          },
+          "optimal_match_rate": {
+            "mean": 0.42758171210208656,
+            "lower_95": 0.42582945704365566,
+            "upper_95": 0.4291523727413697
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.2674239433688365,
+            "lower_95": 0.266732318540537,
+            "upper_95": 0.26818471830672297
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.1997564310251234,
+            "lower_95": 0.19908314336319366,
+            "upper_95": 0.20041749578286175
+          }
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "left": "gps",
+      "right": "grid",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 201,
+          "active_right": 221,
+          "optimal_match_rate": 0.5479124390138596,
+          "mutual_information": 3.9060722696378583,
+          "adjusted_mutual_information": 0.7809662731622051,
+          "normalized_mutual_information": 0.7833297905922634,
+          "h_left": 4.943455902558668,
+          "h_right": 5.029914436358504,
+          "h_right_given_left": 1.1238421667206455,
+          "h_left_given_right": 1.0373836329208097,
+          "normalized_h_right_given_left": 0.20267019008372286,
+          "normalized_h_left_given_right": 0.1870785278392786,
+          "variation_of_information": 2.1612257996414552
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 201,
+          "active_right": 221,
+          "optimal_match_rate": 0.011795691032338846,
+          "mutual_information": 0.05349178226541628,
+          "adjusted_mutual_information": 7.141041186447126e-05,
+          "normalized_mutual_information": 0.010727324971962255,
+          "h_left": 4.943455902558668,
+          "h_right": 5.029914436358504,
+          "h_right_given_left": 4.976422654093088,
+          "h_left_given_right": 4.889964120293252,
+          "normalized_h_right_given_left": 0.8974325355534489,
+          "normalized_h_left_given_right": 0.8818408733090046,
+          "variation_of_information": 9.866386774386338
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 201,
+          "active_right": 221,
+          "optimal_match_rate": 0.06601039103089965,
+          "mutual_information": 0.8775942020178078,
+          "adjusted_mutual_information": 0.16711200776578922,
+          "normalized_mutual_information": 0.17599410226870393,
+          "h_left": 4.943455902558668,
+          "h_right": 5.0299144363585055,
+          "h_right_given_left": 4.1523202343406975,
+          "h_left_given_right": 4.06586170054086,
+          "normalized_h_right_given_left": 0.7488164762832779,
+          "normalized_h_left_given_right": 0.7332248140388333,
+          "variation_of_information": 8.218181934881557
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.6138542653964159,
+          "optimal_match_rate": 0.4819020479829599,
+          "right_given_left_entropy_reduction": 0.546146286199555,
+          "left_given_right_entropy_reduction": 0.5461462861995547
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7840074682008649,
+            "lower_95": 0.783357895640168,
+            "upper_95": 0.784740121807143
+          },
+          "optimal_match_rate": {
+            "mean": 0.5481076269714426,
+            "lower_95": 0.546421363558331,
+            "upper_95": 0.549933058465715
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.20204267898252704,
+            "lower_95": 0.20137533210244749,
+            "upper_95": 0.20272261849168105
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.1864620441841094,
+            "lower_95": 0.18564646436137452,
+            "upper_95": 0.18702284417265982
+          }
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "left": "gps",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 201,
+          "active_right": 249,
+          "optimal_match_rate": 0.43862527524718276,
+          "mutual_information": 4.077227163394733,
+          "adjusted_mutual_information": 0.7829389877357897,
+          "normalized_mutual_information": 0.7866044449123984,
+          "h_left": 4.943455902558668,
+          "h_right": 5.434834968356035,
+          "h_right_given_left": 1.3576078049613018,
+          "h_left_given_right": 0.866228739163935,
+          "normalized_h_right_given_left": 0.24482675596122766,
+          "normalized_h_left_given_right": 0.15621298828341354,
+          "variation_of_information": 2.223836544125237
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 201,
+          "active_right": 249,
+          "optimal_match_rate": 0.0093145085848337,
+          "mutual_information": 0.06710444107642366,
+          "adjusted_mutual_information": 0.00011050179370172993,
+          "normalized_mutual_information": 0.012946213077842843,
+          "h_left": 4.943455902558669,
+          "h_right": 5.434834968356037,
+          "h_right_given_left": 5.367730527279613,
+          "h_left_given_right": 4.876351461482245,
+          "normalized_h_right_given_left": 0.9679997765668248,
+          "normalized_h_left_given_right": 0.8793860088890105,
+          "variation_of_information": 10.244081988761858
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 201,
+          "active_right": 249,
+          "optimal_match_rate": 0.05192637047911,
+          "mutual_information": 0.9393414304260275,
+          "adjusted_mutual_information": 0.17038258797077813,
+          "normalized_mutual_information": 0.18122368826962232,
+          "h_left": 4.943455902558668,
+          "h_right": 5.4348349683560375,
+          "h_right_given_left": 4.49549353793001,
+          "h_left_given_right": 4.00411447213264,
+          "normalized_h_right_given_left": 0.8107032791900007,
+          "normalized_h_left_given_right": 0.7220895115121861,
+          "variation_of_information": 8.49960801006265
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.6125563997650116,
+          "optimal_match_rate": 0.3866989047680728,
+          "right_given_left_entropy_reduction": 0.565876523228773,
+          "left_given_right_entropy_reduction": 0.5658765232287726
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7869484548966872,
+            "lower_95": 0.7864405850439684,
+            "upper_95": 0.7874629553666527
+          },
+          "optimal_match_rate": {
+            "mean": 0.43888901057550084,
+            "lower_95": 0.43731357483332756,
+            "upper_95": 0.4403517660137971
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.24448407627786728,
+            "lower_95": 0.24393616170926108,
+            "upper_95": 0.2450495918287772
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.15588622377477848,
+            "lower_95": 0.1553561610738471,
+            "upper_95": 0.15639574952313504
+          }
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "left": "grid",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 221,
+          "active_right": 249,
+          "optimal_match_rate": 0.409651281608451,
+          "mutual_information": 3.8932135241756014,
+          "adjusted_mutual_information": 0.7405382397008372,
+          "normalized_mutual_information": 0.7446200810147158,
+          "h_left": 5.029914436358504,
+          "h_right": 5.434834968356036,
+          "h_right_given_left": 1.5416214441804343,
+          "h_left_given_right": 1.1367009121829024,
+          "normalized_h_right_given_left": 0.2780112015558993,
+          "normalized_h_left_given_right": 0.2049890961225293,
+          "variation_of_information": 2.6783223563633367
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 221,
+          "active_right": 249,
+          "optimal_match_rate": 0.009372076623058877,
+          "mutual_information": 0.07122057567229079,
+          "adjusted_mutual_information": 2.9155039237562426e-05,
+          "normalized_mutual_information": 0.013621721618324437,
+          "h_left": 5.029914436358504,
+          "h_right": 5.434834968356037,
+          "h_right_given_left": 5.363614392683746,
+          "h_left_given_right": 4.958693860686213,
+          "normalized_h_right_given_left": 0.9672574856956887,
+          "normalized_h_left_given_right": 0.8942353802623185,
+          "variation_of_information": 10.32230825336996
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 221,
+          "active_right": 249,
+          "optimal_match_rate": 0.05038930385849776,
+          "mutual_information": 0.9377705262894048,
+          "adjusted_mutual_information": 0.16792274338202032,
+          "normalized_mutual_information": 0.17935896937651072,
+          "h_left": 5.029914436358504,
+          "h_right": 5.4348349683560375,
+          "h_right_given_left": 4.497064442066633,
+          "h_left_given_right": 4.092143910069099,
+          "normalized_h_right_given_left": 0.8109865711409531,
+          "normalized_h_left_given_right": 0.7379644657075828,
+          "variation_of_information": 8.589208352135731
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.5726154963188169,
+          "optimal_match_rate": 0.3592619777499532,
+          "right_given_left_entropy_reduction": 0.5329753695850538,
+          "left_given_right_entropy_reduction": 0.5329753695850534
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7454339592390908,
+            "lower_95": 0.7447618050045183,
+            "upper_95": 0.746163184525219
+          },
+          "optimal_match_rate": {
+            "mean": 0.4099711718724081,
+            "lower_95": 0.4083181025427687,
+            "upper_95": 0.41168890959681564
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.27722448747238687,
+            "lower_95": 0.27658072640245895,
+            "upper_95": 0.27790524698740426
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.20420726976771572,
+            "lower_95": 0.20352456047731435,
+            "upper_95": 0.20485479252299507
+          }
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "left": "gps",
+      "right": "grid",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 186,
+          "active_right": 207,
+          "optimal_match_rate": 0.5518184304074378,
+          "mutual_information": 3.792152362054026,
+          "adjusted_mutual_information": 0.778098986080182,
+          "normalized_mutual_information": 0.7799630569937086,
+          "h_left": 4.844806705192799,
+          "h_right": 4.879182203559481,
+          "h_right_given_left": 1.0870298415054553,
+          "h_left_given_right": 1.0526543431387734,
+          "normalized_h_right_given_left": 0.19603157020477954,
+          "normalized_h_left_given_right": 0.1898324000770672,
+          "variation_of_information": 2.1396841846442287
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 186,
+          "active_right": 207,
+          "optimal_match_rate": 0.012449088266194609,
+          "mutual_information": 0.04069913318568694,
+          "adjusted_mutual_information": -7.690720883373079e-06,
+          "normalized_mutual_information": 0.008370924294642102,
+          "h_left": 4.844806705192799,
+          "h_right": 4.879182203559482,
+          "h_right_given_left": 4.838483070373796,
+          "h_left_given_right": 4.804107572007113,
+          "normalized_h_right_given_left": 0.872556941381685,
+          "normalized_h_left_given_right": 0.8663577712539726,
+          "variation_of_information": 9.64259064238091
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 186,
+          "active_right": 207,
+          "optimal_match_rate": 0.07114546004058547,
+          "mutual_information": 0.8577345709210787,
+          "adjusted_mutual_information": 0.1694574979672791,
+          "normalized_mutual_information": 0.17641729924122188,
+          "h_left": 4.844806705192799,
+          "h_right": 4.879182203559482,
+          "h_right_given_left": 4.021447632638403,
+          "h_left_given_right": 3.987072134271721,
+          "normalized_h_right_given_left": 0.7252153196002608,
+          "normalized_h_left_given_right": 0.7190161494725483,
+          "variation_of_information": 8.008519766910124
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.608641488112903,
+          "optimal_match_rate": 0.48067297036685236,
+          "right_given_left_entropy_reduction": 0.5291837493954812,
+          "left_given_right_entropy_reduction": 0.5291837493954812
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.780619800585161,
+            "lower_95": 0.780023163176575,
+            "upper_95": 0.7812666020915132
+          },
+          "optimal_match_rate": {
+            "mean": 0.5519230742833213,
+            "lower_95": 0.5501785153014345,
+            "upper_95": 0.5535410316500003
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.1954389463135476,
+            "lower_95": 0.19481503125141642,
+            "upper_95": 0.19596642597472458
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.1892473153722281,
+            "lower_95": 0.1886477630134784,
+            "upper_95": 0.18993061338730785
+          }
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "left": "gps",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 186,
+          "active_right": 202,
+          "optimal_match_rate": 0.4466790437948851,
+          "mutual_information": 3.9121339212952595,
+          "adjusted_mutual_information": 0.7778069714813536,
+          "normalized_mutual_information": 0.7803555570426423,
+          "h_left": 4.844806705192799,
+          "h_right": 5.187593258185064,
+          "h_right_given_left": 1.2754593368898046,
+          "h_left_given_right": 0.9326727838975399,
+          "normalized_h_right_given_left": 0.23001235752330587,
+          "normalized_h_left_given_right": 0.1681953000126356,
+          "variation_of_information": 2.2081321207873446
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 186,
+          "active_right": 202,
+          "optimal_match_rate": 0.010681749492681664,
+          "mutual_information": 0.04722481046657852,
+          "adjusted_mutual_information": -5.05543498000904e-06,
+          "normalized_mutual_information": 0.009419959546190274,
+          "h_left": 4.844806705192799,
+          "h_right": 5.187593258185066,
+          "h_right_given_left": 5.140368447718488,
+          "h_left_given_right": 4.797581894726221,
+          "normalized_h_right_given_left": 0.9269980084831951,
+          "normalized_h_left_given_right": 0.8651809509725246,
+          "variation_of_information": 9.937950342444708
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 186,
+          "active_right": 202,
+          "optimal_match_rate": 0.05963185239554999,
+          "mutual_information": 0.9024700163718233,
+          "adjusted_mutual_information": 0.17211283609624012,
+          "normalized_mutual_information": 0.18001620254015965,
+          "h_left": 4.844806705192799,
+          "h_right": 5.187593258185068,
+          "h_right_given_left": 4.2851232418132446,
+          "h_left_given_right": 3.9423366888209763,
+          "normalized_h_right_given_left": 0.7727657563202508,
+          "normalized_h_left_given_right": 0.7109486988095799,
+          "variation_of_information": 8.227459930634222
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.6056941353851135,
+          "optimal_match_rate": 0.38704719139933513,
+          "right_given_left_entropy_reduction": 0.542753398796945,
+          "left_given_right_entropy_reduction": 0.5427533987969443
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7807032798197744,
+            "lower_95": 0.7800906837177648,
+            "upper_95": 0.7812866323431114
+          },
+          "optimal_match_rate": {
+            "mean": 0.44701069266281945,
+            "lower_95": 0.4452272467007576,
+            "upper_95": 0.4485549747046416
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.2296908421768714,
+            "lower_95": 0.22908990376283542,
+            "upper_95": 0.23028197314173293
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.1678657203623123,
+            "lower_95": 0.16730894666460544,
+            "upper_95": 0.16846768392180106
+          }
+        }
+      }
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "left": "grid",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 202,
+          "optimal_match_rate": 0.4282083387303369,
+          "mutual_information": 3.723631835433472,
+          "adjusted_mutual_information": 0.7373208247781443,
+          "normalized_mutual_information": 0.7401338343785749,
+          "h_left": 4.8791822035594805,
+          "h_right": 5.187593258185065,
+          "h_right_given_left": 1.4639614227515931,
+          "h_left_given_right": 1.1555503681260086,
+          "normalized_h_right_given_left": 0.2640062355820593,
+          "normalized_h_left_given_right": 0.2083883481991011,
+          "variation_of_information": 2.6195117908776018
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 202,
+          "optimal_match_rate": 0.010592519033432638,
+          "mutual_information": 0.04673850056508668,
+          "adjusted_mutual_information": -0.00010155441899964762,
+          "normalized_mutual_information": 0.009290055291493612,
+          "h_left": 4.8791822035594805,
+          "h_right": 5.187593258185066,
+          "h_right_given_left": 5.140854757619979,
+          "h_left_given_right": 4.832443702994394,
+          "normalized_h_right_given_left": 0.9270857080935972,
+          "normalized_h_left_given_right": 0.8714678207106389,
+          "variation_of_information": 9.973298460614373
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 202,
+          "optimal_match_rate": 0.058918008721557794,
+          "mutual_information": 0.8980144573455636,
+          "adjusted_mutual_information": 0.1706267980870038,
+          "normalized_mutual_information": 0.1784953274160614,
+          "h_left": 4.8791822035594805,
+          "h_right": 5.187593258185067,
+          "h_right_given_left": 4.289578800839503,
+          "h_left_given_right": 3.981167746213917,
+          "normalized_h_right_given_left": 0.7735692579341972,
+          "normalized_h_left_given_right": 0.7179513705512387,
+          "variation_of_information": 8.27074654705342
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.5666940266911406,
+          "optimal_match_rate": 0.36929033000877914,
+          "right_given_left_entropy_reduction": 0.5095630223521379,
+          "left_given_right_entropy_reduction": 0.5095630223521376
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7409032781769378,
+            "lower_95": 0.7402957238775365,
+            "upper_95": 0.7415796428182149
+          },
+          "optimal_match_rate": {
+            "mean": 0.4284390251934023,
+            "lower_95": 0.42694945331693324,
+            "upper_95": 0.42992274403761527
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.26330178941457233,
+            "lower_95": 0.26270506266231025,
+            "upper_95": 0.26388056285928646
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.20766829854133273,
+            "lower_95": 0.20703185315365163,
+            "upper_95": 0.2083176586482715
+          }
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "left": "gps",
+      "right": "grid",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 222,
+          "optimal_match_rate": 0.5019817797159017,
+          "mutual_information": 3.814908882369865,
+          "adjusted_mutual_information": 0.7546314148510926,
+          "normalized_mutual_information": 0.7573302789626137,
+          "h_left": 4.974595191134751,
+          "h_right": 5.100819453010085,
+          "h_right_given_left": 1.2859105706402199,
+          "h_left_given_right": 1.1596863087648854,
+          "normalized_h_right_given_left": 0.2318971004111678,
+          "normalized_h_left_given_right": 0.20913421083024095,
+          "variation_of_information": 2.4455968794051053
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 222,
+          "optimal_match_rate": 0.011361052343738756,
+          "mutual_information": 0.05477309221503738,
+          "adjusted_mutual_information": 0.00011687766989767325,
+          "normalized_mutual_information": 0.010873476270576228,
+          "h_left": 4.9745951911347515,
+          "h_right": 5.100819453010086,
+          "h_right_given_left": 5.0460463607950485,
+          "h_left_given_right": 4.919822098919714,
+          "normalized_h_right_given_left": 0.9099882576018522,
+          "normalized_h_left_given_right": 0.8872253680209253,
+          "variation_of_information": 9.965868459714763
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 222,
+          "optimal_match_rate": 0.06240087503418102,
+          "mutual_information": 0.8759363398076947,
+          "adjusted_mutual_information": 0.16489273744863955,
+          "normalized_mutual_information": 0.17388963486015346,
+          "h_left": 4.974595191134751,
+          "h_right": 5.100819453010088,
+          "h_right_given_left": 4.224883113202393,
+          "h_left_given_right": 4.098658851327055,
+          "normalized_h_right_given_left": 0.7619022394690773,
+          "normalized_h_left_given_right": 0.7391393498881498,
+          "variation_of_information": 8.323541964529449
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.5897386774024531,
+          "optimal_match_rate": 0.43958090468172073,
+          "right_given_left_entropy_reduction": 0.5300051390579095,
+          "left_given_right_entropy_reduction": 0.5300051390579088
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7580956156059286,
+            "lower_95": 0.7573412745542456,
+            "upper_95": 0.7588770347168118
+          },
+          "optimal_match_rate": {
+            "mean": 0.5021366217937365,
+            "lower_95": 0.500242313349244,
+            "upper_95": 0.5037495892160331
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.23117542401287558,
+            "lower_95": 0.23041558027559297,
+            "upper_95": 0.23187380565854465
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.20842350241429983,
+            "lower_95": 0.20764810649464513,
+            "upper_95": 0.20919824695092812
+          }
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "left": "gps",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 248,
+          "optimal_match_rate": 0.45723702200538263,
+          "mutual_information": 4.065082569455471,
+          "adjusted_mutual_information": 0.778522885990899,
+          "normalized_mutual_information": 0.7821018029337024,
+          "h_left": 4.974595191134751,
+          "h_right": 5.430682625376548,
+          "h_right_given_left": 1.3656000559210772,
+          "h_left_given_right": 0.9095126216792799,
+          "normalized_h_right_given_left": 0.24626805356437867,
+          "normalized_h_left_given_right": 0.16401866861532713,
+          "variation_of_information": 2.275112677600357
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 248,
+          "optimal_match_rate": 0.009429644661284054,
+          "mutual_information": 0.06688013207530659,
+          "adjusted_mutual_information": 9.081467116810766e-05,
+          "normalized_mutual_information": 0.012867406991821099,
+          "h_left": 4.9745951911347515,
+          "h_right": 5.43068262537655,
+          "h_right_given_left": 5.363802493301243,
+          "h_left_given_right": 4.907715059059445,
+          "normalized_h_right_given_left": 0.9672914071741952,
+          "normalized_h_left_given_right": 0.8850420222251435,
+          "variation_of_information": 10.271517552360688
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 207,
+          "active_right": 248,
+          "optimal_match_rate": 0.05194364089057755,
+          "mutual_information": 0.9401543926512127,
+          "adjusted_mutual_information": 0.17011339410207357,
+          "normalized_mutual_information": 0.1808810603389658,
+          "h_left": 4.974595191134751,
+          "h_right": 5.4306826253765506,
+          "h_right_given_left": 4.490528232725338,
+          "h_left_given_right": 4.034440798483538,
+          "normalized_h_right_given_left": 0.8098078515405908,
+          "normalized_h_left_given_right": 0.7275584665915388,
+          "variation_of_information": 8.524969031208876
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.6084094918888254,
+          "optimal_match_rate": 0.40529338111480506,
+          "right_given_left_entropy_reduction": 0.5635397979762121,
+          "left_given_right_entropy_reduction": 0.5635397979762117
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7824890451140223,
+            "lower_95": 0.7820148916865831,
+            "upper_95": 0.7830377189530847
+          },
+          "optimal_match_rate": {
+            "mean": 0.457425237820084,
+            "lower_95": 0.4556346677588985,
+            "upper_95": 0.45910770685260893
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.2458947030105405,
+            "lower_95": 0.2452893962731647,
+            "upper_95": 0.24647923112957582
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.163633847052689,
+            "lower_95": 0.1630987826019244,
+            "upper_95": 0.16418239936862355
+          }
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "left": "grid",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 222,
+          "active_right": 248,
+          "optimal_match_rate": 0.39526215045406793,
+          "mutual_information": 3.8081625828772725,
+          "adjusted_mutual_information": 0.7193177781304426,
+          "normalized_mutual_information": 0.7235495775093449,
+          "h_left": 5.100819453010085,
+          "h_right": 5.430682625376548,
+          "h_right_given_left": 1.6225200424992754,
+          "h_left_given_right": 1.2926568701328125,
+          "normalized_h_right_given_left": 0.29260020238208184,
+          "normalized_h_left_given_right": 0.23311370701395717,
+          "variation_of_information": 2.915176912632088
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 222,
+          "active_right": 248,
+          "optimal_match_rate": 0.009510239914799304,
+          "mutual_information": 0.07284175229693912,
+          "adjusted_mutual_information": 2.1363851212862835e-05,
+          "normalized_mutual_information": 0.01383990781708418,
+          "h_left": 5.100819453010085,
+          "h_right": 5.43068262537655,
+          "h_right_given_left": 5.357840873079611,
+          "h_left_given_right": 5.027977700713146,
+          "normalized_h_right_given_left": 0.9662163071830185,
+          "normalized_h_left_given_right": 0.9067298118148936,
+          "variation_of_information": 10.385818573792758
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 222,
+          "active_right": 248,
+          "optimal_match_rate": 0.04945094483542737,
+          "mutual_information": 0.9372400537397234,
+          "adjusted_mutual_information": 0.16647523138693737,
+          "normalized_mutual_information": 0.17807528700516803,
+          "h_left": 5.100819453010085,
+          "h_right": 5.430682625376551,
+          "h_right_given_left": 4.4934425716368285,
+          "h_left_given_right": 4.163579399270361,
+          "normalized_h_right_given_left": 0.8103334143274754,
+          "normalized_h_left_given_right": 0.75084691895935,
+          "variation_of_information": 8.65702197090719
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.5528425467435052,
+          "optimal_match_rate": 0.34581120561864054,
+          "right_given_left_entropy_reduction": 0.5177332119453936,
+          "left_given_right_entropy_reduction": 0.5177332119453928
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7244472180443233,
+            "lower_95": 0.7236975550736083,
+            "upper_95": 0.725232783026183
+          },
+          "optimal_match_rate": {
+            "mean": 0.3954783036654435,
+            "lower_95": 0.3937743121375828,
+            "upper_95": 0.39713495084045514
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.2917374756264495,
+            "lower_95": 0.2909114603969902,
+            "upper_95": 0.2925400180129894
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.23222854126717377,
+            "lower_95": 0.23150575208069737,
+            "upper_95": 0.23300585806077717
+          }
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "left": "gps",
+      "right": "grid",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 210,
+          "active_right": 226,
+          "optimal_match_rate": 0.5028798411122145,
+          "mutual_information": 3.8518970646722774,
+          "adjusted_mutual_information": 0.7597524759456888,
+          "normalized_mutual_information": 0.7624775916873119,
+          "h_left": 5.001965861548822,
+          "h_right": 5.102164453371865,
+          "h_right_given_left": 1.2502673886995872,
+          "h_left_given_right": 1.1500687968765444,
+          "normalized_h_right_given_left": 0.22546932018276106,
+          "normalized_h_left_given_right": 0.20739981874186592,
+          "variation_of_information": 2.4003361855761316
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 210,
+          "active_right": 226,
+          "optimal_match_rate": 0.01125167307111092,
+          "mutual_information": 0.0570723958230461,
+          "adjusted_mutual_information": 0.00011119203743301341,
+          "normalized_mutual_information": 0.011297400264948044,
+          "h_left": 5.001965861548822,
+          "h_right": 5.1021644533718655,
+          "h_right_given_left": 5.045092057548819,
+          "h_left_given_right": 4.944893465725776,
+          "normalized_h_right_given_left": 0.9098161615317474,
+          "normalized_h_left_given_right": 0.891746660090852,
+          "variation_of_information": 9.989985523274594
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 210,
+          "active_right": 226,
+          "optimal_match_rate": 0.062090007627765065,
+          "mutual_information": 0.880730592619551,
+          "adjusted_mutual_information": 0.16498963167975586,
+          "normalized_mutual_information": 0.17433937872974523,
+          "h_left": 5.001965861548822,
+          "h_right": 5.102164453371866,
+          "h_right_given_left": 4.221433860752315,
+          "h_left_given_right": 4.12123526892927,
+          "normalized_h_right_given_left": 0.7612802120435145,
+          "normalized_h_left_given_right": 0.743210710602619,
+          "variation_of_information": 8.342669129681585
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.594762844265933,
+          "optimal_match_rate": 0.44078983348444944,
+          "right_given_left_entropy_reduction": 0.5358108918607534,
+          "left_given_right_entropy_reduction": 0.5358108918607531
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7632433005701913,
+            "lower_95": 0.7625870600213075,
+            "upper_95": 0.7639572075873219
+          },
+          "optimal_match_rate": {
+            "mean": 0.5028525493630821,
+            "lower_95": 0.5011467512700134,
+            "upper_95": 0.5046485145270001
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.2247401071918757,
+            "lower_95": 0.22400409914412586,
+            "upper_95": 0.22537419065583628
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.20670549388282225,
+            "lower_95": 0.20602764301782864,
+            "upper_95": 0.2073474711505168
+          }
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "left": "gps",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 210,
+          "active_right": 232,
+          "optimal_match_rate": 0.4711569736482305,
+          "mutual_information": 4.0550213132079795,
+          "adjusted_mutual_information": 0.7815838983656392,
+          "normalized_mutual_information": 0.784696972063522,
+          "h_left": 5.001965861548822,
+          "h_right": 5.338774844861552,
+          "h_right_given_left": 1.2837535316535726,
+          "h_left_given_right": 0.9469445483408423,
+          "normalized_h_right_given_left": 0.23150810673003777,
+          "normalized_h_left_given_right": 0.17076902548602158,
+          "variation_of_information": 2.230698079994415
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 210,
+          "active_right": 232,
+          "optimal_match_rate": 0.00990170257473051,
+          "mutual_information": 0.06440461634508343,
+          "adjusted_mutual_information": 0.00011109407832314024,
+          "normalized_mutual_information": 0.012463092923405236,
+          "h_left": 5.001965861548822,
+          "h_right": 5.338774844861553,
+          "h_right_given_left": 5.27437022851647,
+          "h_left_given_right": 4.937561245203739,
+          "normalized_h_right_given_left": 0.9511634715616375,
+          "normalized_h_left_given_right": 0.8904243903176211,
+          "variation_of_information": 10.21193147372021
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 210,
+          "active_right": 232,
+          "optimal_match_rate": 0.05576328022681807,
+          "mutual_information": 0.9354507279886544,
+          "adjusted_mutual_information": 0.17068594484381383,
+          "normalized_mutual_information": 0.18102133060962913,
+          "h_left": 5.001965861548822,
+          "h_right": 5.338774844861555,
+          "h_right_given_left": 4.4033241168729,
+          "h_left_given_right": 4.066515133560167,
+          "normalized_h_right_given_left": 0.7940817333549135,
+          "normalized_h_left_given_right": 0.7333426521108968,
+          "variation_of_information": 8.469839250433068
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.6108979535218254,
+          "optimal_match_rate": 0.4153936934214124,
+          "right_given_left_entropy_reduction": 0.5625736266248758,
+          "left_given_right_entropy_reduction": 0.5625736266248752
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7850424391057962,
+            "lower_95": 0.7844775374409642,
+            "upper_95": 0.7855346871828875
+          },
+          "optimal_match_rate": {
+            "mean": 0.471328841809231,
+            "lower_95": 0.46973341700475535,
+            "upper_95": 0.472956548109477
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.23116465841256953,
+            "lower_95": 0.23063861183180562,
+            "upper_95": 0.23174131645518556
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.1704457398821555,
+            "lower_95": 0.1699363095831493,
+            "upper_95": 0.17101875939432756
+          }
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "left": "grid",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 226,
+          "active_right": 232,
+          "optimal_match_rate": 0.41164889253486464,
+          "mutual_information": 3.81604965459846,
+          "adjusted_mutual_information": 0.7274833304388356,
+          "normalized_mutual_information": 0.7311659999696986,
+          "h_left": 5.102164453371865,
+          "h_right": 5.338774844861553,
+          "h_right_given_left": 1.5227251902630932,
+          "h_left_given_right": 1.2861147987734047,
+          "normalized_h_right_given_left": 0.27460351007865846,
+          "normalized_h_left_given_right": 0.23193393027553727,
+          "variation_of_information": 2.808839989036498
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 226,
+          "active_right": 232,
+          "optimal_match_rate": 0.009867161751795403,
+          "mutual_information": 0.06767347527460639,
+          "adjusted_mutual_information": 0.00014037274893344032,
+          "normalized_mutual_information": 0.012966430916577995,
+          "h_left": 5.102164453371865,
+          "h_right": 5.338774844861553,
+          "h_right_given_left": 5.271101369586947,
+          "h_left_given_right": 5.034490978097258,
+          "normalized_h_right_given_left": 0.9505739757407639,
+          "normalized_h_left_given_right": 0.9079043959376427,
+          "variation_of_information": 10.305592347684204
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 226,
+          "active_right": 232,
+          "optimal_match_rate": 0.05242721241166904,
+          "mutual_information": 0.9291904409531787,
+          "adjusted_mutual_information": 0.16731097354752092,
+          "normalized_mutual_information": 0.17803553921347084,
+          "h_left": 5.102164453371865,
+          "h_right": 5.338774844861555,
+          "h_right_given_left": 4.409584403908376,
+          "h_left_given_right": 4.172974012418686,
+          "normalized_h_right_given_left": 0.7952106939874912,
+          "normalized_h_left_given_right": 0.7525411141843696,
+          "variation_of_information": 8.58255841632706
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.5601723568913147,
+          "optimal_match_rate": 0.3592216801231956,
+          "right_given_left_entropy_reduction": 0.5206071839088328,
+          "left_given_right_entropy_reduction": 0.5206071839088324
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7320281772020831,
+            "lower_95": 0.7312002055761999,
+            "upper_95": 0.7327173740831235
+          },
+          "optimal_match_rate": {
+            "mean": 0.4119903508512796,
+            "lower_95": 0.41014043563531344,
+            "upper_95": 0.4137869842872085
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.2737809084902539,
+            "lower_95": 0.2731048339678626,
+            "upper_95": 0.27457148285369165
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.23109660326889334,
+            "lower_95": 0.23042149493853673,
+            "upper_95": 0.23190793307452
+          }
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "left": "gps",
+      "right": "grid",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 198,
+          "active_right": 233,
+          "optimal_match_rate": 0.46757624167062445,
+          "mutual_information": 3.6993438179090736,
+          "adjusted_mutual_information": 0.737901816502658,
+          "normalized_mutual_information": 0.7408062994885238,
+          "h_left": 4.878746112920621,
+          "h_right": 5.11130552618504,
+          "h_right_given_left": 1.4119617082759666,
+          "h_left_given_right": 1.1794022950115473,
+          "normalized_h_right_given_left": 0.2546287693068558,
+          "normalized_h_left_given_right": 0.2126897302782777,
+          "variation_of_information": 2.591364003287514
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 198,
+          "active_right": 233,
+          "optimal_match_rate": 0.011438769195342745,
+          "mutual_information": 0.051350352974016265,
+          "adjusted_mutual_information": -3.5778799787628644e-05,
+          "normalized_mutual_information": 0.010283084470264695,
+          "h_left": 4.878746112920621,
+          "h_right": 5.11130552618504,
+          "h_right_given_left": 5.059955173211024,
+          "h_left_given_right": 4.827395759946604,
+          "normalized_h_right_given_left": 0.9124965294390001,
+          "normalized_h_left_given_right": 0.870557490410422,
+          "variation_of_information": 9.887350933157627
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 198,
+          "active_right": 233,
+          "optimal_match_rate": 0.0641451865924039,
+          "mutual_information": 0.8839577575060331,
+          "adjusted_mutual_information": 0.1683889488860403,
+          "normalized_mutual_information": 0.17701557559263165,
+          "h_left": 4.878746112920622,
+          "h_right": 5.111305526185042,
+          "h_right_given_left": 4.227347768679008,
+          "h_left_given_right": 3.9947883554145887,
+          "normalized_h_right_given_left": 0.7623467077482788,
+          "normalized_h_left_given_right": 0.7204076687197006,
+          "variation_of_information": 8.222136124093597
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.5695128676166177,
+          "optimal_match_rate": 0.4034310550782205,
+          "right_given_left_entropy_reduction": 0.507717938441423,
+          "left_given_right_entropy_reduction": 0.507717938441423
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7415444618924812,
+            "lower_95": 0.7409434658209842,
+            "upper_95": 0.7422952155824641
+          },
+          "optimal_match_rate": {
+            "mean": 0.46769038935275575,
+            "lower_95": 0.46599801794760315,
+            "upper_95": 0.4691414859734555
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.2539481105116981,
+            "lower_95": 0.25318959793683454,
+            "upper_95": 0.25460697021000467
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.21201637473527246,
+            "lower_95": 0.21126201631261537,
+            "upper_95": 0.21267697218009807
+          }
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "left": "gps",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 198,
+          "active_right": 231,
+          "optimal_match_rate": 0.41224472173049526,
+          "mutual_information": 3.850416710532159,
+          "adjusted_mutual_information": 0.754748303820829,
+          "normalized_mutual_information": 0.7579973412349509,
+          "h_left": 4.878746112920622,
+          "h_right": 5.288979504807086,
+          "h_right_given_left": 1.4385627942749273,
+          "h_left_given_right": 1.0283294023884628,
+          "normalized_h_right_given_left": 0.259425926163476,
+          "normalized_h_left_given_right": 0.18544571615326835,
+          "variation_of_information": 2.46689219666339
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 198,
+          "active_right": 231,
+          "optimal_match_rate": 0.010097433904696113,
+          "mutual_information": 0.05519554611005032,
+          "adjusted_mutual_information": 0.00012722292515896796,
+          "normalized_mutual_information": 0.010865856956466127,
+          "h_left": 4.878746112920622,
+          "h_right": 5.288979504807086,
+          "h_right_given_left": 5.233783958697036,
+          "h_left_given_right": 4.823550566810572,
+          "normalized_h_right_given_left": 0.9438442702870528,
+          "normalized_h_left_given_right": 0.869864060276845,
+          "variation_of_information": 10.057334525507608
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 198,
+          "active_right": 231,
+          "optimal_match_rate": 0.0559993091835413,
+          "mutual_information": 0.9338818233992698,
+          "adjusted_mutual_information": 0.17484041080261656,
+          "normalized_mutual_information": 0.18384502052154755,
+          "h_left": 4.878746112920622,
+          "h_right": 5.288979504807088,
+          "h_right_given_left": 4.355097681407818,
+          "h_left_given_right": 3.9448642895213517,
+          "normalized_h_right_given_left": 0.7853847284442602,
+          "normalized_h_left_given_right": 0.7114045184340523,
+          "variation_of_information": 8.29996197092917
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.5799078930182124,
+          "optimal_match_rate": 0.35624541254695397,
+          "right_given_left_entropy_reduction": 0.5259588022807842,
+          "left_given_right_entropy_reduction": 0.525958802280784
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7583939630012645,
+            "lower_95": 0.7578411215641829,
+            "upper_95": 0.7588975988707048
+          },
+          "optimal_match_rate": {
+            "mean": 0.41259133195499714,
+            "lower_95": 0.41106710647962624,
+            "upper_95": 0.41432860410952543
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.2590357437431322,
+            "lower_95": 0.25849233147688166,
+            "upper_95": 0.2595873493920043
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.1850812298282271,
+            "lower_95": 0.18451492709059125,
+            "upper_95": 0.1856710118022105
+          }
+        }
+      }
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "left": "grid",
+      "right": "road",
+      "metrics": {
+        "actual": {
+          "samples": 347415,
+          "active_left": 233,
+          "active_right": 231,
+          "optimal_match_rate": 0.4124462098642834,
+          "mutual_information": 3.774739416073195,
+          "adjusted_mutual_information": 0.7223993055640958,
+          "normalized_mutual_information": 0.7259974800817319,
+          "h_left": 5.11130552618504,
+          "h_right": 5.288979504807086,
+          "h_right_given_left": 1.5142400887338914,
+          "h_left_given_right": 1.3365661101118453,
+          "normalized_h_right_given_left": 0.2730733333414561,
+          "normalized_h_left_given_right": 0.24103216235982644,
+          "variation_of_information": 2.8508061988457367
+        },
+        "global_shuffle": {
+          "samples": 347415,
+          "active_left": 233,
+          "active_right": 231,
+          "optimal_match_rate": 0.010140609933364996,
+          "mutual_information": 0.06568841417874156,
+          "adjusted_mutual_information": 5.266955567429284e-05,
+          "normalized_mutual_information": 0.012633884861366745,
+          "h_left": 5.11130552618504,
+          "h_right": 5.288979504807086,
+          "h_right_given_left": 5.2232910906283445,
+          "h_left_given_right": 5.0456171120062985,
+          "normalized_h_right_given_left": 0.9419520191961273,
+          "normalized_h_left_given_right": 0.9099108482144975,
+          "variation_of_information": 10.268908202634643
+        },
+        "conditional_shuffle": {
+          "samples": 347415,
+          "active_left": 233,
+          "active_right": 231,
+          "optimal_match_rate": 0.05268051177985982,
+          "mutual_information": 0.9227329969135257,
+          "adjusted_mutual_information": 0.16696417088890117,
+          "normalized_mutual_information": 0.17746968908502112,
+          "h_left": 5.11130552618504,
+          "h_right": 5.288979504807088,
+          "h_right_given_left": 4.366246507893562,
+          "h_left_given_right": 4.188572529271514,
+          "normalized_h_right_given_left": 0.7873952730295996,
+          "normalized_h_left_given_right": 0.7553541020479696,
+          "variation_of_information": 8.554819037165077
+        },
+        "conditional_lift": {
+          "adjusted_mutual_information": 0.5554351346751947,
+          "optimal_match_rate": 0.35976569808442355,
+          "right_given_left_entropy_reduction": 0.5143219396881434,
+          "left_given_right_entropy_reduction": 0.5143219396881431
+        },
+        "bootstrap": {
+          "normalized_mutual_information": {
+            "mean": 0.7269259944663059,
+            "lower_95": 0.7261279883887717,
+            "upper_95": 0.7276635061455383
+          },
+          "optimal_match_rate": {
+            "mean": 0.41271262791188706,
+            "lower_95": 0.4109466151807177,
+            "upper_95": 0.41414684674560565
+          },
+          "normalized_h_right_given_left": {
+            "mean": 0.2721769999928623,
+            "lower_95": 0.27136059743911084,
+            "upper_95": 0.273023923770286
+          },
+          "normalized_h_left_given_right": {
+            "mean": 0.24015422185438282,
+            "lower_95": 0.23936074084958103,
+            "upper_95": 0.2408520854560259
+          }
+        }
+      }
+    }
+  ],
+  "continuous_latent_probes": [
+    {
+      "family": "transformer",
+      "seed": 42,
+      "source": "gps",
+      "target": "grid",
+      "accuracy": 0.3300166666666667,
+      "majority_baseline": 0.022906554705887424,
+      "accuracy_lift": 0.30711011196077925,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "source": "grid",
+      "target": "gps",
+      "accuracy": 0.400325,
+      "majority_baseline": 0.01851835886648332,
+      "accuracy_lift": 0.38180664113351664,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "source": "gps",
+      "target": "road",
+      "accuracy": 0.32216666666666666,
+      "majority_baseline": 0.010767891165846215,
+      "accuracy_lift": 0.31139877550082046,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "source": "road",
+      "target": "gps",
+      "accuracy": 0.7126166666666667,
+      "majority_baseline": 0.01851835886648332,
+      "accuracy_lift": 0.6940983078001833,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "source": "grid",
+      "target": "road",
+      "accuracy": 0.33221666666666666,
+      "majority_baseline": 0.010767891165846215,
+      "accuracy_lift": 0.32144877550082046,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "source": "road",
+      "target": "grid",
+      "accuracy": 0.658025,
+      "majority_baseline": 0.022906554705887424,
+      "accuracy_lift": 0.6351184452941125,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "source": "gps",
+      "target": "grid",
+      "accuracy": 0.362025,
+      "majority_baseline": 0.019018389040717974,
+      "accuracy_lift": 0.34300661095928203,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "source": "grid",
+      "target": "gps",
+      "accuracy": 0.354825,
+      "majority_baseline": 0.021156449096066142,
+      "accuracy_lift": 0.3336685509039339,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "source": "gps",
+      "target": "road",
+      "accuracy": 0.2885583333333333,
+      "majority_baseline": 0.008983300716422542,
+      "accuracy_lift": 0.27957503261691075,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "source": "road",
+      "target": "gps",
+      "accuracy": 0.7264166666666667,
+      "majority_baseline": 0.021156449096066142,
+      "accuracy_lift": 0.7052602175706005,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "source": "grid",
+      "target": "road",
+      "accuracy": 0.2768833333333333,
+      "majority_baseline": 0.008983300716422542,
+      "accuracy_lift": 0.26790003261691075,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 314159,
+      "source": "road",
+      "target": "grid",
+      "accuracy": 0.6305333333333333,
+      "majority_baseline": 0.019018389040717974,
+      "accuracy_lift": 0.6115149442926153,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "source": "gps",
+      "target": "grid",
+      "accuracy": 0.36151666666666665,
+      "majority_baseline": 0.025492917676066658,
+      "accuracy_lift": 0.3360237489906,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "source": "grid",
+      "target": "gps",
+      "accuracy": 0.38793333333333335,
+      "majority_baseline": 0.019906373660479513,
+      "accuracy_lift": 0.3680269596728538,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "source": "gps",
+      "target": "road",
+      "accuracy": 0.2986083333333333,
+      "majority_baseline": 0.013362875345926048,
+      "accuracy_lift": 0.28524545798740725,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "source": "road",
+      "target": "gps",
+      "accuracy": 0.7270833333333333,
+      "majority_baseline": 0.019906373660479513,
+      "accuracy_lift": 0.7071769596728538,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "source": "grid",
+      "target": "road",
+      "accuracy": 0.29836666666666667,
+      "majority_baseline": 0.013362875345926048,
+      "accuracy_lift": 0.2850037913207406,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "transformer",
+      "seed": 20260819,
+      "source": "road",
+      "target": "grid",
+      "accuracy": 0.6568833333333334,
+      "majority_baseline": 0.025492917676066658,
+      "accuracy_lift": 0.6313904156572667,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "source": "gps",
+      "target": "grid",
+      "accuracy": 0.32375,
+      "majority_baseline": 0.01821661651996241,
+      "accuracy_lift": 0.30553338348003756,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "source": "grid",
+      "target": "gps",
+      "accuracy": 0.34370833333333334,
+      "majority_baseline": 0.0202943281060064,
+      "accuracy_lift": 0.32341400522732694,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "source": "gps",
+      "target": "road",
+      "accuracy": 0.3052666666666667,
+      "majority_baseline": 0.008733285629305216,
+      "accuracy_lift": 0.2965333810373615,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "source": "road",
+      "target": "gps",
+      "accuracy": 0.695725,
+      "majority_baseline": 0.0202943281060064,
+      "accuracy_lift": 0.6754306718939936,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "source": "grid",
+      "target": "road",
+      "accuracy": 0.284525,
+      "majority_baseline": 0.008733285629305216,
+      "accuracy_lift": 0.2757917143706948,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "source": "road",
+      "target": "grid",
+      "accuracy": 0.584275,
+      "majority_baseline": 0.01821661651996241,
+      "accuracy_lift": 0.5660583834800376,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "source": "gps",
+      "target": "grid",
+      "accuracy": 0.3531916666666667,
+      "majority_baseline": 0.01707861681308355,
+      "accuracy_lift": 0.33611304985358315,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "source": "grid",
+      "target": "gps",
+      "accuracy": 0.3832,
+      "majority_baseline": 0.018682161854594675,
+      "accuracy_lift": 0.3645178381454053,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "source": "gps",
+      "target": "road",
+      "accuracy": 0.313775,
+      "majority_baseline": 0.010793754795548007,
+      "accuracy_lift": 0.302981245204452,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "source": "road",
+      "target": "gps",
+      "accuracy": 0.6954,
+      "majority_baseline": 0.018682161854594675,
+      "accuracy_lift": 0.6767178381454053,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "source": "grid",
+      "target": "road",
+      "accuracy": 0.29823333333333335,
+      "majority_baseline": 0.010793754795548007,
+      "accuracy_lift": 0.28743957853778535,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 314159,
+      "source": "road",
+      "target": "grid",
+      "accuracy": 0.5931166666666666,
+      "majority_baseline": 0.01707861681308355,
+      "accuracy_lift": 0.5760380498535831,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "source": "gps",
+      "target": "grid",
+      "accuracy": 0.3493833333333333,
+      "majority_baseline": 0.017880389333839113,
+      "accuracy_lift": 0.3315029439994942,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "source": "grid",
+      "target": "gps",
+      "accuracy": 0.401475,
+      "majority_baseline": 0.021035752157457777,
+      "accuracy_lift": 0.38043924784254224,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "source": "gps",
+      "target": "road",
+      "accuracy": 0.3487166666666667,
+      "majority_baseline": 0.0101471640530032,
+      "accuracy_lift": 0.3385695026136635,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "source": "road",
+      "target": "gps",
+      "accuracy": 0.6873333333333334,
+      "majority_baseline": 0.021035752157457777,
+      "accuracy_lift": 0.6662975811758756,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "source": "grid",
+      "target": "road",
+      "accuracy": 0.3229916666666667,
+      "majority_baseline": 0.0101471640530032,
+      "accuracy_lift": 0.3128445026136635,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    },
+    {
+      "family": "gru",
+      "seed": 20260819,
+      "source": "road",
+      "target": "grid",
+      "accuracy": 0.5829916666666667,
+      "majority_baseline": 0.017880389333839113,
+      "accuracy_lift": 0.5651112773328276,
+      "train_samples": 115993,
+      "test_samples": 120000,
+      "epochs": 5
+    }
+  ],
+  "block_stability": [
+    {
+      "comparison": "within_family_seed",
+      "family": "transformer",
+      "seed": 314159,
+      "pair": "gps-grid",
+      "jensen_shannon_divergence": 0.20537372726691402,
+      "cosine_similarity": 0.7131231975617457
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "transformer",
+      "seed": 20260819,
+      "pair": "gps-grid",
+      "jensen_shannon_divergence": 0.19032254358311018,
+      "cosine_similarity": 0.7558345364524895
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "transformer",
+      "seed": 314159,
+      "pair": "gps-road",
+      "jensen_shannon_divergence": 0.17390499764869605,
+      "cosine_similarity": 0.7330856761147884
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "transformer",
+      "seed": 20260819,
+      "pair": "gps-road",
+      "jensen_shannon_divergence": 0.19771863023332686,
+      "cosine_similarity": 0.7470005078335944
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "transformer",
+      "seed": 314159,
+      "pair": "grid-road",
+      "jensen_shannon_divergence": 0.17667218056322914,
+      "cosine_similarity": 0.7402346683547202
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "transformer",
+      "seed": 20260819,
+      "pair": "grid-road",
+      "jensen_shannon_divergence": 0.20476042527140081,
+      "cosine_similarity": 0.7033386502606349
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "gru",
+      "seed": 314159,
+      "pair": "gps-grid",
+      "jensen_shannon_divergence": 0.18554120652568562,
+      "cosine_similarity": 0.7403961546382418
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "gru",
+      "seed": 20260819,
+      "pair": "gps-grid",
+      "jensen_shannon_divergence": 0.19605216261768432,
+      "cosine_similarity": 0.7299198558400702
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "gru",
+      "seed": 314159,
+      "pair": "gps-road",
+      "jensen_shannon_divergence": 0.18472493251945246,
+      "cosine_similarity": 0.7564531990687399
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "gru",
+      "seed": 20260819,
+      "pair": "gps-road",
+      "jensen_shannon_divergence": 0.2059771804973877,
+      "cosine_similarity": 0.7147052825799924
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "gru",
+      "seed": 314159,
+      "pair": "grid-road",
+      "jensen_shannon_divergence": 0.16010993140680993,
+      "cosine_similarity": 0.7782204551347338
+    },
+    {
+      "comparison": "within_family_seed",
+      "family": "gru",
+      "seed": 20260819,
+      "pair": "grid-road",
+      "jensen_shannon_divergence": 0.1641056055957158,
+      "cosine_similarity": 0.7631179503712765
+    },
+    {
+      "comparison": "across_encoder",
+      "seed": 42,
+      "pair": "gps-grid",
+      "jensen_shannon_divergence": 0.2017238872988797,
+      "cosine_similarity": 0.7145086110037138
+    },
+    {
+      "comparison": "across_encoder",
+      "seed": 42,
+      "pair": "gps-road",
+      "jensen_shannon_divergence": 0.19172126630464803,
+      "cosine_similarity": 0.7274281211342923
+    },
+    {
+      "comparison": "across_encoder",
+      "seed": 42,
+      "pair": "grid-road",
+      "jensen_shannon_divergence": 0.1738645575991185,
+      "cosine_similarity": 0.7472453280707615
+    },
+    {
+      "comparison": "across_encoder",
+      "seed": 314159,
+      "pair": "gps-grid",
+      "jensen_shannon_divergence": 0.19988734704551164,
+      "cosine_similarity": 0.7147551118653591
+    },
+    {
+      "comparison": "across_encoder",
+      "seed": 314159,
+      "pair": "gps-road",
+      "jensen_shannon_divergence": 0.1948777342650131,
+      "cosine_similarity": 0.7196870400986113
+    },
+    {
+      "comparison": "across_encoder",
+      "seed": 314159,
+      "pair": "grid-road",
+      "jensen_shannon_divergence": 0.162279708310732,
+      "cosine_similarity": 0.7793594951579784
+    },
+    {
+      "comparison": "across_encoder",
+      "seed": 20260819,
+      "pair": "gps-grid",
+      "jensen_shannon_divergence": 0.1961570520435107,
+      "cosine_similarity": 0.7694316779331031
+    },
+    {
+      "comparison": "across_encoder",
+      "seed": 20260819,
+      "pair": "gps-road",
+      "jensen_shannon_divergence": 0.20458602176088775,
+      "cosine_similarity": 0.7066318410348589
+    },
+    {
+      "comparison": "across_encoder",
+      "seed": 20260819,
+      "pair": "grid-road",
+      "jensen_shannon_divergence": 0.20325837880568554,
+      "cosine_similarity": 0.7069247390091656
+    }
+  ],
+  "semantic_audit": [
+    {
+      "family": "transformer",
+      "seed": 42,
+      "view": "gps",
+      "top_codes": [
+        {
+          "code": 75,
+          "count": 6512,
+          "representative_trajectory_indices": [
+            16,
+            34,
+            41,
+            47,
+            98
+          ],
+          "path_length_m_mean": 485.3564147949219,
+          "path_length_m_median": 477.9581298828125,
+          "displacement_m_mean": 413.4288330078125,
+          "displacement_m_median": 396.8095397949219,
+          "mean_abs_turn_rad_mean": 0.5710012912750244,
+          "mean_abs_turn_rad_median": 0.48752015829086304,
+          "grid_transition_rate_mean": 0.5870887041091919,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.46294352412223816,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 52.134368896484375,
+          "trajectory_points_median": 49.0
+        },
+        {
+          "code": 10,
+          "count": 6475,
+          "representative_trajectory_indices": [
+            12,
+            29,
+            46,
+            52,
+            56
+          ],
+          "path_length_m_mean": 553.6328125,
+          "path_length_m_median": 512.9935913085938,
+          "displacement_m_mean": 377.10089111328125,
+          "displacement_m_median": 288.6865234375,
+          "mean_abs_turn_rad_mean": 0.7406590580940247,
+          "mean_abs_turn_rad_median": 0.7118202447891235,
+          "grid_transition_rate_mean": 0.6000963449478149,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.45185109972953796,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 51.87752914428711,
+          "trajectory_points_median": 50.0
+        },
+        {
+          "code": 22,
+          "count": 6133,
+          "representative_trajectory_indices": [
+            1,
+            7,
+            13,
+            30,
+            49
+          ],
+          "path_length_m_mean": 421.1818542480469,
+          "path_length_m_median": 413.507568359375,
+          "displacement_m_mean": 335.4970397949219,
+          "displacement_m_median": 307.3438415527344,
+          "mean_abs_turn_rad_mean": 0.7285964488983154,
+          "mean_abs_turn_rad_median": 0.6734258532524109,
+          "grid_transition_rate_mean": 0.5430260300636292,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.5116256475448608,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 49.39817428588867,
+          "trajectory_points_median": 46.0
+        },
+        {
+          "code": 13,
+          "count": 6131,
+          "representative_trajectory_indices": [
+            3,
+            6,
+            8,
+            81,
+            84
+          ],
+          "path_length_m_mean": 588.0193481445312,
+          "path_length_m_median": 523.8550415039062,
+          "displacement_m_mean": 533.1416625976562,
+          "displacement_m_median": 456.72393798828125,
+          "mean_abs_turn_rad_mean": 0.5494444370269775,
+          "mean_abs_turn_rad_median": 0.47451797127723694,
+          "grid_transition_rate_mean": 0.6249116659164429,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5179691910743713,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 46.37432861328125,
+          "trajectory_points_median": 43.0
+        },
+        {
+          "code": 34,
+          "count": 5599,
+          "representative_trajectory_indices": [
+            0,
+            10,
+            12,
+            14,
+            18
+          ],
+          "path_length_m_mean": 1169.518798828125,
+          "path_length_m_median": 961.1316528320312,
+          "displacement_m_mean": 1003.5032348632812,
+          "displacement_m_median": 816.3692016601562,
+          "mean_abs_turn_rad_mean": 0.528626561164856,
+          "mean_abs_turn_rad_median": 0.4342515468597412,
+          "grid_transition_rate_mean": 0.7752600908279419,
+          "grid_transition_rate_median": 0.8571428656578064,
+          "road_transition_rate_mean": 0.6587511897087097,
+          "road_transition_rate_median": 0.7142857313156128,
+          "trajectory_points_mean": 47.868370056152344,
+          "trajectory_points_median": 44.0
+        },
+        {
+          "code": 67,
+          "count": 5330,
+          "representative_trajectory_indices": [
+            7,
+            19,
+            38,
+            42,
+            48
+          ],
+          "path_length_m_mean": 543.3709106445312,
+          "path_length_m_median": 517.1949462890625,
+          "displacement_m_mean": 465.7442626953125,
+          "displacement_m_median": 443.66510009765625,
+          "mean_abs_turn_rad_mean": 0.6558495759963989,
+          "mean_abs_turn_rad_median": 0.5776565074920654,
+          "grid_transition_rate_mean": 0.5856964588165283,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.5435477495193481,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 50.300376892089844,
+          "trajectory_points_median": 47.0
+        },
+        {
+          "code": 55,
+          "count": 4945,
+          "representative_trajectory_indices": [
+            0,
+            3,
+            12,
+            29,
+            31
+          ],
+          "path_length_m_mean": 1401.8282470703125,
+          "path_length_m_median": 1437.3302001953125,
+          "displacement_m_mean": 1275.528564453125,
+          "displacement_m_median": 1260.4637451171875,
+          "mean_abs_turn_rad_mean": 0.48665520548820496,
+          "mean_abs_turn_rad_median": 0.3891499638557434,
+          "grid_transition_rate_mean": 0.7847956418991089,
+          "grid_transition_rate_median": 1.0,
+          "road_transition_rate_mean": 0.6052313446998596,
+          "road_transition_rate_median": 0.7142857313156128,
+          "trajectory_points_mean": 48.017189025878906,
+          "trajectory_points_median": 44.0
+        },
+        {
+          "code": 51,
+          "count": 4925,
+          "representative_trajectory_indices": [
+            1,
+            15,
+            20,
+            25,
+            30
+          ],
+          "path_length_m_mean": 613.2106323242188,
+          "path_length_m_median": 627.5916137695312,
+          "displacement_m_mean": 541.4611206054688,
+          "displacement_m_median": 532.4700927734375,
+          "mean_abs_turn_rad_mean": 0.6042810678482056,
+          "mean_abs_turn_rad_median": 0.5360459685325623,
+          "grid_transition_rate_mean": 0.6643103361129761,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.6529886722564697,
+          "road_transition_rate_median": 0.7142857313156128,
+          "trajectory_points_mean": 46.2702522277832,
+          "trajectory_points_median": 42.0
+        },
+        {
+          "code": 21,
+          "count": 4916,
+          "representative_trajectory_indices": [
+            2,
+            9,
+            25,
+            34,
+            44
+          ],
+          "path_length_m_mean": 327.2515869140625,
+          "path_length_m_median": 316.89093017578125,
+          "displacement_m_mean": 275.77520751953125,
+          "displacement_m_median": 260.9067687988281,
+          "mean_abs_turn_rad_mean": 0.6988109946250916,
+          "mean_abs_turn_rad_median": 0.6362284421920776,
+          "grid_transition_rate_mean": 0.4733765423297882,
+          "grid_transition_rate_median": 0.4285714328289032,
+          "road_transition_rate_mean": 0.4602300226688385,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 52.467044830322266,
+          "trajectory_points_median": 49.0
+        },
+        {
+          "code": 2,
+          "count": 4745,
+          "representative_trajectory_indices": [
+            14,
+            18,
+            20,
+            32,
+            40
+          ],
+          "path_length_m_mean": 1381.7064208984375,
+          "path_length_m_median": 1176.0369873046875,
+          "displacement_m_mean": 1197.71533203125,
+          "displacement_m_median": 906.2743530273438,
+          "mean_abs_turn_rad_mean": 0.6221766471862793,
+          "mean_abs_turn_rad_median": 0.4837810695171356,
+          "grid_transition_rate_mean": 0.8260208964347839,
+          "grid_transition_rate_median": 0.8571428656578064,
+          "road_transition_rate_mean": 0.6501911878585815,
+          "road_transition_rate_median": 0.7142857313156128,
+          "trajectory_points_mean": 50.30305480957031,
+          "trajectory_points_median": 46.0
+        }
+      ]
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "view": "grid",
+      "top_codes": [
+        {
+          "code": 6,
+          "count": 7761,
+          "representative_trajectory_indices": [
+            3,
+            6,
+            8,
+            27,
+            61
+          ],
+          "path_length_m_mean": 572.9412841796875,
+          "path_length_m_median": 506.381591796875,
+          "displacement_m_mean": 523.330322265625,
+          "displacement_m_median": 447.4102783203125,
+          "mean_abs_turn_rad_mean": 0.5434056520462036,
+          "mean_abs_turn_rad_median": 0.46924731135368347,
+          "grid_transition_rate_mean": 0.613328218460083,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5055344104766846,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 47.26246643066406,
+          "trajectory_points_median": 44.0
+        },
+        {
+          "code": 1,
+          "count": 6198,
+          "representative_trajectory_indices": [
+            12,
+            29,
+            46,
+            52,
+            56
+          ],
+          "path_length_m_mean": 487.1444091796875,
+          "path_length_m_median": 432.078369140625,
+          "displacement_m_mean": 328.5851745605469,
+          "displacement_m_median": 231.04977416992188,
+          "mean_abs_turn_rad_mean": 0.737913966178894,
+          "mean_abs_turn_rad_median": 0.7144633531570435,
+          "grid_transition_rate_mean": 0.5353904366493225,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.40488559007644653,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 52.80316162109375,
+          "trajectory_points_median": 51.0
+        },
+        {
+          "code": 7,
+          "count": 5359,
+          "representative_trajectory_indices": [
+            1,
+            7,
+            13,
+            49,
+            61
+          ],
+          "path_length_m_mean": 419.6440124511719,
+          "path_length_m_median": 406.83148193359375,
+          "displacement_m_mean": 333.22369384765625,
+          "displacement_m_median": 298.16546630859375,
+          "mean_abs_turn_rad_mean": 0.7434855699539185,
+          "mean_abs_turn_rad_median": 0.6867203116416931,
+          "grid_transition_rate_mean": 0.5406858921051025,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.5083953142166138,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 49.549171447753906,
+          "trajectory_points_median": 47.0
+        },
+        {
+          "code": 8,
+          "count": 5276,
+          "representative_trajectory_indices": [
+            3,
+            14,
+            18,
+            20,
+            29
+          ],
+          "path_length_m_mean": 1291.0706787109375,
+          "path_length_m_median": 1035.4625244140625,
+          "displacement_m_mean": 1127.3306884765625,
+          "displacement_m_median": 809.4883422851562,
+          "mean_abs_turn_rad_mean": 0.6333550810813904,
+          "mean_abs_turn_rad_median": 0.526780366897583,
+          "grid_transition_rate_mean": 0.8047267198562622,
+          "grid_transition_rate_median": 0.8571428656578064,
+          "road_transition_rate_mean": 0.6633895039558411,
+          "road_transition_rate_median": 0.7142857313156128,
+          "trajectory_points_mean": 49.77919006347656,
+          "trajectory_points_median": 46.0
+        },
+        {
+          "code": 54,
+          "count": 4873,
+          "representative_trajectory_indices": [
+            19,
+            26,
+            38,
+            42,
+            48
+          ],
+          "path_length_m_mean": 595.814697265625,
+          "path_length_m_median": 558.4982299804688,
+          "displacement_m_mean": 509.1571960449219,
+          "displacement_m_median": 484.54937744140625,
+          "mean_abs_turn_rad_mean": 0.6330580711364746,
+          "mean_abs_turn_rad_median": 0.5507358312606812,
+          "grid_transition_rate_mean": 0.6230048537254333,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5742605328559875,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 49.50482177734375,
+          "trajectory_points_median": 46.0
+        },
+        {
+          "code": 17,
+          "count": 4165,
+          "representative_trajectory_indices": [
+            1,
+            2,
+            13,
+            15,
+            25
+          ],
+          "path_length_m_mean": 633.9179077148438,
+          "path_length_m_median": 642.4384765625,
+          "displacement_m_mean": 543.8949584960938,
+          "displacement_m_median": 547.0814208984375,
+          "mean_abs_turn_rad_mean": 0.6496163010597229,
+          "mean_abs_turn_rad_median": 0.5803481340408325,
+          "grid_transition_rate_mean": 0.6640192866325378,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5835545659065247,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 47.38079071044922,
+          "trajectory_points_median": 44.0
+        },
+        {
+          "code": 12,
+          "count": 4122,
+          "representative_trajectory_indices": [
+            5,
+            25,
+            33,
+            44,
+            61
+          ],
+          "path_length_m_mean": 607.7476806640625,
+          "path_length_m_median": 613.8035888671875,
+          "displacement_m_mean": 558.6942138671875,
+          "displacement_m_median": 566.8707885742188,
+          "mean_abs_turn_rad_mean": 0.5043484568595886,
+          "mean_abs_turn_rad_median": 0.40874794125556946,
+          "grid_transition_rate_mean": 0.6444998979568481,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5937397480010986,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 48.31732177734375,
+          "trajectory_points_median": 45.0
+        },
+        {
+          "code": 206,
+          "count": 4103,
+          "representative_trajectory_indices": [
+            16,
+            41,
+            47,
+            98,
+            104
+          ],
+          "path_length_m_mean": 469.6436767578125,
+          "path_length_m_median": 440.9984130859375,
+          "displacement_m_mean": 408.48895263671875,
+          "displacement_m_median": 366.88726806640625,
+          "mean_abs_turn_rad_mean": 0.5553898811340332,
+          "mean_abs_turn_rad_median": 0.4600558280944824,
+          "grid_transition_rate_mean": 0.5630502700805664,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.40479034185409546,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 52.65196228027344,
+          "trajectory_points_median": 49.0
+        },
+        {
+          "code": 60,
+          "count": 4037,
+          "representative_trajectory_indices": [
+            12,
+            28,
+            40,
+            43,
+            72
+          ],
+          "path_length_m_mean": 1310.72216796875,
+          "path_length_m_median": 1130.48779296875,
+          "displacement_m_mean": 1142.0361328125,
+          "displacement_m_median": 976.6689453125,
+          "mean_abs_turn_rad_mean": 0.5102853775024414,
+          "mean_abs_turn_rad_median": 0.4192618429660797,
+          "grid_transition_rate_mean": 0.801824152469635,
+          "grid_transition_rate_median": 0.8571428656578064,
+          "road_transition_rate_mean": 0.6716556549072266,
+          "road_transition_rate_median": 0.7142857313156128,
+          "trajectory_points_mean": 48.46049118041992,
+          "trajectory_points_median": 45.0
+        },
+        {
+          "code": 3,
+          "count": 4018,
+          "representative_trajectory_indices": [
+            9,
+            50,
+            81,
+            100,
+            125
+          ],
+          "path_length_m_mean": 538.1727294921875,
+          "path_length_m_median": 521.089111328125,
+          "displacement_m_mean": 472.72430419921875,
+          "displacement_m_median": 440.87713623046875,
+          "mean_abs_turn_rad_mean": 0.6218440532684326,
+          "mean_abs_turn_rad_median": 0.5558651685714722,
+          "grid_transition_rate_mean": 0.6262800097465515,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5862292647361755,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 45.59382629394531,
+          "trajectory_points_median": 42.0
+        }
+      ]
+    },
+    {
+      "family": "transformer",
+      "seed": 42,
+      "view": "road",
+      "top_codes": [
+        {
+          "code": 170,
+          "count": 3738,
+          "representative_trajectory_indices": [
+            35,
+            46,
+            63,
+            79,
+            105
+          ],
+          "path_length_m_mean": 1048.643798828125,
+          "path_length_m_median": 1139.90087890625,
+          "displacement_m_mean": 994.7620239257812,
+          "displacement_m_median": 1116.774658203125,
+          "mean_abs_turn_rad_mean": 0.13380281627178192,
+          "mean_abs_turn_rad_median": 0.051154669374227524,
+          "grid_transition_rate_mean": 0.8262503743171692,
+          "grid_transition_rate_median": 1.0,
+          "road_transition_rate_mean": 0.45131465792655945,
+          "road_transition_rate_median": 0.5,
+          "trajectory_points_mean": 41.279293060302734,
+          "trajectory_points_median": 39.0
+        },
+        {
+          "code": 85,
+          "count": 3652,
+          "representative_trajectory_indices": [
+            12,
+            29,
+            82,
+            85,
+            90
+          ],
+          "path_length_m_mean": 332.8327941894531,
+          "path_length_m_median": 341.44903564453125,
+          "displacement_m_mean": 236.9368896484375,
+          "displacement_m_median": 224.04705810546875,
+          "mean_abs_turn_rad_mean": 0.6933861374855042,
+          "mean_abs_turn_rad_median": 0.621361494064331,
+          "grid_transition_rate_mean": 0.42640239000320435,
+          "grid_transition_rate_median": 0.4285714328289032,
+          "road_transition_rate_mean": 0.40770161151885986,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 49.02710723876953,
+          "trajectory_points_median": 46.0
+        },
+        {
+          "code": 182,
+          "count": 3359,
+          "representative_trajectory_indices": [
+            34,
+            83,
+            122,
+            152,
+            160
+          ],
+          "path_length_m_mean": 1066.016357421875,
+          "path_length_m_median": 1182.0911865234375,
+          "displacement_m_mean": 998.1910400390625,
+          "displacement_m_median": 1098.9263916015625,
+          "mean_abs_turn_rad_mean": 0.45206698775291443,
+          "mean_abs_turn_rad_median": 0.33017057180404663,
+          "grid_transition_rate_mean": 0.8020556569099426,
+          "grid_transition_rate_median": 1.0,
+          "road_transition_rate_mean": 0.13024143874645233,
+          "road_transition_rate_median": 0.1428571492433548,
+          "trajectory_points_mean": 49.07293701171875,
+          "trajectory_points_median": 44.0
+        },
+        {
+          "code": 29,
+          "count": 3353,
+          "representative_trajectory_indices": [
+            38,
+            42,
+            47,
+            55,
+            73
+          ],
+          "path_length_m_mean": 628.8271484375,
+          "path_length_m_median": 653.3544311523438,
+          "displacement_m_mean": 526.4834594726562,
+          "displacement_m_median": 522.4451904296875,
+          "mean_abs_turn_rad_mean": 0.6654228568077087,
+          "mean_abs_turn_rad_median": 0.6171671748161316,
+          "grid_transition_rate_mean": 0.6789336204528809,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.6986543536186218,
+          "road_transition_rate_median": 0.7142857313156128,
+          "trajectory_points_mean": 51.070980072021484,
+          "trajectory_points_median": 48.0
+        },
+        {
+          "code": 150,
+          "count": 3342,
+          "representative_trajectory_indices": [
+            55,
+            73,
+            94,
+            108,
+            137
+          ],
+          "path_length_m_mean": 623.4639892578125,
+          "path_length_m_median": 631.1610717773438,
+          "displacement_m_mean": 553.1489868164062,
+          "displacement_m_median": 517.21923828125,
+          "mean_abs_turn_rad_mean": 0.5139684081077576,
+          "mean_abs_turn_rad_median": 0.42233455181121826,
+          "grid_transition_rate_mean": 0.6355148553848267,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5168148875236511,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 54.06403350830078,
+          "trajectory_points_median": 52.0
+        },
+        {
+          "code": 54,
+          "count": 3004,
+          "representative_trajectory_indices": [
+            41,
+            47,
+            83,
+            98,
+            106
+          ],
+          "path_length_m_mean": 699.9691162109375,
+          "path_length_m_median": 721.9632568359375,
+          "displacement_m_mean": 650.6767578125,
+          "displacement_m_median": 668.919921875,
+          "mean_abs_turn_rad_mean": 0.39680376648902893,
+          "mean_abs_turn_rad_median": 0.28503233194351196,
+          "grid_transition_rate_mean": 0.7245132923126221,
+          "grid_transition_rate_median": 0.8571428656578064,
+          "road_transition_rate_mean": 0.30260366201400757,
+          "road_transition_rate_median": 0.2857142984867096,
+          "trajectory_points_mean": 52.90645980834961,
+          "trajectory_points_median": 49.0
+        },
+        {
+          "code": 156,
+          "count": 2871,
+          "representative_trajectory_indices": [
+            40,
+            57,
+            67,
+            69,
+            80
+          ],
+          "path_length_m_mean": 495.0686950683594,
+          "path_length_m_median": 508.3154296875,
+          "displacement_m_mean": 381.481201171875,
+          "displacement_m_median": 356.9725646972656,
+          "mean_abs_turn_rad_mean": 0.7465866804122925,
+          "mean_abs_turn_rad_median": 0.6894456744194031,
+          "grid_transition_rate_mean": 0.565213680267334,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.33734720945358276,
+          "road_transition_rate_median": 0.2857142984867096,
+          "trajectory_points_mean": 49.71577835083008,
+          "trajectory_points_median": 46.0
+        },
+        {
+          "code": 179,
+          "count": 2566,
+          "representative_trajectory_indices": [
+            0,
+            27,
+            32,
+            48,
+            53
+          ],
+          "path_length_m_mean": 412.02459716796875,
+          "path_length_m_median": 383.38397216796875,
+          "displacement_m_mean": 314.3160095214844,
+          "displacement_m_median": 256.80926513671875,
+          "mean_abs_turn_rad_mean": 0.7396124005317688,
+          "mean_abs_turn_rad_median": 0.6952468156814575,
+          "grid_transition_rate_mean": 0.4475290775299072,
+          "grid_transition_rate_median": 0.4285714328289032,
+          "road_transition_rate_mean": 0.5008935928344727,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 45.84840393066406,
+          "trajectory_points_median": 42.0
+        },
+        {
+          "code": 61,
+          "count": 2416,
+          "representative_trajectory_indices": [
+            7,
+            36,
+            71,
+            74,
+            116
+          ],
+          "path_length_m_mean": 399.9067687988281,
+          "path_length_m_median": 382.6866455078125,
+          "displacement_m_mean": 344.26776123046875,
+          "displacement_m_median": 326.99957275390625,
+          "mean_abs_turn_rad_mean": 0.6746001243591309,
+          "mean_abs_turn_rad_median": 0.607682466506958,
+          "grid_transition_rate_mean": 0.4771641492843628,
+          "grid_transition_rate_median": 0.4285714328289032,
+          "road_transition_rate_mean": 0.4787833094596863,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 50.34933853149414,
+          "trajectory_points_median": 48.0
+        },
+        {
+          "code": 13,
+          "count": 2408,
+          "representative_trajectory_indices": [
+            16,
+            26,
+            41,
+            98,
+            104
+          ],
+          "path_length_m_mean": 858.3202514648438,
+          "path_length_m_median": 901.355224609375,
+          "displacement_m_mean": 810.8369750976562,
+          "displacement_m_median": 853.4854125976562,
+          "mean_abs_turn_rad_mean": 0.39975300431251526,
+          "mean_abs_turn_rad_median": 0.2643541693687439,
+          "grid_transition_rate_mean": 0.7795493006706238,
+          "grid_transition_rate_median": 0.8571428656578064,
+          "road_transition_rate_mean": 0.35457703471183777,
+          "road_transition_rate_median": 0.2857142984867096,
+          "trajectory_points_mean": 54.224666595458984,
+          "trajectory_points_median": 50.0
+        }
+      ]
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "view": "gps",
+      "top_codes": [
+        {
+          "code": 84,
+          "count": 7063,
+          "representative_trajectory_indices": [
+            12,
+            29,
+            46,
+            52,
+            56
+          ],
+          "path_length_m_mean": 386.50885009765625,
+          "path_length_m_median": 371.5373840332031,
+          "displacement_m_mean": 267.58123779296875,
+          "displacement_m_median": 218.179443359375,
+          "mean_abs_turn_rad_mean": 0.7317702770233154,
+          "mean_abs_turn_rad_median": 0.6904391646385193,
+          "grid_transition_rate_mean": 0.47954702377319336,
+          "grid_transition_rate_median": 0.5,
+          "road_transition_rate_mean": 0.37263134121894836,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 52.31728744506836,
+          "trajectory_points_median": 50.0
+        },
+        {
+          "code": 0,
+          "count": 6967,
+          "representative_trajectory_indices": [
+            3,
+            6,
+            8,
+            27,
+            44
+          ],
+          "path_length_m_mean": 580.5726928710938,
+          "path_length_m_median": 518.0432739257812,
+          "displacement_m_mean": 537.5068359375,
+          "displacement_m_median": 461.593505859375,
+          "mean_abs_turn_rad_mean": 0.522019624710083,
+          "mean_abs_turn_rad_median": 0.4445877969264984,
+          "grid_transition_rate_mean": 0.6146687865257263,
+          "grid_transition_rate_median": 0.6000000238418579,
+          "road_transition_rate_mean": 0.4993048906326294,
+          "road_transition_rate_median": 0.5,
+          "trajectory_points_mean": 47.887611389160156,
+          "trajectory_points_median": 44.0
+        },
+        {
+          "code": 60,
+          "count": 6470,
+          "representative_trajectory_indices": [
+            16,
+            34,
+            41,
+            47,
+            83
+          ],
+          "path_length_m_mean": 480.49957275390625,
+          "path_length_m_median": 437.49200439453125,
+          "displacement_m_mean": 418.0854187011719,
+          "displacement_m_median": 363.92572021484375,
+          "mean_abs_turn_rad_mean": 0.5688470602035522,
+          "mean_abs_turn_rad_median": 0.4724552631378174,
+          "grid_transition_rate_mean": 0.5564223527908325,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.39036616683006287,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 52.07094192504883,
+          "trajectory_points_median": 48.0
+        },
+        {
+          "code": 20,
+          "count": 5420,
+          "representative_trajectory_indices": [
+            1,
+            7,
+            13,
+            30,
+            49
+          ],
+          "path_length_m_mean": 416.68585205078125,
+          "path_length_m_median": 403.1961975097656,
+          "displacement_m_mean": 335.3744201660156,
+          "displacement_m_median": 303.75347900390625,
+          "mean_abs_turn_rad_mean": 0.7255451083183289,
+          "mean_abs_turn_rad_median": 0.6698884963989258,
+          "grid_transition_rate_mean": 0.5336364507675171,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.5166746377944946,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 49.697601318359375,
+          "trajectory_points_median": 47.0
+        },
+        {
+          "code": 61,
+          "count": 5028,
+          "representative_trajectory_indices": [
+            4,
+            17,
+            19,
+            33,
+            37
+          ],
+          "path_length_m_mean": 676.015380859375,
+          "path_length_m_median": 555.8590087890625,
+          "displacement_m_mean": 593.7490844726562,
+          "displacement_m_median": 516.5726318359375,
+          "mean_abs_turn_rad_mean": 0.6704316735267639,
+          "mean_abs_turn_rad_median": 0.621547281742096,
+          "grid_transition_rate_mean": 0.6102629899978638,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.49846145510673523,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 50.06801986694336,
+          "trajectory_points_median": 47.0
+        },
+        {
+          "code": 4,
+          "count": 4769,
+          "representative_trajectory_indices": [
+            2,
+            9,
+            25,
+            34,
+            44
+          ],
+          "path_length_m_mean": 331.3810119628906,
+          "path_length_m_median": 331.28387451171875,
+          "displacement_m_mean": 269.2742004394531,
+          "displacement_m_median": 247.63340759277344,
+          "mean_abs_turn_rad_mean": 0.6957715153694153,
+          "mean_abs_turn_rad_median": 0.6502110958099365,
+          "grid_transition_rate_mean": 0.47060734033584595,
+          "grid_transition_rate_median": 0.4285714328289032,
+          "road_transition_rate_mean": 0.37445956468582153,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 49.080101013183594,
+          "trajectory_points_median": 45.0
+        },
+        {
+          "code": 58,
+          "count": 4554,
+          "representative_trajectory_indices": [
+            0,
+            3,
+            14,
+            20,
+            29
+          ],
+          "path_length_m_mean": 1330.6463623046875,
+          "path_length_m_median": 1193.6092529296875,
+          "displacement_m_mean": 1167.98291015625,
+          "displacement_m_median": 944.2286376953125,
+          "mean_abs_turn_rad_mean": 0.5854852199554443,
+          "mean_abs_turn_rad_median": 0.48704349994659424,
+          "grid_transition_rate_mean": 0.7922083139419556,
+          "grid_transition_rate_median": 0.8571428656578064,
+          "road_transition_rate_mean": 0.6367871761322021,
+          "road_transition_rate_median": 0.7142857313156128,
+          "trajectory_points_mean": 49.08212661743164,
+          "trajectory_points_median": 45.0
+        },
+        {
+          "code": 90,
+          "count": 4511,
+          "representative_trajectory_indices": [
+            23,
+            31,
+            40,
+            64,
+            81
+          ],
+          "path_length_m_mean": 409.822998046875,
+          "path_length_m_median": 336.7142028808594,
+          "displacement_m_mean": 350.1563415527344,
+          "displacement_m_median": 264.3183288574219,
+          "mean_abs_turn_rad_mean": 0.7205188870429993,
+          "mean_abs_turn_rad_median": 0.6629983186721802,
+          "grid_transition_rate_mean": 0.4768565893173218,
+          "grid_transition_rate_median": 0.5,
+          "road_transition_rate_mean": 0.3382108211517334,
+          "road_transition_rate_median": 0.2857142984867096,
+          "trajectory_points_mean": 49.164485931396484,
+          "trajectory_points_median": 46.0
+        },
+        {
+          "code": 15,
+          "count": 4478,
+          "representative_trajectory_indices": [
+            6,
+            75,
+            96,
+            101,
+            113
+          ],
+          "path_length_m_mean": 531.9176025390625,
+          "path_length_m_median": 479.732666015625,
+          "displacement_m_mean": 474.4258728027344,
+          "displacement_m_median": 410.14959716796875,
+          "mean_abs_turn_rad_mean": 0.5896385908126831,
+          "mean_abs_turn_rad_median": 0.5282254219055176,
+          "grid_transition_rate_mean": 0.5987797379493713,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.5004492998123169,
+          "road_transition_rate_median": 0.5,
+          "trajectory_points_mean": 46.48324966430664,
+          "trajectory_points_median": 43.0
+        },
+        {
+          "code": 16,
+          "count": 4311,
+          "representative_trajectory_indices": [
+            34,
+            46,
+            77,
+            79,
+            82
+          ],
+          "path_length_m_mean": 880.164306640625,
+          "path_length_m_median": 918.5892944335938,
+          "displacement_m_mean": 682.6958618164062,
+          "displacement_m_median": 656.9058837890625,
+          "mean_abs_turn_rad_mean": 0.6369925141334534,
+          "mean_abs_turn_rad_median": 0.5888530015945435,
+          "grid_transition_rate_mean": 0.8312124609947205,
+          "grid_transition_rate_median": 1.0,
+          "road_transition_rate_mean": 0.4899929463863373,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 48.503597259521484,
+          "trajectory_points_median": 45.0
+        }
+      ]
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "view": "grid",
+      "top_codes": [
+        {
+          "code": 30,
+          "count": 6273,
+          "representative_trajectory_indices": [
+            12,
+            29,
+            46,
+            52,
+            56
+          ],
+          "path_length_m_mean": 361.5062561035156,
+          "path_length_m_median": 352.0618591308594,
+          "displacement_m_mean": 255.82940673828125,
+          "displacement_m_median": 210.5710906982422,
+          "mean_abs_turn_rad_mean": 0.724449872970581,
+          "mean_abs_turn_rad_median": 0.6777660250663757,
+          "grid_transition_rate_mean": 0.45182111859321594,
+          "grid_transition_rate_median": 0.4285714328289032,
+          "road_transition_rate_mean": 0.3626422882080078,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 51.79882049560547,
+          "trajectory_points_median": 50.0
+        },
+        {
+          "code": 14,
+          "count": 5146,
+          "representative_trajectory_indices": [
+            3,
+            6,
+            8,
+            61,
+            75
+          ],
+          "path_length_m_mean": 594.4127197265625,
+          "path_length_m_median": 525.8717041015625,
+          "displacement_m_mean": 542.5932006835938,
+          "displacement_m_median": 460.2276611328125,
+          "mean_abs_turn_rad_mean": 0.5282202959060669,
+          "mean_abs_turn_rad_median": 0.44490623474121094,
+          "grid_transition_rate_mean": 0.6242199540138245,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5147739052772522,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 47.0699577331543,
+          "trajectory_points_median": 43.0
+        },
+        {
+          "code": 3,
+          "count": 4990,
+          "representative_trajectory_indices": [
+            0,
+            3,
+            21,
+            29,
+            31
+          ],
+          "path_length_m_mean": 1353.0224609375,
+          "path_length_m_median": 1245.114990234375,
+          "displacement_m_mean": 1202.5489501953125,
+          "displacement_m_median": 1027.40673828125,
+          "mean_abs_turn_rad_mean": 0.5464572906494141,
+          "mean_abs_turn_rad_median": 0.46459972858428955,
+          "grid_transition_rate_mean": 0.7936601638793945,
+          "grid_transition_rate_median": 0.8571428656578064,
+          "road_transition_rate_mean": 0.6300320029258728,
+          "road_transition_rate_median": 0.7142857313156128,
+          "trajectory_points_mean": 47.85831832885742,
+          "trajectory_points_median": 44.0
+        },
+        {
+          "code": 18,
+          "count": 4544,
+          "representative_trajectory_indices": [
+            4,
+            19,
+            27,
+            36,
+            37
+          ],
+          "path_length_m_mean": 511.86566162109375,
+          "path_length_m_median": 478.0928039550781,
+          "displacement_m_mean": 455.6654968261719,
+          "displacement_m_median": 413.2662353515625,
+          "mean_abs_turn_rad_mean": 0.6777402758598328,
+          "mean_abs_turn_rad_median": 0.6316643357276917,
+          "grid_transition_rate_mean": 0.5799410939216614,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.4615992605686188,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 50.40625,
+          "trajectory_points_median": 47.0
+        },
+        {
+          "code": 2,
+          "count": 4507,
+          "representative_trajectory_indices": [
+            1,
+            54,
+            61,
+            62,
+            68
+          ],
+          "path_length_m_mean": 421.75,
+          "path_length_m_median": 418.2814025878906,
+          "displacement_m_mean": 338.6163635253906,
+          "displacement_m_median": 320.58563232421875,
+          "mean_abs_turn_rad_mean": 0.7319300770759583,
+          "mean_abs_turn_rad_median": 0.6845241189002991,
+          "grid_transition_rate_mean": 0.5461958646774292,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.4743911325931549,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 49.205013275146484,
+          "trajectory_points_median": 46.0
+        },
+        {
+          "code": 9,
+          "count": 4461,
+          "representative_trajectory_indices": [
+            26,
+            38,
+            42,
+            48,
+            71
+          ],
+          "path_length_m_mean": 575.1288452148438,
+          "path_length_m_median": 545.204345703125,
+          "displacement_m_mean": 488.37310791015625,
+          "displacement_m_median": 474.8030700683594,
+          "mean_abs_turn_rad_mean": 0.6374340653419495,
+          "mean_abs_turn_rad_median": 0.5593101382255554,
+          "grid_transition_rate_mean": 0.6190209984779358,
+          "grid_transition_rate_median": 0.6666666865348816,
+          "road_transition_rate_mean": 0.5672500133514404,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 50.02017593383789,
+          "trajectory_points_median": 47.0
+        },
+        {
+          "code": 34,
+          "count": 4346,
+          "representative_trajectory_indices": [
+            5,
+            6,
+            25,
+            27,
+            44
+          ],
+          "path_length_m_mean": 532.6865234375,
+          "path_length_m_median": 496.9275207519531,
+          "displacement_m_mean": 491.3484802246094,
+          "displacement_m_median": 449.49237060546875,
+          "mean_abs_turn_rad_mean": 0.5350745320320129,
+          "mean_abs_turn_rad_median": 0.47175508737564087,
+          "grid_transition_rate_mean": 0.6005758047103882,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.509473979473114,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 48.67441177368164,
+          "trajectory_points_median": 45.0
+        },
+        {
+          "code": 6,
+          "count": 4238,
+          "representative_trajectory_indices": [
+            1,
+            17,
+            32,
+            35,
+            62
+          ],
+          "path_length_m_mean": 857.4786376953125,
+          "path_length_m_median": 746.1783447265625,
+          "displacement_m_mean": 734.9055786132812,
+          "displacement_m_median": 677.1264038085938,
+          "mean_abs_turn_rad_mean": 0.5886193513870239,
+          "mean_abs_turn_rad_median": 0.5230318307876587,
+          "grid_transition_rate_mean": 0.680312991142273,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5521730780601501,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 51.088722229003906,
+          "trajectory_points_median": 48.0
+        },
+        {
+          "code": 21,
+          "count": 4215,
+          "representative_trajectory_indices": [
+            2,
+            9,
+            25,
+            34,
+            44
+          ],
+          "path_length_m_mean": 312.3795166015625,
+          "path_length_m_median": 310.7424621582031,
+          "displacement_m_mean": 251.96951293945312,
+          "displacement_m_median": 240.56362915039062,
+          "mean_abs_turn_rad_mean": 0.6976560354232788,
+          "mean_abs_turn_rad_median": 0.645130455493927,
+          "grid_transition_rate_mean": 0.45338135957717896,
+          "grid_transition_rate_median": 0.4285714328289032,
+          "road_transition_rate_mean": 0.3944772183895111,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 50.77342987060547,
+          "trajectory_points_median": 47.0
+        },
+        {
+          "code": 7,
+          "count": 3866,
+          "representative_trajectory_indices": [
+            39,
+            46,
+            65,
+            68,
+            76
+          ],
+          "path_length_m_mean": 935.34375,
+          "path_length_m_median": 666.7084350585938,
+          "displacement_m_mean": 787.3854370117188,
+          "displacement_m_median": 542.3116455078125,
+          "mean_abs_turn_rad_mean": 0.6502182483673096,
+          "mean_abs_turn_rad_median": 0.5533158779144287,
+          "grid_transition_rate_mean": 0.6886827349662781,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5923564434051514,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 45.26875305175781,
+          "trajectory_points_median": 42.0
+        }
+      ]
+    },
+    {
+      "family": "gru",
+      "seed": 42,
+      "view": "road",
+      "top_codes": [
+        {
+          "code": 55,
+          "count": 2926,
+          "representative_trajectory_indices": [
+            27,
+            38,
+            42,
+            48,
+            53
+          ],
+          "path_length_m_mean": 492.71942138671875,
+          "path_length_m_median": 449.1025085449219,
+          "displacement_m_mean": 393.71905517578125,
+          "displacement_m_median": 332.5130310058594,
+          "mean_abs_turn_rad_mean": 0.7464151382446289,
+          "mean_abs_turn_rad_median": 0.690738320350647,
+          "grid_transition_rate_mean": 0.5014036893844604,
+          "grid_transition_rate_median": 0.5,
+          "road_transition_rate_mean": 0.5477045178413391,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 46.43540573120117,
+          "trajectory_points_median": 43.0
+        },
+        {
+          "code": 93,
+          "count": 2906,
+          "representative_trajectory_indices": [
+            35,
+            63,
+            79,
+            105,
+            119
+          ],
+          "path_length_m_mean": 945.01025390625,
+          "path_length_m_median": 983.5665283203125,
+          "displacement_m_mean": 928.03564453125,
+          "displacement_m_median": 965.8701171875,
+          "mean_abs_turn_rad_mean": 0.11354763060808182,
+          "mean_abs_turn_rad_median": 0.028875306248664856,
+          "grid_transition_rate_mean": 0.8232089281082153,
+          "grid_transition_rate_median": 1.0,
+          "road_transition_rate_mean": 0.4423188269138336,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 41.18891906738281,
+          "trajectory_points_median": 38.0
+        },
+        {
+          "code": 11,
+          "count": 2768,
+          "representative_trajectory_indices": [
+            40,
+            57,
+            67,
+            69,
+            80
+          ],
+          "path_length_m_mean": 489.7745361328125,
+          "path_length_m_median": 503.9328918457031,
+          "displacement_m_mean": 373.6236572265625,
+          "displacement_m_median": 345.44818115234375,
+          "mean_abs_turn_rad_mean": 0.7513177990913391,
+          "mean_abs_turn_rad_median": 0.6966760158538818,
+          "grid_transition_rate_mean": 0.5647915005683899,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.3281404674053192,
+          "road_transition_rate_median": 0.2857142984867096,
+          "trajectory_points_mean": 49.677024841308594,
+          "trajectory_points_median": 46.0
+        },
+        {
+          "code": 237,
+          "count": 2597,
+          "representative_trajectory_indices": [
+            2,
+            7,
+            11,
+            19,
+            42
+          ],
+          "path_length_m_mean": 504.7779541015625,
+          "path_length_m_median": 485.7900390625,
+          "displacement_m_mean": 433.7970275878906,
+          "displacement_m_median": 444.10772705078125,
+          "mean_abs_turn_rad_mean": 0.6776732802391052,
+          "mean_abs_turn_rad_median": 0.5888350605964661,
+          "grid_transition_rate_mean": 0.5467581748962402,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.4791398346424103,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 51.05390930175781,
+          "trajectory_points_median": 48.0
+        },
+        {
+          "code": 101,
+          "count": 2489,
+          "representative_trajectory_indices": [
+            16,
+            26,
+            41,
+            83,
+            93
+          ],
+          "path_length_m_mean": 856.6685180664062,
+          "path_length_m_median": 889.9869995117188,
+          "displacement_m_mean": 781.0404052734375,
+          "displacement_m_median": 804.900390625,
+          "mean_abs_turn_rad_mean": 0.45909383893013,
+          "mean_abs_turn_rad_median": 0.3114388883113861,
+          "grid_transition_rate_mean": 0.7712516188621521,
+          "grid_transition_rate_median": 0.8571428656578064,
+          "road_transition_rate_mean": 0.44179055094718933,
+          "road_transition_rate_median": 0.4285714328289032,
+          "trajectory_points_mean": 52.53113555908203,
+          "trajectory_points_median": 48.0
+        },
+        {
+          "code": 10,
+          "count": 2445,
+          "representative_trajectory_indices": [
+            18,
+            75,
+            88,
+            115,
+            126
+          ],
+          "path_length_m_mean": 511.055419921875,
+          "path_length_m_median": 510.8067321777344,
+          "displacement_m_mean": 427.94482421875,
+          "displacement_m_median": 404.544921875,
+          "mean_abs_turn_rad_mean": 0.6730291843414307,
+          "mean_abs_turn_rad_median": 0.6079832911491394,
+          "grid_transition_rate_mean": 0.563755989074707,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.48626840114593506,
+          "road_transition_rate_median": 0.5,
+          "trajectory_points_mean": 49.539058685302734,
+          "trajectory_points_median": 46.0
+        },
+        {
+          "code": 57,
+          "count": 2443,
+          "representative_trajectory_indices": [
+            1,
+            4,
+            33,
+            49,
+            60
+          ],
+          "path_length_m_mean": 658.152587890625,
+          "path_length_m_median": 652.7483520507812,
+          "displacement_m_mean": 594.8773803710938,
+          "displacement_m_median": 575.8864135742188,
+          "mean_abs_turn_rad_mean": 0.6413546204566956,
+          "mean_abs_turn_rad_median": 0.5929841995239258,
+          "grid_transition_rate_mean": 0.6158266067504883,
+          "grid_transition_rate_median": 0.7142857313156128,
+          "road_transition_rate_mean": 0.5329971313476562,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 50.1182975769043,
+          "trajectory_points_median": 47.0
+        },
+        {
+          "code": 177,
+          "count": 2416,
+          "representative_trajectory_indices": [
+            36,
+            71,
+            116,
+            137,
+            195
+          ],
+          "path_length_m_mean": 431.21258544921875,
+          "path_length_m_median": 429.0909423828125,
+          "displacement_m_mean": 368.0733337402344,
+          "displacement_m_median": 366.34808349609375,
+          "mean_abs_turn_rad_mean": 0.652676522731781,
+          "mean_abs_turn_rad_median": 0.5678019523620605,
+          "grid_transition_rate_mean": 0.49245014786720276,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.5004878044128418,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 49.394866943359375,
+          "trajectory_points_median": 47.0
+        },
+        {
+          "code": 58,
+          "count": 2398,
+          "representative_trajectory_indices": [
+            39,
+            65,
+            76,
+            80,
+            214
+          ],
+          "path_length_m_mean": 535.0576782226562,
+          "path_length_m_median": 525.7696533203125,
+          "displacement_m_mean": 471.2836608886719,
+          "displacement_m_median": 460.91595458984375,
+          "mean_abs_turn_rad_mean": 0.6574000716209412,
+          "mean_abs_turn_rad_median": 0.5994842648506165,
+          "grid_transition_rate_mean": 0.592901885509491,
+          "grid_transition_rate_median": 0.5714285969734192,
+          "road_transition_rate_mean": 0.5549188256263733,
+          "road_transition_rate_median": 0.5714285969734192,
+          "trajectory_points_mean": 44.919097900390625,
+          "trajectory_points_median": 42.0
+        },
+        {
+          "code": 136,
+          "count": 2370,
+          "representative_trajectory_indices": [
+            23,
+            31,
+            64,
+            81,
+            128
+          ],
+          "path_length_m_mean": 381.52557373046875,
+          "path_length_m_median": 321.79791259765625,
+          "displacement_m_mean": 328.2916564941406,
+          "displacement_m_median": 247.74256896972656,
+          "mean_abs_turn_rad_mean": 0.744155764579773,
+          "mean_abs_turn_rad_median": 0.7062011957168579,
+          "grid_transition_rate_mean": 0.46174106001853943,
+          "grid_transition_rate_median": 0.4285714328289032,
+          "road_transition_rate_mean": 0.3132459223270416,
+          "road_transition_rate_median": 0.2857142984867096,
+          "trajectory_points_mean": 49.993247985839844,
+          "trajectory_points_median": 47.0
+        }
+      ]
+    }
+  ],
+  "verdict": {
+    "validity_pass": true,
+    "gate0_same_view_stability_pass": true,
+    "h1_cross_view_association_pass": true,
+    "h2_non_equivalence_pass": false,
+    "h3_encoder_robustness_pass": false,
+    "gate0_summary": {
+      "transformer:gps": {
+        "mean_ami": 0.8387176185055579,
+        "min_ami": 0.8372535368198637
+      },
+      "transformer:grid": {
+        "mean_ami": 0.7640732846254915,
+        "min_ami": 0.7593560540333186
+      },
+      "transformer:road": {
+        "mean_ami": 0.8766524364625163,
+        "min_ami": 0.8711268049705415
+      },
+      "gru:gps": {
+        "mean_ami": 0.8111569111500829,
+        "min_ami": 0.7996663529650289
+      },
+      "gru:grid": {
+        "mean_ami": 0.7283898502625293,
+        "min_ami": 0.7269724260471911
+      },
+      "gru:road": {
+        "mean_ami": 0.8739167131624329,
+        "min_ami": 0.872666191370038
+      }
+    },
+    "h1_summary": {
+      "transformer:gps-grid": {
+        "mean_ami_lift": 0.6144505885820964,
+        "min_ami_lift": 0.608641488112903
+      },
+      "transformer:gps-road": {
+        "mean_ami_lift": 0.6107250246269905,
+        "min_ami_lift": 0.6056941353851135
+      },
+      "transformer:grid-road": {
+        "mean_ami_lift": 0.572137833564121,
+        "min_ami_lift": 0.5666940266911406
+      },
+      "gru:gps-grid": {
+        "mean_ami_lift": 0.5846714630950013,
+        "min_ami_lift": 0.5695128676166177
+      },
+      "gru:gps-road": {
+        "mean_ami_lift": 0.5997384461429544,
+        "min_ami_lift": 0.5799078930182124
+      },
+      "gru:grid-road": {
+        "mean_ami_lift": 0.5561500127700049,
+        "min_ami_lift": 0.5528425467435052
+      }
+    },
+    "h2_non_equivalent_groups": [],
+    "seed_stability": {
+      "transformer:gps-grid": {
+        "ami_std": 0.004557491889207744,
+        "direction_agreement": 1.0
+      },
+      "transformer:gps-road": {
+        "ami_std": 0.0028495378954928275,
+        "direction_agreement": 1.0
+      },
+      "transformer:grid-road": {
+        "ami_std": 0.0035104438418781074,
+        "direction_agreement": 1.0
+      },
+      "gru:gps-grid": {
+        "ami_std": 0.00933069037418305,
+        "direction_agreement": 1.0
+      },
+      "gru:gps-road": {
+        "ami_std": 0.011994210124950432,
+        "direction_agreement": 1.0
+      },
+      "gru:grid-road": {
+        "ami_std": 0.0033668211969887117,
+        "direction_agreement": 1.0
+      }
+    },
+    "encoder_directional_entropy_spearman": 0.942857142857143,
+    "within_family_block_cosine_mean": 0.739619177850919,
+    "across_encoder_block_cosine_mean": 0.7317746628119826,
+    "decision": "do_not_advance_to_shared_private_design"
+  }
+}
