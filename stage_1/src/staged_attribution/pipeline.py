@@ -29,7 +29,7 @@ from .model import AttributionRQVAE
 from .prepare_llm_data import build_llm_frame, deterministic_subset
 from .run_cell import CellRunError, StageNode
 from .stage4_metrics import evaluate_population
-from .train_stage1 import save_stage1_artifacts, train_epochs
+from .train_stage1 import build_cosine_warmup_scheduler, save_stage1_artifacts, train_epochs
 from .train_stage2 import run_hf_stage2
 from .views import make_sampling_view
 
@@ -315,9 +315,14 @@ class PipelineBackend:
         speed_edges, turn_edges, meters = self._auxiliary_settings(train_dataset)
         model = self._new_model()
         optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=1e-4)
+        train_loader = self._loader("train", shuffle=True)
+        scheduler = build_cosine_warmup_scheduler(
+            optimizer, len(train_loader), self.budget.stage1_epochs,
+            warmup_epochs=10, warmup_ratio=0.01, minimum_ratio=0.10,
+        )
         history = train_epochs(
             model,
-            self._loader("train", shuffle=True),
+            train_loader,
             optimizer,
             self.device,
             self.budget.stage1_epochs,
@@ -325,6 +330,7 @@ class PipelineBackend:
             speed_edges,
             turn_edges,
             meters,
+            scheduler=scheduler,
         )
         metrics = self._evaluate_stage1_model(
             model, self._loader("test"), speed_edges, turn_edges, meters
@@ -342,6 +348,12 @@ class PipelineBackend:
             "turn_edges": turn_edges.tolist(),
             "meters_per_normalized_coordinate": list(meters),
             "initialization": "same_seed_random_from_scratch",
+            "optimizer": {"name": "AdamW", "learning_rate": 1e-4, "weight_decay": 1e-4},
+            "scheduler": {
+                "name": "cosine_with_linear_warmup", "warmup_epochs": 10,
+                "warmup_lr_ratio": 0.01, "minimum_lr_ratio": 0.10,
+                "steps_per_epoch": len(train_loader),
+            },
         }
         saved = save_stage1_artifacts(output, model, resolved, history, metrics)
         return {
@@ -421,6 +433,7 @@ class PipelineBackend:
     def _stage2(self, run_dir: Path) -> Mapping[str, Path]:
         output = run_dir / "stage2"
         frame = pd.read_parquet(run_dir / "stage2_data" / "llm_train.parquet")
+        eval_frame = pd.read_parquet(run_dir / "stage2_data" / "llm_test.parquet")
         metadata = json.loads((self.aligned_root / "metadata.json").read_text())
         result = run_hf_stage2(
             frame,
@@ -430,6 +443,7 @@ class PipelineBackend:
             self.seed,
             self.budget.stage2_epochs,
             self.budget.stage2_max_steps,
+            eval_frame=eval_frame,
         )
         adapter_manifest = output / "adapter_manifest.json"
         _atomic_json(

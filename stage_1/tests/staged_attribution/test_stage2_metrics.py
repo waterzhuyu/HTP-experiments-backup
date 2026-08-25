@@ -5,7 +5,11 @@ import math
 import pytest
 import torch
 
-from staged_attribution.evaluate_stage2 import semantic_id_metrics, teacher_forced_nll
+from staged_attribution.evaluate_stage2 import (
+    grouped_teacher_forced_accuracy,
+    semantic_id_metrics,
+    teacher_forced_nll,
+)
 from staged_attribution.token_protocol import serialize_answer
 
 
@@ -74,3 +78,26 @@ def test_length_mismatch_is_a_failure_without_dropping_population() -> None:
 def test_metrics_reject_population_mismatch() -> None:
     with pytest.raises(ValueError, match="population"):
         semantic_id_metrics([], [answer([0, 0, 0], [[1, 2, 3, 4]])])
+
+
+def test_grouped_teacher_forced_accuracy_preserves_first_error_population() -> None:
+    labels = torch.tensor([[10, 20, 30, 40], [10, 21, 31, -100]])
+    predictions = torch.tensor([[10, 20, 99, 40], [11, 21, 31, 0]])
+    groups = {
+        "sampling": {10, 11},
+        "layer_0": {20, 21},
+        "layer_1": {30, 31},
+        "layer_2": {40},
+    }
+
+    result = grouped_teacher_forced_accuracy(predictions, labels, groups)
+
+    assert result["accuracy"] == {
+        "sampling": 0.5,
+        "layer_0": 1.0,
+        "layer_1": 0.5,
+        "layer_2": 1.0,
+    }
+    assert result["denominators"] == {"sampling": 2, "layer_0": 2, "layer_1": 2, "layer_2": 1}
+    assert result["sequence_exact_accuracy"] == 0.0
+    assert result["first_error_histogram"] == {"layer_1": 1, "sampling": 1}

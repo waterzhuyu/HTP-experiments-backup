@@ -6,7 +6,7 @@ from pathlib import Path
 import torch
 
 from staged_attribution.model import AttributionRQVAE
-from staged_attribution.train_stage1 import save_stage1_artifacts, train_step
+from staged_attribution.train_stage1 import save_stage1_artifacts, train_epochs, train_step
 
 
 def config() -> dict[str, object]:
@@ -125,6 +125,31 @@ def test_q3_train_step_constructs_required_sampling_and_targets() -> None:
     assert metrics["auxiliary_enabled"] is True
     assert metrics["q_loss_components"]["invariance"] >= 0
     assert metrics["q_loss_components"]["auxiliary"] > 0
+
+
+def test_train_epochs_steps_scheduler_and_records_learning_rate() -> None:
+    model = make_model()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+    scheduler = torch.optim.lr_scheduler.LambdaLR(
+        optimizer, lr_lambda=lambda step: 1.0 if step == 0 else 0.5
+    )
+
+    history = train_epochs(
+        model,
+        [full_batch()],
+        optimizer,
+        device=torch.device("cpu"),
+        epochs=2,
+        seed=7,
+        speed_edges=torch.tensor([0.01, 0.03, 0.1]),
+        turn_edges=torch.tensor([0.1, 0.5]),
+        meters_per_coordinate=(1.0, 1.0),
+        scheduler=scheduler,
+    )
+
+    assert scheduler.last_epoch == 2
+    assert [row["learning_rate"] for row in history] == [5e-4, 5e-4]
+    assert [row["global_step"] for row in history] == [1, 2]
 
 
 def test_save_stage1_artifacts_is_complete_and_reloadable(tmp_path: Path) -> None:

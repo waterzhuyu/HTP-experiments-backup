@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import json
 import math
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset
 
-from .token_protocol import special_tokens
+from .evaluate_stage2 import grouped_teacher_forced_accuracy
+from .token_protocol import PREFIXES, VOCAB_SIZES, special_tokens
 
 
 SYSTEM_MESSAGE = (
@@ -155,6 +158,70 @@ def _atomic_json(path: Path, value: object) -> None:
     temporary.replace(path)
 
 
+@torch.no_grad()
+def evaluate_teacher_forced_model(
+    model: torch.nn.Module,
+    dataset: Dataset,
+    collator: AssistantOnlyCollator,
+    token_groups: dict[str, set[int]],
+    device: torch.device,
+    batch_size: int = 4,
+) -> dict[str, object]:
+    loader = torch.utils.data.DataLoader(
+        dataset, batch_size=batch_size, shuffle=False, collate_fn=collator
+    )
+    model.eval()
+    total_loss = 0.0
+    total_tokens = 0
+    correct = {name: 0 for name in token_groups}
+    denominators = {name: 0 for name in token_groups}
+    first_errors: Counter[str] = Counter()
+    exact = 0
+    population = 0
+    for batch in loader:
+        batch = {name: value.to(device) for name, value in batch.items()}
+        output = model(**batch)
+        shifted_logits = output.logits[:, :-1]
+        shifted_labels = batch["labels"][:, 1:]
+        tokens = int((shifted_labels != -100).sum())
+        total_loss += float(
+            F.cross_entropy(
+                shifted_logits.reshape(-1, shifted_logits.shape[-1]),
+                shifted_labels.reshape(-1),
+                ignore_index=-100,
+                reduction="sum",
+            )
+        )
+        total_tokens += tokens
+        grouped = grouped_teacher_forced_accuracy(
+            shifted_logits.argmax(dim=-1).cpu(), shifted_labels.cpu(), token_groups
+        )
+        population += int(grouped["population"])
+        exact += round(float(grouped["sequence_exact_accuracy"]) * int(grouped["population"]))
+        first_errors.update(grouped["first_error_histogram"])
+        for name in token_groups:
+            count = int(grouped["denominators"][name])
+            denominators[name] += count
+            if count:
+                correct[name] += round(float(grouped["accuracy"][name]) * count)
+    if total_tokens == 0:
+        raise Stage2DataError("teacher-forced evaluation produced no supervised tokens")
+    nll = total_loss / total_tokens
+    return {
+        "population": population,
+        "tokens": total_tokens,
+        "nll": nll,
+        "perplexity": math.exp(nll),
+        "accuracy": {
+            name: correct[name] / denominators[name] if denominators[name] else float("nan")
+            for name in token_groups
+        },
+        "denominators": denominators,
+        "sequence_exact_accuracy": exact / population,
+        "first_error_histogram": dict(first_errors),
+    }
+
+
 def run_hf_stage2(
     frame: pd.DataFrame,
     model_path: str | Path,
@@ -169,6 +236,7 @@ def run_hf_stage2(
     lora_r: int = 16,
     lora_alpha: int = 32,
     lora_dropout: float = 0.05,
+    eval_frame: pd.DataFrame | None = None,
 ) -> dict[str, object]:
     """Train the frozen Stage2 recipe; heavyweight libraries are imported only here."""
     from peft import LoraConfig, TaskType, get_peft_model
@@ -202,6 +270,7 @@ def run_hf_stage2(
     model = get_peft_model(model, lora)
     records = frame.sort_values("traj_id").to_dict("records")
     tokenized = [tokenize_training_record(tokenizer, record) for record in records]
+    collator = AssistantOnlyCollator(tokenizer)
     arguments = TrainingArguments(
         output_dir=str(output / "trainer"),
         overwrite_output_dir=True,
@@ -227,14 +296,33 @@ def run_hf_stage2(
         model=model,
         args=arguments,
         train_dataset=_TokenizedDataset(tokenized),
-        data_collator=AssistantOnlyCollator(tokenizer),
+        data_collator=collator,
     )
     train_result = trainer.train()
     adapter_path = output / "adapter"
     model.save_pretrained(adapter_path)
     tokenizer.save_pretrained(adapter_path)
     trainer.save_state()
-    metrics = {key: float(value) for key, value in train_result.metrics.items()}
+    train_metrics = {key: float(value) for key, value in train_result.metrics.items()}
+    teacher_forced = None
+    if eval_frame is not None:
+        eval_records = eval_frame.sort_values("traj_id").to_dict("records")
+        eval_tokenized = [tokenize_training_record(tokenizer, record) for record in eval_records]
+        token_groups = {
+            "sampling": set(tokenizer.convert_tokens_to_ids([f"<t_{value}>" for value in range(8)])),
+        }
+        for prefix, size in zip(PREFIXES, VOCAB_SIZES):
+            token_groups[f"layer_{PREFIXES.index(prefix)}"] = set(
+                tokenizer.convert_tokens_to_ids([f"<{prefix}_{value}>" for value in range(size)])
+            )
+        teacher_forced = evaluate_teacher_forced_model(
+            model,
+            _TokenizedDataset(eval_tokenized),
+            collator,
+            token_groups,
+            next(model.parameters()).device,
+        )
+    metrics = {"train": train_metrics, "teacher_forced": teacher_forced}
     token_budget = {
         "population": len(tokenized),
         "prompt_tokens": sum(int(row["prompt_tokens"]) for row in tokenized),

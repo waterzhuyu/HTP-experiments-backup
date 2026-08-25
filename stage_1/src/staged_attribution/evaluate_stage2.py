@@ -28,6 +28,56 @@ def teacher_forced_nll(logits: torch.Tensor, labels: torch.Tensor) -> dict[str, 
     return {"tokens": tokens, "nll": nll, "perplexity": math.exp(nll)}
 
 
+def grouped_teacher_forced_accuracy(
+    predictions: torch.Tensor,
+    labels: torch.Tensor,
+    token_groups: dict[str, set[int]],
+) -> dict[str, object]:
+    if predictions.shape != labels.shape or predictions.ndim != 2:
+        raise ValueError("predictions and labels must have the same [batch,time] shape")
+    owners: dict[int, str] = {}
+    for name, values in token_groups.items():
+        for value in values:
+            if int(value) in owners:
+                raise ValueError(f"token ID {value} belongs to multiple groups")
+            owners[int(value)] = name
+    correct = {name: 0 for name in token_groups}
+    denominators = {name: 0 for name in token_groups}
+    exact = 0
+    first_errors: Counter[str] = Counter()
+    for predicted_row, label_row in zip(predictions.tolist(), labels.tolist()):
+        row_exact = True
+        first_error = None
+        observed = 0
+        for predicted, label in zip(predicted_row, label_row):
+            if label == -100 or label not in owners:
+                continue
+            observed += 1
+            group = owners[label]
+            denominators[group] += 1
+            match = predicted == label
+            correct[group] += int(match)
+            if not match and first_error is None:
+                first_error = group
+                row_exact = False
+        if observed and row_exact:
+            exact += 1
+            first_errors["none"] += 1
+        elif observed:
+            first_errors[first_error or "unknown"] += 1
+    population = len(labels)
+    return {
+        "accuracy": {
+            name: correct[name] / denominators[name] if denominators[name] else float("nan")
+            for name in token_groups
+        },
+        "denominators": denominators,
+        "sequence_exact_accuracy": exact / population,
+        "first_error_histogram": dict(first_errors),
+        "population": population,
+    }
+
+
 def _first_code_error(predicted: list[list[int]], target: list[list[int]]) -> str | None:
     for predicted_event, target_event in zip(predicted, target):
         for layer, (predicted_code, target_code) in enumerate(zip(predicted_event, target_event)):

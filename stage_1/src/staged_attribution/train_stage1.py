@@ -100,6 +100,32 @@ def train_step(
     }
 
 
+def build_cosine_warmup_scheduler(
+    optimizer: torch.optim.Optimizer,
+    steps_per_epoch: int,
+    epochs: int,
+    warmup_epochs: int = 10,
+    warmup_ratio: float = 0.01,
+    minimum_ratio: float = 0.10,
+) -> torch.optim.lr_scheduler.LambdaLR:
+    if steps_per_epoch <= 0 or epochs <= 0:
+        raise ValueError("steps_per_epoch and epochs must be positive")
+    if warmup_epochs < 0 or not 0 < warmup_ratio <= 1 or not 0 < minimum_ratio <= 1:
+        raise ValueError("invalid Stage1 scheduler ratios")
+    total_steps = steps_per_epoch * epochs
+    warmup_steps = min(warmup_epochs * steps_per_epoch, total_steps)
+
+    def multiplier(step: int) -> float:
+        if warmup_steps and step <= warmup_steps:
+            return warmup_ratio + (1.0 - warmup_ratio) * step / warmup_steps
+        decay_steps = max(1, total_steps - warmup_steps)
+        progress = min(1.0, max(0.0, (step - warmup_steps) / decay_steps))
+        cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
+        return minimum_ratio + (1.0 - minimum_ratio) * cosine
+
+    return torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=multiplier)
+
+
 def train_epochs(
     model: AttributionRQVAE,
     loader: Iterable[Mapping[str, torch.Tensor]],
@@ -112,6 +138,7 @@ def train_epochs(
     meters_per_coordinate: tuple[float, float],
     gradient_clip_norm: float = 1.0,
     keep_probability: float = 0.65,
+    scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
 ) -> list[dict[str, object]]:
     if epochs <= 0:
         raise ValueError("epochs must be positive")
@@ -136,6 +163,8 @@ def train_epochs(
             )
             global_step += 1
             steps += 1
+            if scheduler is not None:
+                scheduler.step()
             for name in (
                 "loss",
                 "base_loss",
@@ -153,6 +182,8 @@ def train_epochs(
         row: dict[str, object] = {
             "epoch": epoch,
             "steps": steps,
+            "global_step": global_step,
+            "learning_rate": float(optimizer.param_groups[0]["lr"]),
             **{
                 name: sum(values) / len(values)
                 for name, values in accumulators.items()
