@@ -1,18 +1,40 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "htp-multiview-pattern"
-version = "0.1.0"
-description = "Independent GPS/Grid/Road tokenizer correlation experiments for HTP"
+name = "htp-staged-attribution"
+version = "0.2.0"
+description = "End-to-end GPS/Road/Grid staged attribution for HTP"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+  "accelerate==1.14.0",
+  "datasets==5.0.0",
+  "einops==0.8.2",
+  "loguru==0.7.3",
   "numpy==2.5.1",
+  "pandas==3.0.4",
+  "peft==0.19.1",
+  "pyarrow==24.0.0",
+  "pyyaml==6.0.3",
   "scikit-learn==1.8.0",
   "scipy==1.18.0",
+  "shapely==2.1.2",
   "torch==2.12.1",
+  "torch-geometric==2.8.0",
+  "tqdm==4.68.4",
+  "transformers==5.13.0",
 ]
+
+[tool.setuptools]
+package-dir = {"" = "stage_1/src"}
+
+[tool.setuptools.packages.find]
+where = ["stage_1/src"]
 
 [dependency-groups]
 dev = ["pytest==9.1.1"]
 
 [tool.pytest.ini_options]
 testpaths = ["stage_1/tests"]
-pythonpath = ["stage_1/src"]
+pythonpath = [".", "stage_1/src"]
