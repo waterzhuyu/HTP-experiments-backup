@@ -1,0 +1,86 @@
+{
+  "experiment_id": "staged_attribution_data_alignment_v1_20260826",
+  "status": "completed",
+  "git_revision": "f9cd1d4b32239a219966faa5b841d7be0c13d089",
+  "git_clean": true,
+  "schema_version": 1,
+  "excluded_views": ["poi"],
+  "commands": {
+    "chengdu_prepare": "uv run python -m staged_attribution.prepare_data --config stage_1/configs/staged_attribution/experiment.json --city chengdu",
+    "chengdu_audit": "uv run python -m staged_attribution.prepare_data --config stage_1/configs/staged_attribution/experiment.json --city chengdu --audit-only",
+    "porto_audit": "uv run python -m staged_attribution.prepare_data --config stage_1/configs/staged_attribution/experiment.json --city porto --audit-only"
+  },
+  "porto": {
+    "artifact_root": "/workspace/guozuyu/HTP-main/reproduction/runs/multiview_vq/porto/data",
+    "artifact_size": "401M",
+    "metadata_sha256": "87fd6077a61612dbae295fa2fabd5b8f445e7cced82601b4831485760f49c880",
+    "train_trajectories": 537993,
+    "test_trajectories": 59778,
+    "train_test_overlap": 0,
+    "output_sha256": {
+      "test_gps.npy": "9e54089ab4f28c1ecc442a11918e341a6e63b43f79ee27d346d1b56cb2afd202",
+      "test_grid.npy": "94c42db77b48d2c3e62f34ae9faea2cdda61c587cbea4f5f0e6119a6ebdd3f72",
+      "test_offsets.npy": "1d126bb9f0e2867e776f8e0c00627ddc0f0356da6049cfce521f929baa6c9dce",
+      "test_road.npy": "2bbbd45ee075bd7220aa65de56d3daf7ed3605f5e3f3180515415b8e8b9b032c",
+      "test_traj_ids.npy": "d7ef922e342842384617fc8696593452209b56d59260821cb0a8c1dbb7f477f4",
+      "train_gps.npy": "ac085ce274b30a0e90166e23cec2371a194d33e3626d157ee7ab9391304c0795",
+      "train_grid.npy": "ecd654c30d5a5199e0d9468ae82138a8ebd904b5d04abfe70e1e1b57e67fcc06",
+      "train_offsets.npy": "7b1eacd3964490d6bf0a7225b299ac61925d40a9302d15e464a2146257184418",
+      "train_road.npy": "cad44d4592b19b5e8dbeb922f60c9cdf4b51b0cf3f2e46c0fece5d9403c77281",
+      "train_traj_ids.npy": "3c833f86cef5ab822d7b67fd8b127e8fa63d46a7ee16876632add0bdd7dabe47"
+    }
+  },
+  "chengdu": {
+    "artifact_root": "/workspace/guozuyu/HTP-staged-attribution-artifacts/aligned/chengdu",
+    "artifact_size": "539M",
+    "metadata_sha256": "6c86bc511e3621f3dec19ee5e564db57f5baf1330dc4002ecc7122b88fa5dacc",
+    "source_sha256": "73937a301e74f74465dd69bba51f8837d64f35586dbd3459e97cc4bf4df9cd92",
+    "train_index_sha256": "fa665ad3172973ffe9c31c4cd65cc577fd9e0d5a4373e0afc49f479018fc38e4",
+    "test_index_sha256": "bd626a93a0561b037b18561a68c68cf9de3fb45d83ce23ca5478850c5191c049",
+    "train_trajectories": 542592,
+    "test_trajectories": 60288,
+    "train_points": 31237070,
+    "test_points": 3475397,
+    "train_test_overlap": 0,
+    "grid_size_m": 100.0,
+    "grid_shape": [278, 255],
+    "num_grids": 70890,
+    "num_roads": 39503,
+    "output_sha256": {
+      "test_gps.npy": "6965d2c8ca16ac6d9d46533d4c9c37e13461d6015e9d4f5b160a8eb06249374a",
+      "test_grid.npy": "05c8d7be6663896f1cd3c9395a57a8e1ec3d23204c323d545b09ffc827e4bc5e",
+      "test_offsets.npy": "cc871a053a3279892fd26525fc1ef57db73629ece62136cb57d01a836a43aad6",
+      "test_road.npy": "78e645253205a8ed97231816d124709b0648651ef56859c16936c715161d0304",
+      "test_traj_ids.npy": "bd626a93a0561b037b18561a68c68cf9de3fb45d83ce23ca5478850c5191c049",
+      "train_gps.npy": "24f37cd03cca830a9222459b7583a0ee61c34a7be7f048b5a5c9e22266a02d89",
+      "train_grid.npy": "3f40dbf377b99d88e25961a63722e44b6890ddef6728ca61e2f5e74961e3bc8c",
+      "train_offsets.npy": "6c84cdd7f1d0cfb00be7e74453d85c581f0080a2f4c8c1e6b9360a81442d99a2",
+      "train_road.npy": "97aeea3c7a02975cedb38611cb1d2778f967e802e58cf18348da8fedd36fb376",
+      "train_traj_ids.npy": "fa665ad3172973ffe9c31c4cd65cc577fd9e0d5a4373e0afc49f479018fc38e4"
+    }
+  },
+  "failed_attempts": [
+    {
+      "git_revision": "a43f55d1f04016369fb5b64cef3c229a66f181f4",
+      "city": "chengdu",
+      "status": "failed_before_output",
+      "error": "ValueError: edge_info.csv has no from_node_id column",
+      "root_cause": "Porto-specific road table column was used only to count rows",
+      "fix_revision": "f9cd1d4b32239a219966faa5b841d7be0c13d089",
+      "fix": "Count CSV data records independently of city-specific column names; regression-tested on both schemas"
+    }
+  ],
+  "checks": {
+    "join_key": "traj_id, not row position",
+    "point_fields": ["gps", "grid", "pointwise_road", "time", "dxy", "percent_dist"],
+    "route_path_may_differ_in_length": true,
+    "all_lengths_valid": true,
+    "all_ids_in_range": true,
+    "all_losses_or_model_fields": "not_applicable_data_only",
+    "poi_used": false
+  },
+  "gate": {
+    "passed": true,
+    "decision": "advance_to_e_stage_model_implementation"
+  }
+}
