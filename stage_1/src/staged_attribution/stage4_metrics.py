@@ -8,6 +8,8 @@ import numpy as np
 from scipy.stats import entropy
 from shapely.geometry import LineString, Point
 
+from .prepare_data import gps_to_grid_ids, grid_spec as build_grid_spec
+
 
 CITY_BOUNDS = {
     "porto": {"min_lat": 41.13, "max_lat": 41.19, "min_lon": -8.69, "max_lon": -8.55},
@@ -40,47 +42,51 @@ def _radius(trajectory: np.ndarray) -> float:
     return float(np.mean([geodistance(center, point) for point in trajectory]))
 
 
-def _grid_ids(trajectory: np.ndarray, city: str, grid_size: int = 100) -> list[int]:
-    if city not in CITY_BOUNDS:
-        raise ValueError(f"unsupported city {city!r}")
-    bounds = CITY_BOUNDS[city]
-    lat_num = max(
-        1,
-        int(
-            geodistance(
-                (bounds["min_lon"], bounds["min_lat"]),
-                (bounds["min_lon"], bounds["max_lat"]),
-            )
-            * 1000
-            // grid_size
-        ),
+def _grid_context(
+    city: str,
+    mbr: Mapping[str, float] | None,
+    grid: Mapping[str, float | int] | None,
+    grid_size: float,
+) -> tuple[dict[str, float], dict[str, float | int]]:
+    if mbr is None:
+        if city not in CITY_BOUNDS:
+            raise ValueError(f"unsupported city {city!r}")
+        bounds = {name: float(value) for name, value in CITY_BOUNDS[city].items()}
+    else:
+        required = {"min_lon", "max_lon", "min_lat", "max_lat"}
+        if set(mbr) != required:
+            raise ValueError(f"MBR keys must be exactly {sorted(required)}")
+        bounds = {name: float(value) for name, value in mbr.items()}
+    spec = dict(grid) if grid is not None else build_grid_spec(bounds, grid_size)
+    required_grid = {"grid_size_m", "meters_per_lon", "meters_per_lat", "n_grid_x", "n_grid_y"}
+    if set(spec) != required_grid:
+        raise ValueError(f"grid keys must be exactly {sorted(required_grid)}")
+    return bounds, spec
+
+
+def _grid_ids(
+    trajectory: np.ndarray,
+    city: str,
+    grid_size: int = 100,
+    mbr: Mapping[str, float] | None = None,
+    grid: Mapping[str, float | int] | None = None,
+) -> list[int]:
+    values = np.asarray(trajectory, dtype=np.float64)
+    bounds, spec = _grid_context(city, mbr, grid, grid_size)
+    outside = (
+        (values[:, 0] < bounds["min_lon"])
+        | (values[:, 0] > bounds["max_lon"])
+        | (values[:, 1] < bounds["min_lat"])
+        | (values[:, 1] > bounds["max_lat"])
     )
-    lon_num = max(
-        1,
-        int(
-            geodistance(
-                (bounds["min_lon"], bounds["min_lat"]),
-                (bounds["max_lon"], bounds["min_lat"]),
-            )
-            * 1000
-            // grid_size
-        ),
-    )
-    lat_size = (bounds["max_lat"] - bounds["min_lat"]) / lat_num
-    lon_size = (bounds["max_lon"] - bounds["min_lon"]) / lon_num
-    result: list[int] = []
-    for lon, lat in trajectory:
-        if not (
-            bounds["min_lon"] < lon < bounds["max_lon"]
-            and bounds["min_lat"] < lat < bounds["max_lat"]
-        ):
-            continue
-        column = min(lon_num - 1, int((lon - bounds["min_lon"]) / lon_size))
-        row = min(lat_num - 1, int((lat - bounds["min_lat"]) / lat_size))
-        value = row * lon_num + column
-        if not result or result[-1] != value:
-            result.append(value)
-    return result
+    if np.any(outside):
+        raise ValueError("GPS coordinate outside the registered city MBR")
+    raw = gps_to_grid_ids(values, bounds, spec).tolist()
+    return [
+        int(value)
+        for index, value in enumerate(raw)
+        if index == 0 or int(value) != int(raw[index - 1])
+    ]
 
 
 def _point_road_distances(
@@ -106,6 +112,8 @@ def trajectory_sufficient_statistics(
     road_traj: Sequence[int],
     road_geometries: Mapping[int, np.ndarray],
     city: str,
+    mbr: Mapping[str, float] | None = None,
+    grid: Mapping[str, float | int] | None = None,
 ) -> dict[str, float | int]:
     trajectory = np.asarray(gps_traj, dtype=np.float64)
     if trajectory.ndim != 2 or trajectory.shape[0] < 2 or trajectory.shape[1] != 2:
@@ -121,7 +129,7 @@ def trajectory_sufficient_statistics(
         "radius_km": _radius(trajectory),
         "mean_point_to_road_km": float(np.mean(point_road)),
         "unique_road_count": len(set(int(value) for value in road_traj)),
-        "unique_grid_count": len(set(_grid_ids(trajectory, city))),
+        "unique_grid_count": len(set(_grid_ids(trajectory, city, mbr=mbr, grid=grid))),
     }
 
 
@@ -170,13 +178,18 @@ def _cosine(first: np.ndarray, second: np.ndarray) -> float:
 
 
 def _pattern(first: np.ndarray, second: np.ndarray, top_k: int) -> float:
-    k = min(top_k, len(first))
-    first_top = set(np.argsort(first)[::-1][:k].tolist())
-    second_top = set(np.argsort(second)[::-1][:k].tolist())
+    if top_k <= 0:
+        raise ValueError("top_k must be positive")
+    first_positive = np.flatnonzero(first > 0)
+    second_positive = np.flatnonzero(second > 0)
+    first_top = set(first_positive[np.argsort(first[first_positive])[::-1][:top_k]].tolist())
+    second_top = set(second_positive[np.argsort(second[second_positive])[::-1][:top_k]].tolist())
+    if not first_top and not second_top:
+        return 1.0
+    if not first_top or not second_top:
+        return 0.0
     intersection = len(first_top & second_top)
-    precision = intersection / k
-    recall = intersection / len(first_top | second_top)
-    return 0.0 if precision + recall == 0 else 2 * precision * recall / (precision + recall)
+    return 2 * intersection / (len(first_top) + len(second_top))
 
 
 def htp_aggregate_metrics(
@@ -187,6 +200,8 @@ def htp_aggregate_metrics(
     road_geometries: Mapping[int, np.ndarray],
     city: str,
     top_k: int = 100,
+    mbr: Mapping[str, float] | None = None,
+    grid: Mapping[str, float | int] | None = None,
 ) -> dict[str, float]:
     populations = [set(values) for values in (real_gps, generated_gps, real_roads, generated_roads)]
     if any(values != populations[0] for values in populations[1:]):
@@ -209,17 +224,19 @@ def htp_aggregate_metrics(
             np.asarray(generated_gps[key]), generated_roads[key], road_geometries
         )
     ]
-    real_grids = {key: _grid_ids(np.asarray(value), city) for key, value in real_gps.items()}
-    generated_grids = {
-        key: _grid_ids(np.asarray(value), city) for key, value in generated_gps.items()
+    bounds, spec = _grid_context(city, mbr, grid, 100.0)
+    real_grids = {
+        key: _grid_ids(np.asarray(value), city, mbr=bounds, grid=spec)
+        for key, value in real_gps.items()
     }
-    max_grid = max(
-        [value for sequence in list(real_grids.values()) + list(generated_grids.values()) for value in sequence],
-        default=0,
-    )
+    generated_grids = {
+        key: _grid_ids(np.asarray(value), city, mbr=bounds, grid=spec)
+        for key, value in generated_gps.items()
+    }
     max_road = max(road_geometries, default=0)
-    real_grid_density = _density(real_grids, max_grid + 1)
-    generated_grid_density = _density(generated_grids, max_grid + 1)
+    num_grids = int(spec["n_grid_x"]) * int(spec["n_grid_y"])
+    real_grid_density = _density(real_grids, num_grids)
+    generated_grid_density = _density(generated_grids, num_grids)
     real_road_density = _density(real_roads, max_road + 1)
     generated_road_density = _density(generated_roads, max_road + 1)
     return {
@@ -244,6 +261,8 @@ def evaluate_population(
     road_geometries: Mapping[int, np.ndarray],
     city: str,
     invalid_penalty: float = 1.0,
+    mbr: Mapping[str, float] | None = None,
+    grid: Mapping[str, float | int] | None = None,
 ) -> dict[str, object]:
     if set(real_gps) != set(real_roads):
         raise MetricPopulationError("real GPS/Road population mismatch")
@@ -272,9 +291,12 @@ def evaluate_population(
             generated = np.asarray(record["gps_traj"], dtype=np.float64)
             road = [int(value) for value in record["road_traj"]]
             real_stats = trajectory_sufficient_statistics(
-                np.asarray(real_gps[traj_id]), real_roads[traj_id], road_geometries, city
+                np.asarray(real_gps[traj_id]), real_roads[traj_id], road_geometries, city,
+                mbr=mbr, grid=grid,
             )
-            generated_stats = trajectory_sufficient_statistics(generated, road, road_geometries, city)
+            generated_stats = trajectory_sufficient_statistics(
+                generated, road, road_geometries, city, mbr=mbr, grid=grid,
+            )
             error = sum(
                 abs(math.log1p(float(generated_stats[name])) - math.log1p(float(real_stats[name])))
                 for name in ("travel_distance_km", "mean_segment_distance_km", "radius_km", "mean_point_to_road_km")
@@ -297,8 +319,8 @@ def evaluate_population(
             generated_gps,
             {key: real_roads[key] for key in successful_ids},
             generated_roads,
-            road_geometries,
-            city,
+            road_geometries, city,
+            mbr=mbr, grid=grid,
         )
     successful = len(successful_ids)
     return {

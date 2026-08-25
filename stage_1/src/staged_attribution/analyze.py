@@ -29,10 +29,16 @@ def e_contrasts(values: Mapping[str, float]) -> dict[str, float]:
     }
     result.update(
         {
-            "gps_road_interaction": parsed["e3_q0"] - parsed["e1_q0"] - baseline + baseline,
-            "gps_grid_interaction": parsed["e4_q0"] - parsed["e2_q0"] - baseline + baseline,
-            "road_grid_interaction": parsed["e5_q0"] - parsed["e1_q0"] - parsed["e2_q0"] + baseline,
-            "all_vs_best_pair": parsed["e6_q0"] - min(
+            "gps_road_given_grid": (
+                parsed["e6_q0"] - parsed["e4_q0"] - parsed["e5_q0"] + parsed["e2_q0"]
+            ),
+            "gps_grid_given_road": (
+                parsed["e6_q0"] - parsed["e3_q0"] - parsed["e5_q0"] + parsed["e1_q0"]
+            ),
+            "road_grid_given_gps": (
+                parsed["e6_q0"] - parsed["e3_q0"] - parsed["e4_q0"] + baseline
+            ),
+            "all_minus_best_pair_for_minimize": parsed["e6_q0"] - min(
                 parsed["e3_q0"], parsed["e4_q0"], parsed["e5_q0"]
             ),
         }

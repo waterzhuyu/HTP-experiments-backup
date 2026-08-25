@@ -565,7 +565,9 @@ class PipelineBackend:
         geometries = self._road_geometries()
         metrics = {
             variant: evaluate_population(
-                real_gps, real_roads, records, geometries, self.city, invalid_penalty=2.0
+                real_gps, real_roads, records, geometries, self.city, invalid_penalty=2.0,
+                mbr=dataset.metadata["mbr"],
+                grid=dataset.metadata["grid"],
             )
             for variant, records in variants.items()
         }

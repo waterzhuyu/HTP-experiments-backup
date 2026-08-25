@@ -3,8 +3,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from staged_attribution.prepare_data import gps_to_grid_ids, grid_spec
 from staged_attribution.stage4_metrics import (
     MetricPopulationError,
+    _grid_ids,
+    _pattern,
     evaluate_population,
     htp_aggregate_metrics,
     trajectory_sufficient_statistics,
@@ -79,3 +82,43 @@ def test_population_mismatch_is_rejected_instead_of_dropped() -> None:
     gps, roads, geometries = trajectories()
     with pytest.raises(MetricPopulationError, match="population"):
         evaluate_population(gps, roads, [], geometries, city="porto")
+
+
+def test_stage4_grid_ids_reuse_the_aligned_100m_definition() -> None:
+    mbr = {"min_lon": -8.69, "max_lon": -8.55, "min_lat": 41.13, "max_lat": 41.19}
+    spec = grid_spec(mbr, 100.0)
+    gps = np.asarray(
+        [
+            [-8.6899, 41.1301],
+            [-8.6898, 41.1302],
+            [-8.6880, 41.1302],
+            [-8.6880, 41.1320],
+        ]
+    )
+    expected = gps_to_grid_ids(gps, mbr, spec).tolist()
+    collapsed = [value for index, value in enumerate(expected) if index == 0 or value != expected[index - 1]]
+
+    assert _grid_ids(gps, "porto", mbr=mbr, grid=spec) == collapsed
+
+
+def test_pattern_f1_ignores_zero_frequency_bins() -> None:
+    real = np.asarray([10.0, 0.0, 0.0, 0.0])
+    disjoint = np.asarray([0.0, 10.0, 0.0, 0.0])
+    partial = np.asarray([10.0, 5.0, 0.0, 0.0])
+
+    assert _pattern(real, disjoint, top_k=100) == pytest.approx(0.0)
+    assert _pattern(real, partial, top_k=100) == pytest.approx(2.0 / 3.0)
+
+
+def test_out_of_bounds_generated_gps_is_invalid_instead_of_clipped() -> None:
+    gps, roads, geometries = trajectories()
+    generated = [
+        {"traj_id": key, "status": "reconstructed", "gps_traj": value.tolist(), "road_traj": roads[key]}
+        for key, value in gps.items()
+    ]
+    generated[0]["gps_traj"][0][0] = -9.0
+
+    result = evaluate_population(gps, roads, generated, geometries, city="porto")
+
+    assert result["validity_rate"] == pytest.approx(0.5)
+    assert result["failure_reasons"] == {"metric_error": 1}

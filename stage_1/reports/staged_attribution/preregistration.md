@@ -166,7 +166,27 @@ Stage4 保持 HTP 方向：GPS travel/segment/radius JSD 越小越好；Road den
 | Stage3/G | oracle route，生成 SID/sampling | 完整 2×2 counterfactual | 是，归因变量 |
 | 评估 | 同 ID、Road、Grid 与统计实现 | paired contrasts/Shapley | 归因分析增加 |
 
-## 10. 失败、完成与证据边界
+## 10. 首次结果前的方法纠偏
+
+在尚无任何正式 Stage4 attempt、未观察任何 cell 结果时，代码审计发现并冻结以下纠偏：
+
+1. E0 是 GPS-only，不是空模态，因此不能作为标准 2×2 factorial 的 `f00`。七个非空 E 组合只报告可识别的条件二阶交互：
+
+```text
+GPS×Road | Grid = E6 - E4 - E5 + E2
+GPS×Grid | Road = E6 - E3 - E5 + E1
+Road×Grid | GPS = E6 - E3 - E4 + E0
+```
+
+旧实现中退化为 `E3-E1`/`E4-E2` 的字段不得出现在任何结果报告。
+
+2. Stage4 Grid mapping 必须直接复用该 city aligned `metadata.json` 的 MBR、`meters_per_lon/lat`、`grid_size_m=100`、`n_grid_x/y`，与 Stage1 `gps_to_grid_ids` 完全相同；禁止另算近似 geodesic grid。
+3. Grid/Road top-100 pattern F1 只取各分布正频 support 内的 top-k，使用对称集合 F1 `2|A∩B|/(|A|+|B|)`；禁止把零频 bin 加入 top-k。
+4. 生成 GPS 任一点超出注册 city MBR 时，该轨迹记作 invalid，并在主分析保留预注册 penalty；禁止裁剪或静默丢点。
+
+纠偏只修正可识别性与评估定义，不改变 E/Q cell、训练数据、seed、预算、权重或选择 gate。定向测试 10 passed、全套 158 passed 后才能形成新的 clean formal revision。
+
+## 11. 失败、完成与证据边界
 
 formal run 必须来自 clean 40-char Git revision。每个 run 保存 command、resolved config、数据/子集 hash、Stage1/2/3/4 artifacts、逐阶段 complete marker、顶层 immutable manifest、失败 traceback。已失败 attempt 不覆盖，另建 attempt 目录。
 

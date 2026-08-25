@@ -29,8 +29,11 @@ def test_e_and_q_contrasts_follow_frozen_cell_structure() -> None:
     q = q_incremental_contrasts(metrics)
 
     assert e["e6_q0_minus_e0_q0"] == -6.0
-    assert e["gps_road_interaction"] == pytest.approx(7.0 - 9.0 - 10.0 + 10.0)
-    assert e["gps_grid_interaction"] == pytest.approx(6.0 - 8.0 - 10.0 + 10.0)
+    assert e["gps_road_given_grid"] == pytest.approx(4.0 - 6.0 - 5.0 + 8.0)
+    assert e["gps_grid_given_road"] == pytest.approx(4.0 - 7.0 - 5.0 + 9.0)
+    assert e["road_grid_given_gps"] == pytest.approx(4.0 - 7.0 - 6.0 + 10.0)
+    assert "gps_road_interaction" not in e
+    assert "gps_grid_interaction" not in e
     assert q == {
         "q1_minus_q0": -0.5,
         "q2_minus_q1": -0.5,

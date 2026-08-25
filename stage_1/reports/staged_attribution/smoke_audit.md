@@ -15,7 +15,18 @@
 
 临时验证路径：`/tmp/staged_attr_real_stage1_e0`。这是可丢弃的 pre-commit runtime check，不登记为完成 run；正式 smoke 使用 artifact root、clean revision 与 immutable run manifest 重跑。
 
-全量单元测试：revision `e44e0ac` 前后为 153 passed；唯一 warnings 为 PyTorch nested Transformer 优化未启用，不改变数值。
+全量单元测试：最新 pre-formal revision 为 158 passed；唯一 warnings 为 PyTorch nested Transformer 优化未启用，不改变数值。
+
+## 首次结果前的评估审计
+
+在没有任何正式 Stage4 attempt 的前提下发现并修复：
+
+- E0/GPS-only 被误当成空模态导致不可识别的交互字段；改为三个给定第三模态的条件交互；
+- Stage4 使用近似重划网格而非 Stage1 aligned grid；改为复用 metadata 和同一 mapping；
+- top-100 F1 把零频 bin 加入集合，极小 population 时可能虚高；改为正频 top-k 对称 F1；
+- 越界生成 GPS 被静默丢点/裁剪；改为 invalid 并保留 penalty。
+
+这些是看结果前的方法纠偏，不改变 cell/seed/预算；详见预注册第 10 节。
 
 ## 首次真实失败与修复
 
