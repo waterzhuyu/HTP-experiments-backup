@@ -184,10 +184,12 @@ Road×Grid | GPS = E6 - E3 - E4 + E0
 3. Grid/Road top-100 pattern F1 只取各分布正频 support 内的 top-k，使用对称集合 F1 `2|A∩B|/(|A|+|B|)`；禁止把零频 bin 加入 top-k。
 4. 生成 GPS 任一点超出注册 city MBR 时，该轨迹记作 invalid，并在主分析保留预注册 penalty；禁止裁剪或静默丢点。
 
-纠偏只修正可识别性与评估定义，不改变 E/Q cell、训练数据、seed、预算、权重或选择 gate。定向测试 10 passed、全套 158 passed 后才能形成新的 clean formal revision。
+纠偏只修正可识别性与评估定义，不改变 E/Q cell、训练数据、seed、预算、权重或选择 gate。定向测试 11 passed、全套 164 passed 后才能形成新的 clean formal revision。
 
 ## 11. 失败、完成与证据边界
 
 formal run 必须来自 clean 40-char Git revision。每个 run 保存 command、resolved config、数据/子集 hash、Stage1/2/3/4 artifacts、逐阶段 complete marker、顶层 immutable manifest、失败 traceback。已失败 attempt 不覆盖，另建 attempt 目录。
+
+`report_results` 在统计前强制验证完整 Cartesian coverage、manifest identity、同一 clean revision、artifact 位于本 attempt 内，以及 marker size/SHA256。controlled 报告必须覆盖两城×三 seed×十 cell。confirmation 必须通过 `--cells` 显式给出 baseline `e0_q0` 与 controlled 选出的候选；缺少 baseline、重复/未知 cell 或省略选择时拒绝排队和汇总，禁止默认重跑全部十 cell。
 
 任何没有 Stage2 adapter、generation、四路 decode、Stage4 JSON 的 cell 都是 incomplete；不得用 Stage1 排名或现有独立 tokenizer pilot 补齐。最终优于 baseline 的声称只允许来自 confirmation。smoke、controlled 与 confirmation 结果分别提交，负结果与失败不得删除。

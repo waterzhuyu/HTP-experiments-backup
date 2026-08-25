@@ -15,7 +15,7 @@
 
 临时验证路径：`/tmp/staged_attr_real_stage1_e0`。这是可丢弃的 pre-commit runtime check，不登记为完成 run；正式 smoke 使用 artifact root、clean revision 与 immutable run manifest 重跑。
 
-全量单元测试：最新 pre-formal revision 为 158 passed；唯一 warnings 为 PyTorch nested Transformer 优化未启用，不改变数值。
+全量单元测试：最新 pre-formal revision 为 164 passed；唯一 warnings 为 PyTorch nested Transformer 优化未启用，不改变数值。结果审计器另以合成十 cell 文件树验证 coverage、SHA256、同 revision、E/Q/G 与 paired bootstrap；confirmation 强制显式 baseline+候选选择。
 
 ## 首次结果前的评估审计
 

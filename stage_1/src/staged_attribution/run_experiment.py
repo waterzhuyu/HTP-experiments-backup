@@ -26,9 +26,28 @@ class ExperimentJob:
         return f"{self.budget}/{self.city}/seed_{self.seed}/{self.cell_id}"
 
 
-def build_jobs(config: ExperimentConfig, budget: str) -> tuple[ExperimentJob, ...]:
+def build_jobs(
+    config: ExperimentConfig,
+    budget: str,
+    cell_ids: Sequence[str] | None = None,
+) -> tuple[ExperimentJob, ...]:
     if budget not in config.budgets:
         raise ValueError(f"unknown budget {budget}")
+    cells_by_id = {cell.cell_id: cell for cell in config.core_cells()}
+    if budget == "confirmation" and cell_ids is None:
+        raise ValueError("confirmation requires an explicit selected cell list")
+    if cell_ids is None:
+        cells = tuple(cells_by_id.values())
+    else:
+        requested = tuple(cell_ids)
+        if not requested or len(set(requested)) != len(requested):
+            raise ValueError("selected cell list must be non-empty and unique")
+        unknown = sorted(set(requested) - set(cells_by_id))
+        if unknown:
+            raise ValueError(f"unknown selected cells: {unknown}")
+        if budget == "confirmation" and "e0_q0" not in requested:
+            raise ValueError("confirmation selection must include baseline e0_q0")
+        cells = tuple(cells_by_id[cell_id] for cell_id in requested)
     if budget == "smoke":
         cities = config.cities[:1]
         seeds = config.seeds[:1]
@@ -39,7 +58,7 @@ def build_jobs(config: ExperimentConfig, budget: str) -> tuple[ExperimentJob, ..
         ExperimentJob(cell.cell_id, city, seed, budget)
         for city in cities
         for seed in seeds
-        for cell in config.core_cells()
+        for cell in cells
     )
 
 
@@ -150,13 +169,14 @@ def run_parallel_experiment(
     query_gpu_fn: Callable[[], list[dict[str, int]]] = query_gpus,
     popen_factory: Callable[..., Any] = subprocess.Popen,
     sleep_fn: Callable[[float], None] = time.sleep,
+    cell_ids: Sequence[str] | None = None,
 ) -> dict[str, object]:
     if maximum_parallel <= 0:
         raise ValueError("maximum_parallel must be positive")
     if poll_seconds < 0:
         raise ValueError("poll_seconds cannot be negative")
     config = ExperimentConfig.load(config_path)
-    jobs = list(build_jobs(config, budget))
+    jobs = list(build_jobs(config, budget, cell_ids))
     root = (
         Path(artifact_root)
         if artifact_root is not None
@@ -241,9 +261,10 @@ def run_experiment(
     dry_run: bool,
     minimum_free_mib: int = 16000,
     maximum_utilization: int = 20,
+    cell_ids: Sequence[str] | None = None,
 ) -> list[dict[str, object]]:
     config = ExperimentConfig.load(config_path)
-    jobs = build_jobs(config, budget)
+    jobs = build_jobs(config, budget, cell_ids)
     if dry_run:
         return [
             {
@@ -290,6 +311,7 @@ def main() -> None:
     parser.add_argument("--poll-seconds", type=float, default=60.0)
     parser.add_argument("--maximum-parallel", type=int, default=4)
     parser.add_argument("--artifact-root", type=Path)
+    parser.add_argument("--cells", nargs="+")
     arguments = parser.parse_args()
     if arguments.parallel and arguments.dry_run:
         parser.error("--parallel and --dry-run are mutually exclusive")
@@ -303,6 +325,7 @@ def main() -> None:
             poll_seconds=arguments.poll_seconds,
             minimum_free_mib=arguments.minimum_free_mib,
             maximum_utilization=arguments.maximum_utilization,
+            cell_ids=arguments.cells,
         )
     else:
         result = run_experiment(
@@ -311,6 +334,7 @@ def main() -> None:
             arguments.dry_run,
             arguments.minimum_free_mib,
             arguments.maximum_utilization,
+            arguments.cells,
         )
     print(json.dumps(result, indent=2, sort_keys=True))
     if arguments.parallel and result["failed"]:

@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from staged_attribution.config import ExperimentConfig
 from staged_attribution.run_experiment import (
     build_jobs,
@@ -35,6 +37,22 @@ def test_controlled_queue_is_city_seed_cell_cartesian_product() -> None:
 
     assert len(jobs) == 2 * 3 * 10
     assert len({job.run_key for job in jobs}) == len(jobs)
+
+
+def test_confirmation_requires_explicit_baseline_and_selected_candidates() -> None:
+    config = ExperimentConfig.load(CONFIG_PATH)
+
+    with pytest.raises(ValueError, match="explicit selected cell list"):
+        build_jobs(config, budget="confirmation")
+    with pytest.raises(ValueError, match="include baseline"):
+        build_jobs(config, budget="confirmation", cell_ids=["e6_q3"])
+    with pytest.raises(ValueError, match="unknown selected"):
+        build_jobs(config, budget="confirmation", cell_ids=["e0_q0", "missing"])
+
+    jobs = build_jobs(config, budget="confirmation", cell_ids=["e0_q0", "e6_q3"])
+
+    assert len(jobs) == 2 * 3 * 2
+    assert {job.cell_id for job in jobs} == {"e0_q0", "e6_q3"}
 
 
 def test_gpu_safety_uses_free_memory_and_utilization() -> None:
