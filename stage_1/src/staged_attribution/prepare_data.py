@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import gc
 import hashlib
 import json
@@ -26,6 +27,20 @@ def file_sha256(path: str | Path) -> str:
         while chunk := handle.read(1024 * 1024):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def count_csv_records(path: str | Path) -> int:
+    """Count data rows without assuming a city-specific edge table column name."""
+    with Path(path).open(newline="", encoding="utf-8") as handle:
+        reader = csv.reader(handle)
+        try:
+            next(reader)
+        except StopIteration as error:
+            raise DataPreparationError(f"CSV has no header: {path}") from error
+        count = sum(1 for row in reader if row)
+    if count <= 0:
+        raise DataPreparationError(f"CSV has no data records: {path}")
+    return count
 
 
 def grid_spec(mbr: Mapping[str, float], grid_size_m: float) -> dict[str, float | int]:
@@ -253,7 +268,7 @@ def main() -> None:
     train_index_path = data_root / "train_index.npy"
     test_index_path = data_root / "test_index.npy"
     frame = pd.read_parquet(source_path, columns=["traj_id", "geometry", "opath"])
-    num_roads = len(pd.read_csv(data_root / "rn" / "edge_info.csv", usecols=["from_node_id"]))
+    num_roads = count_csv_records(data_root / "rn" / "edge_info.csv")
     metadata = prepare_from_frame(
         frame=frame,
         train_indices=np.load(train_index_path),

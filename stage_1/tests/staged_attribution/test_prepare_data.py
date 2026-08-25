@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from staged_attribution.prepare_data import (
+    count_csv_records,
     DataPreparationError,
     grid_spec,
     prepare_from_frame,
@@ -104,3 +105,16 @@ def test_grid_spec_has_positive_fixed_support() -> None:
     assert spec["n_grid_x"] > 0
     assert spec["n_grid_y"] > 0
     assert spec["grid_size_m"] == 100.0
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "from_node_id,to_node_id,geometry",
+        "road_name,bridge,geometry",
+    ],
+)
+def test_count_csv_records_does_not_assume_city_specific_columns(
+    tmp_path: Path, header: str
+) -> None:
+    path = tmp_path / "edge_info.csv"
