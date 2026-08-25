@@ -78,3 +78,34 @@ def test_dry_run_resolves_cell_without_writing(tmp_path: Path) -> None:
     assert result["stages"][-1] == "stage4"
     assert result["will_execute"] is False
     assert not any(tmp_path.iterdir())
+
+
+def test_backend_runs_every_stage_and_resume_performs_no_proxy_completion(tmp_path: Path) -> None:
+    calls = []
+
+    def backend(node, resolved, run_dir):
+        calls.append(node.name)
+        return {
+            name: touch(Path(run_dir) / node.name / name)
+            for name in node.required_artifacts
+        }
+
+    first = run_cell(
+        config_path=Path("stage_1/configs/staged_attribution/experiment.json"),
+        cell_id="e0_q0",
+        city="porto",
+        seed=42,
+        budget="smoke",
+        run_dir=tmp_path,
+        stage_backend=backend,
+    )
+
+    assert calls == ["stage1", "tokens", "stage2_data", "stage2", "stage3", "g_attribution", "decode", "stage4"]
+    assert first["terminal_complete"] is True
+
+    calls.clear()
+    resumed = run_cell(
+        config_path=Path("stage_1/configs/staged_attribution/experiment.json"),
+        cell_id="e0_q0", city="porto", seed=42, budget="smoke", run_dir=tmp_path,
+        stage_backend=backend,
+    )

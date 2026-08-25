@@ -273,8 +273,10 @@ def collate_aligned(
         )
         if torch.any(flat_route < 0) or torch.any(flat_route >= len(road_context.geometry)):
             raise AlignmentError("route ID outside road geometry population")
-        result["route_geometry"] = road_context.geometry[flat_route]
-        result["route_geometry_lengths"] = road_context.geometry_lengths[flat_route]
+        selected_lengths = road_context.geometry_lengths[flat_route]
+        selected_geometry = road_context.geometry[flat_route]
+        result["route_geometry"] = selected_geometry[:, : int(selected_lengths.max())]
+        result["route_geometry_lengths"] = selected_lengths
     return result
 
 

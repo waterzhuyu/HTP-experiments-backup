@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import Callable, Mapping
 
 from .config import ExperimentConfig
 
@@ -128,6 +129,8 @@ def run_cell(
     budget: str,
     run_dir: str | Path,
     dry_run: bool = False,
+    stage_backend: Callable[[StageNode, Mapping[str, object], Path], Mapping[str, str | Path]] | None = None,
+    device: str = "cuda",
 ) -> dict[str, object]:
     config = ExperimentConfig.load(config_path)
     cells = {cell.cell_id: cell for cell in config.core_cells()}
@@ -150,10 +153,54 @@ def run_cell(
         "views": sorted(cell.views),
         "q_weights": dict(cell.q_weights),
         "stages": [node.name for node in dag],
+        "device": device,
         "will_execute": not dry_run,
     }
     if dry_run:
         return resolved
-    raise CellRunError(
-        "direct execution requires the stage backend; use the experiment runner after prerequisites are prepared"
+    root = Path(run_dir)
+    if stage_backend is None:
+        try:
+            from .pipeline import PipelineBackend
+        except ImportError as error:
+            raise CellRunError("default pipeline backend is unavailable") from error
+        stage_backend = PipelineBackend(config_path, resolved).execute
+    plan = resume_plan(root, dag)
+    remaining = set(plan["remaining"])
+    for node in dag:
+        if node.name not in remaining:
+            continue
+        artifacts = stage_backend(node, resolved, root)
+        write_stage_marker(root, node, artifacts)
+    final = resume_plan(root, dag)
+    if not final["terminal_complete"]:
+        raise CellRunError("cell backend returned without Stage4 terminal completion")
+    return {**resolved, **final}
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run one complete staged-attribution cell")
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--cell", required=True)
+    parser.add_argument("--city", required=True)
+    parser.add_argument("--seed", type=int, required=True)
+    parser.add_argument("--budget", choices=("smoke", "controlled", "confirmation"), required=True)
+    parser.add_argument("--run-dir", type=Path, required=True)
+    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--dry-run", action="store_true")
+    arguments = parser.parse_args()
+    result = run_cell(
+        arguments.config,
+        arguments.cell,
+        arguments.city,
+        arguments.seed,
+        arguments.budget,
+        arguments.run_dir,
+        dry_run=arguments.dry_run,
+        device=arguments.device,
     )
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()

@@ -99,7 +99,10 @@ def test_runtime_collate_adds_route_geometry_and_normalizes_targets(tmp_path: Pa
     aligned, processed = write_fixture(tmp_path)
     dataset = AlignedHTPDataset(aligned, processed, "train")
     geometry = torch.stack(
-        [torch.tensor([[float(road), 0.0], [float(road), 1.0]]) for road in range(6)]
+        [
+            torch.tensor([[float(road), 0.0], [float(road), 1.0], [99.0, 99.0]])
+            for road in range(6)
+        ]
     )
     context = RoadContext(
         geometry=geometry,
