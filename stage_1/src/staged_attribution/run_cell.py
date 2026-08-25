@@ -3,11 +3,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
+import sys
+import traceback
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Mapping
 
 from .config import ExperimentConfig
+from .recording import RunRecorder
 
 
 class CellRunError(RuntimeError):
@@ -131,6 +135,7 @@ def run_cell(
     dry_run: bool = False,
     stage_backend: Callable[[StageNode, Mapping[str, object], Path], Mapping[str, str | Path]] | None = None,
     device: str = "cuda",
+    command: list[str] | None = None,
 ) -> dict[str, object]:
     config = ExperimentConfig.load(config_path)
     cells = {cell.cell_id: cell for cell in config.core_cells()}
@@ -159,23 +164,68 @@ def run_cell(
     if dry_run:
         return resolved
     root = Path(run_dir)
+    revision = subprocess.run(
+        ["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+    ).stdout.strip()
+    dirty = bool(
+        subprocess.run(
+            ["git", "status", "--porcelain"], check=True, capture_output=True, text=True
+        ).stdout.strip()
+    )
+    resolved["git_revision"] = revision
+    resolved["git_dirty"] = dirty
+    manifest_path = root / RunRecorder.MANIFEST_NAME
+    if manifest_path.is_file():
+        recorder = RunRecorder.resume(root)
+        manifest = recorder.read()
+        if manifest["status"] == "completed":
+            final = resume_plan(root, dag)
+            if not final["terminal_complete"]:
+                raise CellRunError("completed run manifest lacks terminal Stage4 marker")
+            return {**resolved, **final}
+        if manifest["status"] == "failed":
+            raise CellRunError("failed run is immutable; create a new attempt directory")
+        if manifest["status"] == "planned":
+            recorder.start()
+    else:
+        actual_command = command or [
+            sys.executable, "-m", "staged_attribution.run_cell",
+            "--config", str(config_path), "--cell", cell_id, "--city", city,
+            "--seed", str(seed), "--budget", budget, "--run-dir", str(root),
+            "--device", device,
+        ]
+        recorder = RunRecorder.create(
+            root, config.experiment_id, cell_id, city, seed, budget,
+            actual_command, revision, dirty, ("stage4_complete",),
+        )
+        recorder.start()
     if stage_backend is None:
         try:
             from .pipeline import PipelineBackend
         except ImportError as error:
             raise CellRunError("default pipeline backend is unavailable") from error
         stage_backend = PipelineBackend(config_path, resolved).execute
-    plan = resume_plan(root, dag)
-    remaining = set(plan["remaining"])
-    for node in dag:
-        if node.name not in remaining:
-            continue
-        artifacts = stage_backend(node, resolved, root)
-        write_stage_marker(root, node, artifacts)
-    final = resume_plan(root, dag)
-    if not final["terminal_complete"]:
-        raise CellRunError("cell backend returned without Stage4 terminal completion")
-    return {**resolved, **final}
+    try:
+        plan = resume_plan(root, dag)
+        remaining = set(plan["remaining"])
+        for node in dag:
+            if node.name not in remaining:
+                continue
+            artifacts = stage_backend(node, resolved, root)
+            write_stage_marker(root, node, artifacts)
+        final = resume_plan(root, dag)
+        if not final["terminal_complete"]:
+            raise CellRunError("cell backend returned without Stage4 terminal completion")
+        recorder.complete({"stage4_complete": _marker_path(root, "stage4")})
+        return {**resolved, **final}
+    except Exception as error:
+        partial = {
+            f"{node.name}_complete": _marker_path(root, node.name)
+            for node in dag
+            if _marker_path(root, node.name).is_file()
+        }
+        recorder.fail(type(error).__name__, str(error), traceback.format_exc(), partial)
+        raise
 
 
 def main() -> None:
@@ -198,6 +248,7 @@ def main() -> None:
         arguments.run_dir,
         dry_run=arguments.dry_run,
         device=arguments.device,
+        command=sys.argv,
     )
     print(json.dumps(result, indent=2, sort_keys=True))
 

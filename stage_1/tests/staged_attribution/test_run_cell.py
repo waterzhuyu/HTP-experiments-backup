@@ -102,6 +102,9 @@ def test_backend_runs_every_stage_and_resume_performs_no_proxy_completion(tmp_pa
 
     assert calls == ["stage1", "tokens", "stage2_data", "stage2", "stage3", "g_attribution", "decode", "stage4"]
     assert first["terminal_complete"] is True
+    manifest = json.loads((tmp_path / "run_manifest.json").read_text())
+    assert manifest["status"] == "completed"
+    assert set(manifest["artifacts"]) == {"stage4_complete"}
 
     calls.clear()
     resumed = run_cell(
