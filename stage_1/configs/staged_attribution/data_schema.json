@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "excluded_views": ["poi"],
+  "trajectory_key": "traj_id",
+  "point_alignment": "gps/grid/road/time/dxy/percent share observation index",
+  "route_alignment": "route path is trajectory-level and may have a different length",
+  "arrays": {
+    "{split}_gps.npy": {
+      "dtype": "float32",
+      "shape": ["points", 2],
+      "unit": "MBR-normalized longitude/latitude"
+    },
+    "{split}_grid.npy": {
+      "dtype": "int32",
+      "shape": ["points"],
+      "unit": "100 m local-equirectangular grid ID"
+    },
+    "{split}_road.npy": {
+      "dtype": "int32",
+      "shape": ["points"],
+      "unit": "released pointwise map-matched road ID"
+    },
+    "{split}_offsets.npy": {
+      "dtype": "int64",
+      "shape": ["trajectories + 1"],
+      "unit": "flat point offset"
+    },
+    "{split}_traj_ids.npy": {
+      "dtype": "int64",
+      "shape": ["trajectories"],
+      "unit": "HTP trajectory ID"
+    }
+  },
+  "processed_fields": {
+    "time_seq": "observation timestamp/relative time from HTP processed data",
+    "dxy": "GPS offset from route projection; raw upstream unit",
+    "percent_dist": "incremental path-percent target; raw upstream unit",
+    "path": "route road IDs; not point-aligned"
+  },
+  "required_checks": [
+    "unique traj_id within each split",
+    "no traj_id overlap across train/test",
+    "join aligned arrays to processed records by traj_id",
+    "equal point counts for GPS/Grid/Road/time/dxy/percent",
+    "strictly increasing offsets beginning at zero",
+    "Grid and Road IDs within metadata bounds",
+    "source, split and output SHA256 recorded"
+  ]
+}
