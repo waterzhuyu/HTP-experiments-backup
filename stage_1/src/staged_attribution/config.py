@@ -29,6 +29,9 @@ def _mapping(value: object, name: str) -> Mapping[str, Any]:
 class Budget:
     name: str
     stage1_epochs: int
+    stage1_train_trajectories: int | str
+    stage1_test_trajectories: int | str
+    stage1_batch_size: int
     stage2_epochs: int
     stage2_max_steps: int
     stage3_trajectories: int | str
@@ -36,16 +39,30 @@ class Budget:
     @classmethod
     def from_dict(cls, name: str, raw: object) -> Budget:
         values = _mapping(raw, f"budget {name}")
-        required = ("stage1_epochs", "stage2_epochs", "stage2_max_steps", "stage3_trajectories")
+        required = (
+            "stage1_epochs", "stage1_train_trajectories", "stage1_test_trajectories",
+            "stage1_batch_size", "stage2_epochs", "stage2_max_steps", "stage3_trajectories",
+        )
         for field in required:
             if field not in values:
                 raise ConfigError(f"budget {name} missing {field}")
         stage1_epochs = values["stage1_epochs"]
+        stage1_train_trajectories = values["stage1_train_trajectories"]
+        stage1_test_trajectories = values["stage1_test_trajectories"]
+        stage1_batch_size = values["stage1_batch_size"]
         stage2_epochs = values["stage2_epochs"]
         stage2_max_steps = values["stage2_max_steps"]
         stage3_trajectories = values["stage3_trajectories"]
         if not isinstance(stage1_epochs, int) or stage1_epochs <= 0:
             raise ConfigError(f"budget {name} stage1_epochs must be positive")
+        for field, population in (
+            ("stage1_train_trajectories", stage1_train_trajectories),
+            ("stage1_test_trajectories", stage1_test_trajectories),
+        ):
+            if population != "full" and (not isinstance(population, int) or population <= 0):
+                raise ConfigError(f"budget {name} {field} must be positive or 'full'")
+        if not isinstance(stage1_batch_size, int) or stage1_batch_size <= 0:
+            raise ConfigError(f"budget {name} stage1_batch_size must be positive")
         if not isinstance(stage2_epochs, int) or stage2_epochs <= 0:
             raise ConfigError(f"budget {name} stage2_epochs must be positive")
         if not isinstance(stage2_max_steps, int) or stage2_max_steps == 0 or stage2_max_steps < -1:
@@ -57,6 +74,9 @@ class Budget:
         return cls(
             name=name,
             stage1_epochs=stage1_epochs,
+            stage1_train_trajectories=stage1_train_trajectories,
+            stage1_test_trajectories=stage1_test_trajectories,
+            stage1_batch_size=stage1_batch_size,
             stage2_epochs=stage2_epochs,
             stage2_max_steps=stage2_max_steps,
             stage3_trajectories=stage3_trajectories,

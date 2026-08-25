@@ -45,18 +45,27 @@
   "budgets": {
     "smoke": {
       "stage1_epochs": 1,
+      "stage1_train_trajectories": 32,
+      "stage1_test_trajectories": 16,
+      "stage1_batch_size": 8,
       "stage2_epochs": 1,
       "stage2_max_steps": 2,
       "stage3_trajectories": 8
     },
     "controlled": {
       "stage1_epochs": 20,
+      "stage1_train_trajectories": "full",
+      "stage1_test_trajectories": "full",
+      "stage1_batch_size": 512,
       "stage2_epochs": 2,
       "stage2_max_steps": -1,
       "stage3_trajectories": 1024
     },
     "confirmation": {
       "stage1_epochs": 100,
+      "stage1_train_trajectories": "full",
+      "stage1_test_trajectories": "full",
+      "stage1_batch_size": 512,
       "stage2_epochs": 2,
       "stage2_max_steps": -1,
       "stage3_trajectories": "full"

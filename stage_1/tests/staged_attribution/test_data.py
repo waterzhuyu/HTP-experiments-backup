@@ -11,6 +11,7 @@ import torch
 from staged_attribution.data import (
     AlignedHTPDataset,
     AlignmentError,
+    RoadContext,
     assert_split_disjoint,
     collate_aligned,
 )
@@ -92,6 +93,33 @@ def test_collate_preserves_raw_ids_and_masks_padding(tmp_path: Path) -> None:
     assert batch["point_road"][1].tolist() == [0, 1, -1]
     assert batch["route"][0].tolist() == [3, 4, -1, -1]
     assert torch.equal(batch["traj_id"], torch.tensor([20, 10]))
+
+
+def test_runtime_collate_adds_route_geometry_and_normalizes_targets(tmp_path: Path) -> None:
+    aligned, processed = write_fixture(tmp_path)
+    dataset = AlignedHTPDataset(aligned, processed, "train")
+    geometry = torch.stack(
+        [torch.tensor([[float(road), 0.0], [float(road), 1.0]]) for road in range(6)]
+    )
+    context = RoadContext(
+        geometry=geometry,
+        geometry_lengths=torch.full((6,), 2, dtype=torch.long),
+        z_score={
+            "mean_dx": 1.0, "std_dx": 2.0,
+            "mean_dy": -1.0, "std_dy": 4.0,
+            "mean_percent_dist": 0.5, "std_percent_dist": 0.25,
+        },
+    )
+
+    batch = collate_aligned([dataset[0], dataset[1]], road_context=context)
+
+    assert batch["route_geometry"].shape == (6, 2, 2)
+    assert batch["route_geometry"][:, 0, 0].tolist() == [3.0, 4.0, 0.0, 2.0, 4.0, 5.0]
+    assert batch["route_geometry_lengths"].tolist() == [2, 2, 2, 2, 2, 2]
+    assert batch["dxy"][0, 0].tolist() == pytest.approx([-0.5, 0.25])
+    assert batch["road_percent"][0, 0].item() == pytest.approx(-2.0)
+    assert batch["dxy_raw"][0, 0].tolist() == [0.0, 0.0]
+    assert batch["road_percent_raw"][0, 0].item() == 0.0
 
 
 def test_rejects_point_target_length_mismatch(tmp_path: Path) -> None:

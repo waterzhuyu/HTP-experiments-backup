@@ -55,18 +55,27 @@ def valid_mapping() -> dict[str, object]:
         "budgets": {
             "smoke": {
                 "stage1_epochs": 1,
+                "stage1_train_trajectories": 32,
+                "stage1_test_trajectories": 16,
+                "stage1_batch_size": 8,
                 "stage2_epochs": 1,
                 "stage2_max_steps": 2,
                 "stage3_trajectories": 8,
             },
             "controlled": {
                 "stage1_epochs": 20,
+                "stage1_train_trajectories": "full",
+                "stage1_test_trajectories": "full",
+                "stage1_batch_size": 512,
                 "stage2_epochs": 2,
                 "stage2_max_steps": -1,
                 "stage3_trajectories": 1024,
             },
             "confirmation": {
                 "stage1_epochs": 100,
+                "stage1_train_trajectories": "full",
+                "stage1_test_trajectories": "full",
+                "stage1_batch_size": 512,
                 "stage2_epochs": 2,
                 "stage2_max_steps": -1,
                 "stage3_trajectories": "full",
@@ -96,6 +105,11 @@ def test_core_cells_deduplicate_e6_q0() -> None:
         "e6_q3",
     ]
     assert config.core_cells()[-1].views == frozenset({"gps", "road", "grid"})
+    smoke = config.budgets["smoke"]
+    assert smoke.stage1_train_trajectories == 32
+    assert smoke.stage1_test_trajectories == 16
+    assert smoke.stage1_batch_size == 8
+    assert config.budgets["controlled"].stage1_train_trajectories == "full"
 
 
 @pytest.mark.parametrize("bad_view", ["poi", "category", "text"])
@@ -120,6 +134,15 @@ def test_rejects_missing_downstream_stage_budget() -> None:
     del mapping["budgets"]["controlled"]["stage2_epochs"]
 
     with pytest.raises(ConfigError, match="stage2_epochs"):
+        ExperimentConfig.from_dict(mapping)
+
+
+@pytest.mark.parametrize("field", ["stage1_train_trajectories", "stage1_test_trajectories"])
+def test_rejects_invalid_stage1_population_budget(field: str) -> None:
+    mapping = valid_mapping()
+    mapping["budgets"]["smoke"][field] = 0
+
+    with pytest.raises(ConfigError, match=field):
         ExperimentConfig.from_dict(mapping)
 
 
