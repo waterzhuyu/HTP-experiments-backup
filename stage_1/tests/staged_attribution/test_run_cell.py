@@ -80,6 +80,23 @@ def test_dry_run_resolves_cell_without_writing(tmp_path: Path) -> None:
     assert not any(tmp_path.iterdir())
 
 
+def test_dry_run_resolves_preregistered_adaptive_e_by_q_cell(tmp_path: Path) -> None:
+    result = run_cell(
+        config_path=Path("stage_1/configs/staged_attribution/experiment.json"),
+        cell_id="e3_q2",
+        city="porto",
+        seed=42,
+        budget="controlled",
+        run_dir=tmp_path,
+        dry_run=True,
+    )
+
+    assert result["cell_id"] == "e3_q2"
+    assert result["views"] == ["gps", "road"]
+    assert result["q_weights"]["invariance"] == pytest.approx(0.05)
+    assert result["q_weights"]["auxiliary"] == pytest.approx(0.0)
+
+
 def test_backend_runs_every_stage_and_resume_performs_no_proxy_completion(tmp_path: Path) -> None:
     calls = []
 

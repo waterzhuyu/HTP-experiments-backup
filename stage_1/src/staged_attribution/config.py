@@ -222,3 +222,17 @@ class ExperimentConfig:
             for q_id in ("q1", "q2", "q3")
         )
         return tuple(cells)
+
+    def cell(self, cell_id: str) -> CellSpec:
+        parts = cell_id.split("_")
+        if len(parts) != 2 or parts[0] not in self.e_variants or parts[1] not in self.q_variants:
+            raise ConfigError(f"unknown E×Q cell {cell_id!r}")
+        e_id, q_id = parts
+        return CellSpec(e_id, q_id, self.e_variants[e_id], self.q_variants[q_id])
+
+    def all_cells(self) -> tuple[CellSpec, ...]:
+        return tuple(
+            self.cell(f"{e_id}_{q_id}")
+            for e_id in self.e_variants
+            for q_id in self.q_variants
+        )

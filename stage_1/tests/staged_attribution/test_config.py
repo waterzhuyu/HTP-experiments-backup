@@ -105,6 +105,19 @@ def test_core_cells_deduplicate_e6_q0() -> None:
         "e6_q3",
     ]
     assert config.core_cells()[-1].views == frozenset({"gps", "road", "grid"})
+
+
+def test_adaptive_cross_product_cells_reuse_frozen_e_and_q_specs() -> None:
+    config = ExperimentConfig.from_dict(valid_mapping())
+
+    cell = config.cell("e3_q2")
+
+    assert cell.cell_id == "e3_q2"
+    assert cell.views == frozenset({"gps", "road"})
+    assert cell.q_weights == config.q_variants["q2"]
+    assert len(config.all_cells()) == 7 * 4
+    with pytest.raises(ConfigError, match="unknown E×Q cell"):
+        config.cell("e7_q2")
     smoke = config.budgets["smoke"]
     assert smoke.stage1_train_trajectories == 32
     assert smoke.stage1_test_trajectories == 16

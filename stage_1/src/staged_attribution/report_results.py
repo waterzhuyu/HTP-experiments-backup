@@ -5,12 +5,13 @@ import hashlib
 import json
 import math
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Mapping, Sequence
 
 from .analyze import city_heterogeneity, e_contrasts, q_incremental_contrasts
 from .config import ExperimentConfig
+from .evaluate_stage1 import validity_gate
 from .run_experiment import build_jobs, completed_attempt
 from .statistics import aggregate_seeds, g_shapley, paired_bootstrap
 
@@ -44,6 +45,7 @@ class RunEvidence:
     attempt: Path
     revision: str
     stage4: Mapping[str, object]
+    stage1: Mapping[str, object] = field(default_factory=dict)
 
 
 def _sha256(path: Path) -> str:
@@ -133,8 +135,13 @@ def collect_core_runs(
         stage4_path = read_stage_artifact(attempt, "stage4", "stage4_metrics.json")
         stage4 = json.loads(stage4_path.read_text(encoding="utf-8"))
         _validate_stage4(stage4, job.run_key)
+        stage1_path = read_stage_artifact(attempt, "stage1", "stage1_metrics.json")
+        stage1 = json.loads(stage1_path.read_text(encoding="utf-8"))
         evidence.append(
-            RunEvidence(job.run_key, job.cell_id, job.city, job.seed, job.budget, attempt, revision, stage4)
+            RunEvidence(
+                job.run_key, job.cell_id, job.city, job.seed, job.budget,
+                attempt, revision, stage4, stage1,
+            )
         )
     if missing:
         raise ResultAuditError(f"missing completed core runs ({len(missing)}): {missing[:10]}")
@@ -179,6 +186,36 @@ def summarize_stage4(
     revisions = {run.revision for run in runs}
     if len(revisions) != 1:
         raise ResultAuditError("summary requires one frozen revision")
+    baseline_oracle = {
+        (run.city, run.seed): float(run.stage4["g00"]["population_mean_penalized_error"])
+        for run in runs
+        if run.cell_id == "e0_q0"
+    }
+    stage1_gates = []
+    for run in runs:
+        if not run.stage1:
+            continue
+        baseline = baseline_oracle.get((run.city, run.seed))
+        if baseline is None:
+            raise ResultAuditError(f"missing E0 oracle baseline for {run.city}/seed_{run.seed}")
+        oracle_error = float(run.stage4["g00"]["population_mean_penalized_error"])
+        ratio = 1.0 if baseline == 0 and oracle_error == 0 else (
+            float("inf") if baseline == 0 else oracle_error / baseline
+        )
+        losses = run.stage1.get("losses", {})
+        all_losses_finite = isinstance(losses, Mapping) and bool(losses) and all(
+            isinstance(value, (int, float)) and math.isfinite(float(value))
+            for value in losses.values()
+        )
+        gate = validity_gate(run.stage1["codebook"], all_losses_finite, ratio)
+        stage1_gates.append(
+            {
+                "city": run.city, "seed": run.seed, "cell_id": run.cell_id,
+                "oracle_error": oracle_error, "e0_oracle_error": baseline,
+                "oracle_error_ratio": ratio, **gate,
+            }
+        )
+
     metric_rows = []
     lookup: dict[tuple[str, int, str, str, str], float] = {}
     for run in runs:
@@ -233,11 +270,15 @@ def summarize_stage4(
                 if run.city == city and run.seed == seed
                 and (city, seed, run.cell_id, "g11", metric) in lookup
             }
-            if len(values) != 10:
+            core_values = {cell: values[cell] for cell in (
+                "e0_q0", "e1_q0", "e2_q0", "e3_q0", "e4_q0", "e5_q0",
+                "e6_q0", "e6_q1", "e6_q2", "e6_q3",
+            ) if cell in values}
+            if len(core_values) != 10:
                 continue
             for family, contrasts in (
-                ("E", e_contrasts(values)),
-                ("Q", q_incremental_contrasts(values)),
+                ("E", e_contrasts(core_values)),
+                ("Q", q_incremental_contrasts(core_values)),
             ):
                 for contrast, estimate in contrasts.items():
                     e_q_rows.append(
@@ -293,6 +334,7 @@ def summarize_stage4(
             "seeds": sorted({run.seed for run in runs}),
             "cells": sorted({run.cell_id for run in runs}),
         },
+        "stage1_gates": stage1_gates,
         "metric_rows": metric_rows,
         "g_shapley": g_rows,
         "g_trajectory_bootstrap": g_trajectory_bootstrap,

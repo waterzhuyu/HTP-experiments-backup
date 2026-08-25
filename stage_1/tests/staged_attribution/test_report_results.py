@@ -16,6 +16,7 @@ from staged_attribution.report_results import (
 )
 from staged_attribution.config import ExperimentConfig
 from staged_attribution.run_experiment import build_jobs
+from staged_attribution.select_candidates import select_candidates
 
 
 CONFIG_PATH = Path("stage_1/configs/staged_attribution/experiment.json")
@@ -65,6 +66,20 @@ def _write_completed_attempt(root: Path, job, revision: str) -> Path:
         },
     }
     (attempt / "stage4" / "complete.json").write_text(json.dumps(marker))
+    stage1_artifact = attempt / "stage1" / "stage1_metrics.json"
+    stage1_artifact.parent.mkdir(parents=True)
+    stage1_artifact.write_text(json.dumps(_stage1_metrics()))
+    stage1_marker = {
+        "stage": "stage1",
+        "artifacts": {
+            "stage1_metrics.json": {
+                "path": str(stage1_artifact.resolve()),
+                "size_bytes": stage1_artifact.stat().st_size,
+                "sha256": _sha256(stage1_artifact),
+            }
+        },
+    }
+    (attempt / "stage1" / "complete.json").write_text(json.dumps(stage1_marker))
     manifest = {
         "experiment_id": "gps_road_grid_staged_attribution_v1_20260826",
         "cell_id": job.cell_id,
@@ -137,6 +152,16 @@ def _variant_payload(base: float, offset: float) -> dict[str, object]:
     }
 
 
+def _stage1_metrics() -> dict[str, object]:
+    return {
+        "losses": {"loss": 1.0, "base_loss": 1.0, "quant_loss": 0.1, "reconstruction_loss": 0.9},
+        "codebook": [
+            {"active_fraction": 0.2, "perplexity_fraction": 0.2, "max_share": 0.2}
+            for _ in range(4)
+        ],
+    }
+
+
 def _run(cell_id: str, base: float) -> RunEvidence:
     offsets = {"g00": 0.0, "g10": 0.1, "g01": 0.2, "g11": 0.4}
     stage4 = {variant: _variant_payload(base, offset) for variant, offset in offsets.items()}
@@ -149,6 +174,7 @@ def _run(cell_id: str, base: float) -> RunEvidence:
         attempt=Path(f"/tmp/{cell_id}"),
         revision="a" * 40,
         stage4=stage4,
+        stage1=_stage1_metrics(),
     )
 
 
@@ -161,6 +187,8 @@ def test_summary_freezes_g_e_q_and_paired_trajectory_attribution() -> None:
     summary = summarize_stage4([_run(cell, base) for cell, base in bases.items()], n_resamples=100)
 
     assert summary["coverage"]["runs"] == 10
+    assert len(summary["stage1_gates"]) == 10
+    assert all(row["passed"] for row in summary["stage1_gates"])
     e_rows = {
         row["contrast"]: row["estimate"]
         for row in summary["e_q_contrasts"]
@@ -182,6 +210,17 @@ def test_summary_freezes_g_e_q_and_paired_trajectory_attribution() -> None:
     assert {row["component"] for row in summary["g_trajectory_bootstrap"]} == {
         "sid", "sampling", "interaction", "total"
     }
+
+    selection = select_candidates(summary, phase="core")
+    assert selection["best_single"] == "e2_q0"
+    assert selection["best_pair"] == "e5_q0"
+    assert selection["best_q"] == "e6_q3"
+    assert selection["adaptive_cells"] == ["e2_q3", "e5_q3"]
+    assert selection["confirmation_cells"] == ["e0_q0"]
+
+    final = select_candidates(summary, phase="final")
+    assert final["confirmation_cells"][0] == "e0_q0"
+    assert "e6_q3" in final["confirmation_cells"]
 
 
 def test_summary_rejects_inconsistent_g_population() -> None:

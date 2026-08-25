@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Mapping
 
-from .config import ExperimentConfig
+from .config import ConfigError, ExperimentConfig
 from .recording import RunRecorder
 
 
@@ -138,16 +138,16 @@ def run_cell(
     command: list[str] | None = None,
 ) -> dict[str, object]:
     config = ExperimentConfig.load(config_path)
-    cells = {cell.cell_id: cell for cell in config.core_cells()}
-    if cell_id not in cells:
-        raise CellRunError(f"unknown core cell {cell_id}")
+    try:
+        cell = config.cell(cell_id)
+    except ConfigError as error:
+        raise CellRunError(str(error)) from error
     if city not in config.cities:
         raise CellRunError(f"unknown city {city}")
     if seed not in config.seeds:
         raise CellRunError(f"unregistered seed {seed}")
     if budget not in config.budgets:
         raise CellRunError(f"unknown budget {budget}")
-    cell = cells[cell_id]
     dag = build_cell_dag(cell_id)
     resolved = {
         "experiment_id": config.experiment_id,

@@ -33,21 +33,27 @@ def build_jobs(
 ) -> tuple[ExperimentJob, ...]:
     if budget not in config.budgets:
         raise ValueError(f"unknown budget {budget}")
-    cells_by_id = {cell.cell_id: cell for cell in config.core_cells()}
+    core_cells = config.core_cells()
     if budget == "confirmation" and cell_ids is None:
         raise ValueError("confirmation requires an explicit selected cell list")
     if cell_ids is None:
-        cells = tuple(cells_by_id.values())
+        cells = core_cells
     else:
         requested = tuple(cell_ids)
         if not requested or len(set(requested)) != len(requested):
             raise ValueError("selected cell list must be non-empty and unique")
-        unknown = sorted(set(requested) - set(cells_by_id))
+        unknown = []
+        resolved = []
+        for cell_id in requested:
+            try:
+                resolved.append(config.cell(cell_id))
+            except ValueError:
+                unknown.append(cell_id)
         if unknown:
-            raise ValueError(f"unknown selected cells: {unknown}")
+            raise ValueError(f"unknown selected cells: {sorted(unknown)}")
         if budget == "confirmation" and "e0_q0" not in requested:
             raise ValueError("confirmation selection must include baseline e0_q0")
-        cells = tuple(cells_by_id[cell_id] for cell_id in requested)
+        cells = tuple(resolved)
     if budget == "smoke":
         cities = config.cities[:1]
         seeds = config.seeds[:1]

@@ -49,10 +49,10 @@ def test_confirmation_requires_explicit_baseline_and_selected_candidates() -> No
     with pytest.raises(ValueError, match="unknown selected"):
         build_jobs(config, budget="confirmation", cell_ids=["e0_q0", "missing"])
 
-    jobs = build_jobs(config, budget="confirmation", cell_ids=["e0_q0", "e6_q3"])
+    jobs = build_jobs(config, budget="confirmation", cell_ids=["e0_q0", "e3_q2"])
 
     assert len(jobs) == 2 * 3 * 2
-    assert {job.cell_id for job in jobs} == {"e0_q0", "e6_q3"}
+    assert {job.cell_id for job in jobs} == {"e0_q0", "e3_q2"}
 
 
 def test_gpu_safety_uses_free_memory_and_utilization() -> None:
