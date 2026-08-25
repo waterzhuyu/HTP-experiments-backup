@@ -8,8 +8,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
 
-from model.rq_quant import RQBottleneck
 from model.unet import Decoder, Encoder, get_padding_mask
+from staged_attribution.losses import (
+    LOSS_NAMES,
+    auxiliary_classification_loss,
+    combine_q_losses,
+    covariance_loss,
+    invariance_loss,
+    variance_loss,
+)
+from staged_attribution.quantizer import AttributionRQBottleneck
 
 
 ALLOWED_VIEWS = frozenset({"gps", "road", "grid"})
@@ -117,6 +125,7 @@ class AttributionRQVAE(nn.Module):
         road_features: torch.Tensor,
         num_grids: int,
         active_views: frozenset[str],
+        q_weights: Mapping[str, float] | None = None,
     ) -> None:
         super().__init__()
         unet = config["Unet"]
@@ -136,6 +145,13 @@ class AttributionRQVAE(nn.Module):
             raise ValueError("HTP RQ protocol must remain [32, 64, 128, 256]")
 
         self.active_views = frozenset(active_views)
+        self.q_weights = {
+            name: float((q_weights or {}).get(name, 0.0)) for name in LOSS_NAMES
+        }
+        if q_weights is not None and set(q_weights) != set(LOSS_NAMES):
+            raise ValueError(f"q_weights must be exactly {LOSS_NAMES}")
+        if any(not math.isfinite(value) or value < 0 for value in self.q_weights.values()):
+            raise ValueError("q_weights must be finite and non-negative")
         self.fusion = ViewFusion(hidden, road_features, num_grids, self.active_views)
         self.encoder = Encoder(
             ch=hidden,
@@ -147,12 +163,13 @@ class AttributionRQVAE(nn.Module):
         self.encoder.conv_in = nn.Identity()
         encoder_output_dim = hidden * int(list(unet["ch_multi"])[-1])
         self.rq_pre_quant_linear = nn.Linear(encoder_output_dim, int(rq["d_model"]))
-        self.rq_quant = RQBottleneck(
+        self.rq_quant = AttributionRQBottleneck(
             base_n_embed=int(rq["base_vocab_size"]),
             codebook_dim=int(rq["d_model"]),
             rq_layer=int(rq["n_codebooks"]),
             rq_multi=list(rq["vocab_multi"]),
             beta=float(rq["beta"]),
+            assignment_temperature=0.2,
         )
         self.rq_post_quant_linear = nn.Linear(int(rq["d_model"]), encoder_output_dim)
         self.decoder = Decoder(
@@ -186,6 +203,15 @@ class AttributionRQVAE(nn.Module):
         self.dxy_head = nn.Sequential(
             nn.Linear(hidden, 4 * hidden), nn.ReLU(), nn.Linear(4 * hidden, 2)
         )
+        latent_dim = int(rq["d_model"])
+        self.auxiliary_heads = nn.ModuleDict(
+            {
+                "speed_state": nn.Linear(latent_dim, 4),
+                "turn_state": nn.Linear(latent_dim, 3),
+                "road_transition": nn.Linear(latent_dim, 2),
+                "grid_transition": nn.Linear(latent_dim, 2),
+            }
+        )
 
     def fuse_views(self, batch: Mapping[str, torch.Tensor]) -> torch.Tensor:
         return self.fusion(batch)
@@ -194,8 +220,8 @@ class AttributionRQVAE(nn.Module):
         fused = self.fuse_views(batch)
         encoded, latent_lengths, lens_types, latent_mask = self.encoder(fused, batch["lengths"])
         valid_prequant = self.rq_pre_quant_linear(encoded[latent_mask])
-        valid_quantized, valid_codes, quant_loss, rq_info = self.rq_quant(valid_prequant)
-        valid_decoder_latent = self.rq_post_quant_linear(valid_quantized)
+        quantizer_output = self.rq_quant(valid_prequant)
+        valid_decoder_latent = self.rq_post_quant_linear(quantizer_output.straight_through)
 
         decoder_latent = torch.zeros_like(encoded)
         decoder_latent[latent_mask] = valid_decoder_latent
@@ -207,12 +233,12 @@ class AttributionRQVAE(nn.Module):
         )
         prequant_latent[latent_mask] = valid_prequant
         codes = torch.full(
-            (*latent_mask.shape, valid_codes.shape[-1]),
+            (*latent_mask.shape, quantizer_output.codes.shape[-1]),
             -1,
             dtype=torch.long,
-            device=valid_codes.device,
+            device=quantizer_output.codes.device,
         )
-        codes[latent_mask] = valid_codes
+        codes[latent_mask] = quantizer_output.codes
         return {
             "fused": fused,
             "decoder_latent": decoder_latent,
@@ -221,8 +247,9 @@ class AttributionRQVAE(nn.Module):
             "latent_lengths": latent_lengths,
             "latent_mask": latent_mask,
             "lens_type": torch.stack(lens_types).T,
-            "quant_loss": quant_loss,
-            "rq_info": rq_info,
+            "quant_loss": quantizer_output.quant_loss,
+            "usage_loss": quantizer_output.usage_loss,
+            "rq_info": quantizer_output.layer_info,
         }
 
     def _route_context(
@@ -249,7 +276,12 @@ class AttributionRQVAE(nn.Module):
         )
         return route_embedding, route_mask
 
-    def forward(self, batch: Mapping[str, torch.Tensor]) -> dict[str, object]:
+    def forward(
+        self,
+        batch: Mapping[str, torch.Tensor],
+        sampling_batch: Mapping[str, torch.Tensor] | None = None,
+        auxiliary_targets: Mapping[str, torch.Tensor] | None = None,
+    ) -> dict[str, object]:
         output = self.encode_views(batch)
         route_embedding, route_mask = self._route_context(batch)
         lens_types = [output["lens_type"][:, index].bool() for index in range(3)]
@@ -268,9 +300,49 @@ class AttributionRQVAE(nn.Module):
         )
         dxy_loss = F.mse_loss(dxy_prediction, batch["dxy"][point_mask])
         reconstruction = percent_loss + dxy_loss
+        base_loss = reconstruction + output["quant_loss"]
+        zero = base_loss * 0.0
+        consistency_required = any(
+            self.q_weights[name] > 0 for name in ("invariance", "variance", "covariance")
+        )
+        if consistency_required and sampling_batch is None:
+            raise ValueError("sampling_batch is required when Q2/Q3 consistency weights are active")
+        if self.q_weights["auxiliary"] > 0 and auxiliary_targets is None:
+            raise ValueError("auxiliary_targets are required when the auxiliary weight is active")
+        components = {
+            "usage": output["usage_loss"],
+            "invariance": zero,
+            "variance": zero,
+            "covariance": zero,
+            "auxiliary": zero,
+        }
+        if sampling_batch is not None:
+            sampling_output = self.encode_views(sampling_batch)
+            if not torch.equal(output["latent_mask"], sampling_output["latent_mask"]):
+                raise ValueError("sampling view changed latent event alignment")
+            mask = output["latent_mask"]
+            components["invariance"] = invariance_loss(
+                output["prequant_latent"], sampling_output["prequant_latent"], mask
+            )
+            components["variance"] = 0.5 * (
+                variance_loss(output["prequant_latent"], mask)
+                + variance_loss(sampling_output["prequant_latent"], mask)
+            )
+            components["covariance"] = 0.5 * (
+                covariance_loss(output["prequant_latent"], mask)
+                + covariance_loss(sampling_output["prequant_latent"], mask)
+            )
+            output["sampling_output"] = sampling_output
+        if auxiliary_targets is not None:
+            components["auxiliary"] = auxiliary_classification_loss(
+                output["prequant_latent"], auxiliary_targets, self.auxiliary_heads
+            )
+        total_loss, reported = combine_q_losses(base_loss, components, self.q_weights)
         output.update(
             {
-                "loss": reconstruction + output["quant_loss"],
+                "loss": total_loss,
+                "base_loss": base_loss,
+                "q_loss_components": reported,
                 "reconstruction_loss": reconstruction,
                 "percent_loss": percent_loss,
                 "dxy_loss": dxy_loss,

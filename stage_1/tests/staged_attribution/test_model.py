@@ -6,7 +6,9 @@ import pytest
 import torch
 
 from model.rqvae import RQVAE
+from staged_attribution.losses import derive_auxiliary_targets
 from staged_attribution.model import AttributionRQVAE
+from staged_attribution.views import make_sampling_view
 
 
 VIEW_MASKS = (
@@ -178,7 +180,10 @@ def test_original_htp_checkpoint_maps_without_unexpected_keys() -> None:
 
     assert unexpected == []
     assert missing
-    assert all(key.startswith("fusion.") for key in missing)
+    assert all(
+        key.startswith(("fusion.", "auxiliary_heads."))
+        for key in missing
+    )
     assert torch.equal(
         model.fusion.gps_adapter.weight,
         baseline.encoder.conv_in.weight,
@@ -187,3 +192,90 @@ def test_original_htp_checkpoint_maps_without_unexpected_keys() -> None:
         model.decoder.conv_in.weight,
         baseline.decoder.conv_in.weight,
     )
+
+
+def complete_batch() -> dict[str, torch.Tensor]:
+    batch = point_batch()
+    batch.update(
+        {
+            "time": torch.arange(9).float().repeat(2, 1),
+            "route": torch.tensor([[0, 1], [4, -1]], dtype=torch.long),
+            "route_lengths": torch.tensor([2, 1], dtype=torch.long),
+            "route_geometry": torch.tensor(
+                [
+                    [[0.0, 0.0], [0.1, 0.1]],
+                    [[0.1, 0.1], [0.2, 0.2]],
+                    [[0.8, 0.8], [0.9, 0.9]],
+                ],
+                dtype=torch.float32,
+            ),
+            "route_geometry_lengths": torch.tensor([2, 2, 2], dtype=torch.long),
+            "dxy": torch.zeros(2, 9, 2),
+            "road_percent": torch.zeros(2, 9),
+        }
+    )
+    return batch
+
+
+def q3_weights() -> dict[str, float]:
+    return {
+        "usage": 0.05,
+        "invariance": 0.05,
+        "variance": 0.05,
+        "covariance": 0.005,
+        "auxiliary": 0.1,
+    }
+
+
+def test_q0_reports_components_without_changing_base_loss() -> None:
+    model = make_model(frozenset({"gps", "road", "grid"}))
+
+    output = model(complete_batch())
+
+    assert set(output["q_loss_components"]) == set(q3_weights())
+    assert torch.allclose(output["loss"], output["base_loss"])
+    assert torch.allclose(
+        output["base_loss"],
+        output["reconstruction_loss"] + output["quant_loss"],
+    )
+
+
+def test_q3_requires_sampling_view_and_auxiliary_targets() -> None:
+    torch.manual_seed(7)
+    model = AttributionRQVAE(
+        tiny_config(),
+        torch.randn(6, 8),
+        num_grids=10,
+        active_views=frozenset({"gps", "road", "grid"}),
+        q_weights=q3_weights(),
+    ).eval()
+
+    with pytest.raises(ValueError, match="sampling_batch"):
+        model(complete_batch())
+
+
+def test_q3_total_matches_frozen_weighted_components() -> None:
+    torch.manual_seed(7)
+    model = AttributionRQVAE(
+        tiny_config(),
+        torch.randn(6, 8),
+        num_grids=10,
+        active_views=frozenset({"gps", "road", "grid"}),
+        q_weights=q3_weights(),
+    ).eval()
+    batch = complete_batch()
+    sampling = make_sampling_view(batch, seed=99, keep_probability=0.5)
+    targets = derive_auxiliary_targets(
+        batch,
+        speed_edges=torch.tensor([0.01, 0.03, 0.1]),
+        turn_edges=torch.tensor([0.1, 0.5]),
+        meters_per_coordinate=(1.0, 1.0),
+    )
+
+    output = model(batch, sampling_batch=sampling, auxiliary_targets=targets)
+    expected = output["base_loss"]
+    for name, weight in q3_weights().items():
+        expected = expected + weight * output["q_loss_components"][name]
+
+    assert torch.allclose(output["loss"], expected)
+    assert all(torch.isfinite(value) for value in output["q_loss_components"].values())
