@@ -29,6 +29,11 @@ from .model import AttributionRQVAE
 from .prepare_llm_data import build_llm_frame, deterministic_subset
 from .run_cell import CellRunError, StageNode
 from .stage4_metrics import evaluate_population
+from .stage2_subset_manifest import (
+    file_sha256 as subset_manifest_sha256,
+    load_stage2_subset_manifest,
+    trajectory_id_sha256,
+)
 from .train_stage1 import build_cosine_warmup_scheduler, save_stage1_artifacts, train_epochs
 from .train_stage2 import run_hf_stage2
 from .views import make_sampling_view
@@ -90,20 +95,39 @@ def select_dataset_indices(
     return np.asarray(sorted(index for index, _ in ranked), dtype=np.int64)
 
 
-def trajectory_id_sha256(traj_ids: Sequence[int]) -> str:
-    return hashlib.sha256("\n".join(map(str, sorted(map(int, traj_ids)))).encode()).hexdigest()
-
-
 def select_stage2_train_frame(
     frame: pd.DataFrame,
     requested: int | str,
     subset_seed: int,
     city: str,
+    manifest_path: str | Path | None = None,
 ) -> tuple[pd.DataFrame, dict[str, object]]:
     if "traj_id" not in frame or frame["traj_id"].duplicated().any():
         raise CellRunError("Stage2 train frame requires unique traj_id values")
     source_ids = [int(value) for value in frame["traj_id"]]
-    if requested == "full":
+    manifest_audit: dict[str, object] = {}
+    if manifest_path is not None:
+        if not isinstance(requested, int):
+            raise CellRunError("Stage2 subset manifest requires a finite requested population")
+        selected_ids, _ = load_stage2_subset_manifest(
+            manifest_path,
+            source_ids,
+            city,
+            requested,
+            subset_seed,
+        )
+        row_by_id = {int(traj_id): index for index, traj_id in enumerate(frame["traj_id"])}
+        selected = frame.iloc[[row_by_id[traj_id] for traj_id in selected_ids]].reset_index(
+            drop=True
+        )
+        method = "frozen_manifest_sha256_rank_fixed_city_v1"
+        recorded_ids = selected_ids
+        resolved_manifest_path = Path(manifest_path).resolve()
+        manifest_audit = {
+            "manifest_path": str(resolved_manifest_path),
+            "manifest_sha256": subset_manifest_sha256(resolved_manifest_path),
+        }
+    elif requested == "full":
         selected = frame
         method = "full_population_v1"
         recorded_ids: list[int] | None = None
@@ -128,6 +152,7 @@ def select_stage2_train_frame(
         "selected_traj_id_sha256": trajectory_id_sha256(selected_ids),
         "selected_traj_ids": recorded_ids,
         "selection_depends_on_training_seed": False,
+        **manifest_audit,
     }
 
 
@@ -390,6 +415,7 @@ class PipelineBackend:
             "stage2_batch_size": self.budget.stage2_batch_size,
             "stage2_gradient_accumulation": self.budget.stage2_gradient_accumulation,
             "stage2_effective_batch_size": self.budget.stage2_effective_batch_size,
+            "stage2_subset_manifests": dict(self.budget.stage2_subset_manifests),
             "stage2_epochs": self.budget.stage2_epochs,
             "stage2_max_steps": self.budget.stage2_max_steps,
             "speed_edges": speed_edges.tolist(),
@@ -454,6 +480,7 @@ class PipelineBackend:
                     self.budget.stage2_train_trajectories,
                     self.budget.stage2_subset_seed,
                     self.city,
+                    self.budget.stage2_subset_manifests.get(self.city),
                 )
             path = output / f"llm_{split}.parquet"
             frame.to_parquet(path, index=False)

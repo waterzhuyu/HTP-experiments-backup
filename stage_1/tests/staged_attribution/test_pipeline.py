@@ -10,6 +10,10 @@ from staged_attribution.pipeline import (
     select_stage2_train_frame,
     trajectory_id_sha256,
 )
+from staged_attribution.stage2_subset_manifest import (
+    build_stage2_subset_manifest,
+    write_immutable_json,
+)
 
 
 def test_subset_selection_is_id_based_deterministic_and_sorted() -> None:
@@ -65,6 +69,25 @@ def test_stage2_full_population_preserves_frame_order_and_audits_hash() -> None:
     assert audit["population"] == 3
     assert audit["selected_traj_ids"] is None
     assert audit["selected_traj_id_sha256"] == trajectory_id_sha256([30, 10, 20])
+
+
+def test_stage2_selection_uses_and_audits_frozen_manifest(tmp_path) -> None:
+    frame = pd.DataFrame({"traj_id": [50, 10, 40, 20, 30], "value": range(5)})
+    source_path = tmp_path / "train_traj_ids.npy"
+    np.save(source_path, frame["traj_id"].to_numpy(dtype=np.int64))
+    manifest = build_stage2_subset_manifest(
+        frame["traj_id"].tolist(), "porto", 3, 20260826, source_path
+    )
+    manifest_path = write_immutable_json(tmp_path / "subset.json", manifest)
+
+    selected, audit = select_stage2_train_frame(
+        frame, 3, 20260826, "porto", manifest_path
+    )
+
+    assert selected["traj_id"].tolist() == manifest["selected"]["traj_ids"]
+    assert audit["method"] == "frozen_manifest_sha256_rank_fixed_city_v1"
+    assert audit["manifest_path"] == str(manifest_path.resolve())
+    assert len(audit["manifest_sha256"]) == 64
 
 
 @pytest.mark.parametrize(

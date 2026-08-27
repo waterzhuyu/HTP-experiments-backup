@@ -127,6 +127,7 @@ def test_adaptive_cross_product_cells_reuse_frozen_e_and_q_specs() -> None:
     assert smoke.stage2_batch_size == 16
     assert smoke.stage2_gradient_accumulation == 1
     assert smoke.stage2_effective_batch_size == 16
+    assert smoke.stage2_subset_manifests == {}
     assert config.budgets["controlled"].stage1_train_trajectories == "full"
 
 
@@ -139,6 +140,10 @@ def test_stage2_resource_controls_are_explicit_and_preserve_effective_batch() ->
             "stage2_subset_seed": 20260826,
             "stage2_batch_size": 8,
             "stage2_gradient_accumulation": 2,
+            "stage2_subset_manifests": {
+                "porto": "/artifacts/porto_stage2_train_64000.json",
+                "chengdu": "/artifacts/chengdu_stage2_train_64000.json",
+            },
         }
     )
 
@@ -149,6 +154,7 @@ def test_stage2_resource_controls_are_explicit_and_preserve_effective_batch() ->
     assert budget.stage2_batch_size == 8
     assert budget.stage2_gradient_accumulation == 2
     assert budget.stage2_effective_batch_size == 16
+    assert budget.stage2_subset_manifests["porto"].endswith("64000.json")
 
 
 @pytest.mark.parametrize("bad_view", ["poi", "category", "text"])
@@ -196,6 +202,8 @@ def test_rejects_invalid_stage1_population_budget(field: str) -> None:
         ("stage2_batch_size", True),
         ("stage2_gradient_accumulation", 0),
         ("stage2_gradient_accumulation", True),
+        ("stage2_subset_manifests", []),
+        ("stage2_subset_manifests", {"porto": ""}),
     ],
 )
 def test_rejects_invalid_stage2_resource_control(field: str, value: object) -> None:
@@ -203,6 +211,29 @@ def test_rejects_invalid_stage2_resource_control(field: str, value: object) -> N
     mapping["budgets"]["controlled"][field] = value
 
     with pytest.raises(ConfigError, match=field):
+        ExperimentConfig.from_dict(mapping)
+
+
+def test_rejects_subset_manifest_for_full_stage2_population() -> None:
+    mapping = valid_mapping()
+    mapping["budgets"]["controlled"]["stage2_subset_manifests"] = {
+        "porto": "/artifacts/porto.json"
+    }
+
+    with pytest.raises(ConfigError, match="require a finite"):
+        ExperimentConfig.from_dict(mapping)
+
+
+def test_rejects_partial_city_subset_manifest_registry() -> None:
+    mapping = valid_mapping()
+    mapping["budgets"]["controlled"].update(
+        {
+            "stage2_train_trajectories": 64_000,
+            "stage2_subset_manifests": {"porto": "/artifacts/porto.json"},
+        }
+    )
+
+    with pytest.raises(ConfigError, match="cover exactly"):
         ExperimentConfig.from_dict(mapping)
 
 

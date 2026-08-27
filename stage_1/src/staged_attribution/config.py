@@ -38,6 +38,7 @@ class Budget:
     stage2_subset_seed: int
     stage2_batch_size: int
     stage2_gradient_accumulation: int
+    stage2_subset_manifests: Mapping[str, str]
     stage3_trajectories: int | str
 
     @property
@@ -64,6 +65,7 @@ class Budget:
         stage2_subset_seed = values.get("stage2_subset_seed", 20260826)
         stage2_batch_size = values.get("stage2_batch_size", 16)
         stage2_gradient_accumulation = values.get("stage2_gradient_accumulation", 1)
+        stage2_subset_manifests_raw = values.get("stage2_subset_manifests", {})
         stage3_trajectories = values["stage3_trajectories"]
         if not isinstance(stage1_epochs, int) or stage1_epochs <= 0:
             raise ConfigError(f"budget {name} stage1_epochs must be positive")
@@ -102,6 +104,25 @@ class Budget:
             raise ConfigError(
                 f"budget {name} stage2_gradient_accumulation must be positive"
             )
+        stage2_subset_manifests = _mapping(
+            stage2_subset_manifests_raw,
+            f"budget {name} stage2_subset_manifests",
+        )
+        if any(
+            not isinstance(city, str)
+            or not city
+            or not isinstance(path, str)
+            or not path
+            for city, path in stage2_subset_manifests.items()
+        ):
+            raise ConfigError(
+                f"budget {name} stage2_subset_manifests must map city names to paths"
+            )
+        if stage2_train_trajectories == "full" and stage2_subset_manifests:
+            raise ConfigError(
+                f"budget {name} stage2_subset_manifests require a finite "
+                "stage2_train_trajectories budget"
+            )
         if stage3_trajectories != "full" and (
             not isinstance(stage3_trajectories, int) or stage3_trajectories <= 0
         ):
@@ -118,6 +139,7 @@ class Budget:
             stage2_subset_seed=stage2_subset_seed,
             stage2_batch_size=stage2_batch_size,
             stage2_gradient_accumulation=stage2_gradient_accumulation,
+            stage2_subset_manifests=dict(stage2_subset_manifests),
             stage3_trajectories=stage3_trajectories,
         )
 
@@ -231,6 +253,14 @@ class ExperimentConfig:
         if tuple(budgets_raw) != REQUIRED_BUDGETS:
             raise ConfigError(f"budgets must be ordered as {list(REQUIRED_BUDGETS)}")
         budgets = {name: Budget.from_dict(name, value) for name, value in budgets_raw.items()}
+        for name, budget in budgets.items():
+            if budget.stage2_subset_manifests and set(
+                budget.stage2_subset_manifests
+            ) != set(cities):
+                raise ConfigError(
+                    f"budget {name} stage2_subset_manifests must cover exactly "
+                    f"{sorted(cities)}"
+                )
 
         paths_raw = _mapping(raw.get("paths"), "paths")
         for required in ("model_root", "data_root", "artifact_root"):
