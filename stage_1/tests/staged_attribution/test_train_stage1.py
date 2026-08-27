@@ -127,6 +127,33 @@ def test_q3_train_step_constructs_required_sampling_and_targets() -> None:
     assert metrics["q_loss_components"]["auxiliary"] > 0
 
 
+def test_train_epochs_moves_model_to_requested_device_once() -> None:
+    model = make_model()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+    requested_devices: list[torch.device] = []
+    original_to = model.to
+
+    def tracked_to(device: torch.device) -> AttributionRQVAE:
+        requested_devices.append(torch.device(device))
+        return original_to(device)
+
+    model.to = tracked_to  # type: ignore[method-assign]
+
+    train_epochs(
+        model,
+        [full_batch()],
+        optimizer,
+        device=torch.device("cpu"),
+        epochs=1,
+        seed=7,
+        speed_edges=torch.tensor([0.01, 0.03, 0.1]),
+        turn_edges=torch.tensor([0.1, 0.5]),
+        meters_per_coordinate=(1.0, 1.0),
+    )
+
+    assert requested_devices == [torch.device("cpu")]
+
+
 def test_train_epochs_steps_scheduler_and_records_learning_rate() -> None:
     model = make_model()
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)

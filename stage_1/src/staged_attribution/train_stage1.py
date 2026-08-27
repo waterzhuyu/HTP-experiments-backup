@@ -142,6 +142,7 @@ def train_epochs(
 ) -> list[dict[str, object]]:
     if epochs <= 0:
         raise ValueError("epochs must be positive")
+    model = model.to(device)
     history: list[dict[str, object]] = []
     global_step = 0
     for epoch in range(1, epochs + 1):
