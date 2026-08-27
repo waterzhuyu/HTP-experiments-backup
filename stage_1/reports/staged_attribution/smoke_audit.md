@@ -1,69 +1,108 @@
 # Staged Attribution Smoke Audit
 
 - 实验 ID：`gps_road_grid_staged_attribution_v1_20260826`
-- 状态：running，不能用于科学结论
+- 状态：**completed（仅接口验证，不用于科学结论）**
 - 城市/seed：Porto / 42
-- 目标：十个核心 cell 各自完整到 Stage4；当前尚未满足
+- 最终统一 revision：`433b3421b4a5b568365a66fb4b19853b203070d3`
+- 完成时间：2026-08-27 11:45（Asia/Shanghai）
 
-## 已验证证据
+## 1. 覆盖范围与固定预算
 
-截至 revision `472db57` 后的真实 CPU 检查，E0/Q0 使用实际 Porto aligned/processed/road network 数据完成：
+本轮只使用 GPS、pointwise Road 和 100 m Grid，不使用 POI。十个核心 cell 为 E0–E6/Q0 与 E6/Q1–Q3；每个 cell 都实际完成 Stage1、token export、Stage2 data、Stage2 Qwen/LoRA、Stage3 generation、G00/G10/G01/G11、decode 和 Stage4 JSON。
 
-1. Stage1：32 train / 16 test，1 epoch，batch 8；生成可重载 `stage1_model.pt`（48,557,673 bytes）、resolved config 和 Stage1 JSON；
-2. tokens：32 train / 16 test 全人口一一导出，产生 `train_tokens.jsonl`、`test_tokens.jsonl` 和 SHA256 audit；
-3. Stage2 data：复刻原 HTP prompt，产生 32/16 parquet 与固定 8-ID generation manifest。
+Smoke 固定为 32 条训练轨迹、16 条测试轨迹、Stage1 1 epoch/batch 8、Stage2 最多 2 optimizer steps、固定 8 条生成轨迹。所有成功 attempt 来自 clean revision，失败 attempt 均保持 immutable，没有覆盖或删除。
 
-临时验证路径：`/tmp/staged_attr_real_stage1_e0`。这是可丢弃的 pre-commit runtime check，不登记为完成 run；正式 smoke 使用 artifact root、clean revision 与 immutable run manifest 重跑。
+## 2. 最终成功证据
 
-全量单元测试：最新 pre-formal revision 为 166 passed；唯一 warnings 为 PyTorch nested Transformer 优化未启用，不改变数值。结果审计器另以合成十 cell 文件树验证 coverage、SHA256、同 revision、E/Q/G、Stage1 gate 与 paired bootstrap；adaptive E×Q dry-run 和 confirmation 显式 baseline+候选队列已验证。
-
-## 首次结果前的评估审计
-
-在没有任何正式 Stage4 attempt 的前提下发现并修复：
-
-- E0/GPS-only 被误当成空模态导致不可识别的交互字段；改为三个给定第三模态的条件交互；
-- Stage4 使用近似重划网格而非 Stage1 aligned grid；改为复用 metadata 和同一 mapping；
-- top-100 F1 把零频 bin 加入集合，极小 population 时可能虚高；改为正频 top-k 对称 F1；
-- 越界生成 GPS 被静默丢点/裁剪；改为 invalid 并保留 penalty。
-
-这些是看结果前的方法纠偏，不改变 cell/seed/预算；详见预注册第 10 节。
-
-## 首次真实失败与修复
-
-第一次 E0/Q0 Stage1 CPU smoke 在 decoder route context 失败：
+artifact root：
 
 ```text
-RuntimeError: The size of tensor a (59) must match the size of tensor b (52)
+/workspace/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/
+gps_road_grid_staged_attribution_v1_20260826
 ```
 
-原因：RoadContext geometry 按全路网最大 59 points padding，而 batch 内所选 route 最大 geometry 仅 52；`get_padding_mask(geometry_lengths)` 使用 52，geometry tensor 未同步 slice。
+最终同 revision completed attempts：
 
-修复：collator 先取 batch route 的 `selected_lengths`，再将 selected geometry slice 到 `max(selected_lengths)`；新增全局 padded support 大于 batch support 的回归夹具。修复后真实 Stage1、token export、Stage2 data 均完成。
+| Cell | Attempt | 完整终点 |
+|---|---|---|
+| E0/Q0 | `smoke/porto/seed_42/e0_q0/attempt_004` | Stage4 |
+| E1/Q0 | `smoke/porto/seed_42/e1_q0/attempt_002` | Stage4 |
+| E2/Q0 | `smoke/porto/seed_42/e2_q0/attempt_002` | Stage4 |
+| E3/Q0 | `smoke/porto/seed_42/e3_q0/attempt_002` | Stage4 |
+| E4/Q0 | `smoke/porto/seed_42/e4_q0/attempt_002` | Stage4 |
+| E5/Q0 | `smoke/porto/seed_42/e5_q0/attempt_001` | Stage4 |
+| E6/Q0 | `smoke/porto/seed_42/e6_q0/attempt_001` | Stage4 |
+| E6/Q1 | `smoke/porto/seed_42/e6_q1/attempt_001` | Stage4 |
+| E6/Q2 | `smoke/porto/seed_42/e6_q2/attempt_001` | Stage4 |
+| E6/Q3 | `smoke/porto/seed_42/e6_q3/attempt_001` | Stage4 |
 
-## GPU blocker（预期等待，不是完成）
+结果审计命令：
 
-检查时四张 24 GB GPU 占用约为：
+```sh
+uv run python -m staged_attribution.report_results \
+  --config stage_1/configs/staged_attribution/experiment.json \
+  --experiment-root /workspace/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826 \
+  --budget smoke \
+  --output-dir /workspace/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/analysis/smoke_433b342 \
+  --n-resamples 200 --bootstrap-seed 20260826
+```
 
-| GPU | used MiB | utilization |
-|---:|---:|---:|
-| 0 | 22294 | 100% |
-| 1 | 20676 | 96% |
-| 2 | 20818 | 100% |
-| 3 | 20976 | 64% |
+审计器验证了完整 Cartesian coverage、manifest identity、同一 clean revision、artifact 路径约束、size/SHA256、Stage1/Stage4 JSON，以及四个 G condition 的完全相同 trajectory population。输出为：
 
-安全阈值为 free≥16,000 MiB 且 utilization≤20%。当前无 GPU 合格；未抢占或终止其他用户进程。Stage2 真实 Qwen 2-step、Stage3 和十 cell 完整 smoke 仍为 pending。
+- `analysis/smoke_433b342/analysis.json`
+- `analysis/smoke_433b342/analysis.md`
+- 10 completed runs、160 Stage4 metric rows、20 G Shapley rows、40 trajectory-bootstrap G rows、28 E/Q contrast rows、9 paired E/Q rows。
 
-## 当前不可声称内容
+## 3. Smoke 观察与边界
 
-- 不能声称任一 E/Q cell 更好；
-- 不能声称完整 smoke 已通过；
-- 不能把前三阶段接口检查记作 full-pipeline cell；
-- 不能用 CPU fixture 或旧 independent-tokenizer 结果替代 Stage2/3/4。
+- 十个 cell 的 G00 validity 均为 1.0，证明 oracle SID/sampling、route-conditioned decode 与 Stage4 接口可贯通。
+- 十个 cell 的 G11 validity 均为 0.0。2-step Qwen smoke 不足以学会协议，因此该结果只说明 invalid population 能被保留和惩罚，不能用于比较 E/Q 方法。
+- 1-epoch Stage1 gate 有 8/10 通过；E0/Q0 与 E3/Q0 因 active fraction、perplexity fraction 或 max share 未过阈值而失败。按预注册，smoke gate 不用于提前筛 cell，controlled 仍完整运行全部十个核心 cell。
+- 所有 smoke contrast 和 G attribution 均不得写入最终科学结论；最终优于 baseline 的声称只允许来自 confirmation。
 
-## 下一动作
+## 4. 真实失败、归因与修复
 
-1. 等待安全 GPU；先跑 E0/Q0 完整 smoke，验证 PEFT trainable token、teacher-forced eval、generation、G00/G10/G01/G11 decode、Stage4；
-2. 修复并提交任何真实接口失败；
-3. 从新的 clean revision 运行十个核心 smoke cell；
-4. 冻结 smoke audit 和 controlled preregistration revision 后，排队两城×三 seed×十 cell controlled；
-5. 依据预注册规则选择 interaction/confirmation，不能提前看 test 结果改权重。
+### 4.0 Pre-formal CPU runtime：route geometry 支持长度不一致
+
+- 失败：decoder route context 中 geometry tensor 使用全路网 padding 59，而 batch 内 mask support 为 52，触发 tensor size mismatch。
+- 归因：collator 选择 batch routes 后没有把 geometry 同步 slice 到 `max(selected_lengths)`。
+- 修复：按 batch route support 截断 geometry，并增加全局 padding 大于 batch support 的回归夹具。该检查发生在 formal attempt 之前，临时路径不记为完成 run。
+
+### 4.1 E0/Q0 attempt_001：模型与 batch 设备不一致
+
+- revision：`518c7d5fb3881f81f9f56caf6b564782b2723696`
+- 失败：batch 在 `cuda:0`，Stage1 模型仍在 CPU，`Linear` 报 device mismatch。
+- 归因：训练入口只迁移 batch，没有保证 model 移到传入 device。
+- 修复：`23bcd4f0a3e6050f2c208b6dc3385efb967b074e`，`train_epochs` 入口统一迁移模型，并增加回归测试。
+
+### 4.2 E0/Q0 attempt_002：锁定 Transformers API 不兼容
+
+- revision：`23bcd4f0a3e6050f2c208b6dc3385efb967b074e`
+- 已完成：Stage1、tokens、Stage2 data。
+- 失败：Transformers 5.13.0 的 `TrainingArguments` 已移除 `overwrite_output_dir`。
+- 修复：`912e8edcd7b938c43b6f1b23c54955ee52da6ec0`，集中构造锁定版本参数并增加真实 API 构造测试。
+
+### 4.3 E1–E4/Q0 首次并行 attempt：跨卡 DataParallel OOM
+
+- revision：`912e8edcd7b938c43b6f1b23c54955ee52da6ec0`
+- 失败：四个进程都能看见四张 GPU，Transformers 为每个进程自动启用 DataParallel；四份 Qwen 同时跨四卡复制，导致 OOM。
+- 归因：`--device cuda:N` 只约束 Stage1 tensor，不会限制 Trainer 的可见设备。
+- 修复：`433b3421b4a5b568365a66fb4b19853b203070d3`。launcher 为每个子进程设置 `CUDA_VISIBLE_DEVICES=<physical GPU>`，子进程统一使用逻辑 `cuda:0`，同时把可见物理卡写入 resolved config。
+- 真实验证：隔离后 E1/E2/E3 同时运行时各自只占一张卡约 5.3 GiB；十个 cell 全部完成，无 OOM。
+
+## 5. 测试与环境
+
+最终 revision：
+
+```text
+168 passed, 21 warnings
+```
+
+warnings 为 Transformer nested-tensor 优化提示，不改变数值或执行路径。正式依赖由 `pyproject.toml` 与 `uv.lock` 锁定；Stage2 使用本地 Qwen3-1.7B、相同 LoRA 目标层和固定 smoke token budget。
+
+## 6. 下一动作
+
+1. 从本 smoke 记录后的 clean revision 排队两城市 × 三 seeds × 十核心 cells 的 controlled full pipeline；
+2. 审计 60 个 run 的同 revision、population、gate、E/Q contrast 与 G 2×2；
+3. 按冻结 Pareto 规则选择 best single、best pair 和 best Q，运行两个 adaptive interaction cells；
+4. 最后对 baseline 与最终候选运行 confirmation，才能形成 GPS/Road/Grid 轨迹上下文结论。
