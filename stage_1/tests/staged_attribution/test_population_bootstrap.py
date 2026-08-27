@@ -6,6 +6,7 @@ import pytest
 from staged_attribution.population_bootstrap import (
     BOOTSTRAP_METHOD,
     build_metric_contributions,
+    g_metric_attribution,
     load_metric_contributions,
     paired_metric_effects,
     paired_metric_effects_stratified_seeds,
@@ -170,3 +171,35 @@ def test_selection_effect_resamples_within_seed_and_equal_weights_seed_effects()
         paired_metric_effects_stratified_seeds(
             {42: baseline}, {314159: candidate}, n_resamples=10, seed=1
         )
+
+
+def test_g_attribution_uses_one_population_and_satisfies_shapley_identity() -> None:
+    real_gps, real_roads, generated = population()
+    kwargs = {
+        "mbr": {"min_lon": 0.0, "max_lon": 0.02, "min_lat": 0.0, "max_lat": 0.02},
+        "grid": {"grid_size_m": 100.0, "meters_per_lon": 111320.0, "meters_per_lat": 110540.0, "n_grid_x": 23, "n_grid_y": 23},
+    }
+    perfect = build_metric_contributions(
+        real_gps, real_roads, generated, geometries(), "porto", **kwargs
+    )
+    one_failure = list(generated)
+    one_failure[1] = {"traj_id": 2, "status": "failed", "failure": {"reason": "syntax"}}
+    degraded = build_metric_contributions(
+        real_gps, real_roads, one_failure, geometries(), "porto", **kwargs
+    )
+    rows = g_metric_attribution(
+        {"g00": perfect, "g10": degraded, "g01": perfect, "g11": degraded},
+        n_resamples=100,
+        seed=42,
+        chunk_size=13,
+    )
+
+    assert len(rows) == 9 * 4
+    for metric in {row["metric"] for row in rows}:
+        values = {row["component"]: row["estimate"] for row in rows if row["metric"] == metric}
+        assert values["sid"] + values["sampling"] == pytest.approx(values["total"])
+        assert values["interaction"] == pytest.approx(0.0)
+        assert values["sampling"] == pytest.approx(0.0)
+
+    with pytest.raises(ValueError, match="exactly"):
+        g_metric_attribution({"g00": perfect}, n_resamples=10, seed=1)

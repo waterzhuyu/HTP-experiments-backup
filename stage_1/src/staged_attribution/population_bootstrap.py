@@ -544,3 +544,81 @@ def paired_metric_effects_stratified_seeds(
             }
         )
     return result
+
+
+def g_metric_attribution(
+    variants: Mapping[str, PopulationMetricContributions],
+    *,
+    n_resamples: int,
+    seed: int,
+    confidence: float = 0.95,
+    chunk_size: int = 64,
+) -> list[dict[str, object]]:
+    required = ("g00", "g10", "g01", "g11")
+    if set(variants) != set(required):
+        raise ValueError(f"G contributions must be exactly {required}")
+    populations = {variants[name].traj_ids for name in required}
+    if len(populations) != 1:
+        raise ValueError("G contribution populations differ")
+    population = len(variants["g00"].traj_ids)
+    if n_resamples <= 0 or not 0 < confidence < 1:
+        raise ValueError("invalid bootstrap settings")
+    generator = np.random.default_rng(seed)
+    weights = generator.multinomial(
+        population, np.full(population, 1 / population), size=n_resamples
+    )
+    sampled = {
+        name: population_regrets(variants[name], weights, chunk_size=chunk_size)
+        for name in required
+    }
+    points = {name: population_regrets(variants[name]) for name in required}
+    result = []
+    for metric in DOMAIN_METRICS + ("validity_rate",):
+        sampled_components = {
+            "sid": 0.5 * (
+                (sampled["g10"][metric] - sampled["g00"][metric])
+                + (sampled["g11"][metric] - sampled["g01"][metric])
+            ),
+            "sampling": 0.5 * (
+                (sampled["g01"][metric] - sampled["g00"][metric])
+                + (sampled["g11"][metric] - sampled["g10"][metric])
+            ),
+            "interaction": (
+                sampled["g11"][metric] - sampled["g10"][metric]
+                - sampled["g01"][metric] + sampled["g00"][metric]
+            ),
+            "total": sampled["g11"][metric] - sampled["g00"][metric],
+        }
+        point_components = {
+            "sid": 0.5 * (
+                (points["g10"][metric][0] - points["g00"][metric][0])
+                + (points["g11"][metric][0] - points["g01"][metric][0])
+            ),
+            "sampling": 0.5 * (
+                (points["g01"][metric][0] - points["g00"][metric][0])
+                + (points["g11"][metric][0] - points["g10"][metric][0])
+            ),
+            "interaction": (
+                points["g11"][metric][0] - points["g10"][metric][0]
+                - points["g01"][metric][0] + points["g00"][metric][0]
+            ),
+            "total": points["g11"][metric][0] - points["g00"][metric][0],
+        }
+        for component, values in sampled_components.items():
+            low, high = _interval(values, confidence)
+            result.append(
+                {
+                    "metric": metric,
+                    "component": component,
+                    "method": BOOTSTRAP_METHOD,
+                    "n_pairs": population,
+                    "estimate": float(point_components[component]),
+                    "ci_low": low,
+                    "ci_high": high,
+                    "p_improvement": float(np.mean(values < 0)),
+                    "p_degradation": float(np.mean(values > 0)),
+                    "seed": int(seed),
+                    "n_resamples": int(n_resamples),
+                }
+            )
+    return result
