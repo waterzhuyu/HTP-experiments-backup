@@ -480,3 +480,67 @@ def paired_metric_effects(
             }
         )
     return result
+
+
+def paired_metric_effects_stratified_seeds(
+    baseline_by_seed: Mapping[int, PopulationMetricContributions],
+    candidate_by_seed: Mapping[int, PopulationMetricContributions],
+    *,
+    n_resamples: int,
+    seed: int,
+    confidence: float = 0.95,
+    chunk_size: int = 64,
+) -> list[dict[str, object]]:
+    seed_ids = sorted(int(value) for value in baseline_by_seed)
+    if not seed_ids or set(seed_ids) != {int(value) for value in candidate_by_seed}:
+        raise ValueError("baseline and candidate seed strata differ")
+    if n_resamples <= 0 or not 0 < confidence < 1:
+        raise ValueError("invalid bootstrap settings")
+    bootstrap_differences = {
+        metric: np.zeros(n_resamples, dtype=np.float64)
+        for metric in DOMAIN_METRICS + ("validity_rate",)
+    }
+    point_differences = {metric: 0.0 for metric in bootstrap_differences}
+    populations: dict[int, int] = {}
+    for current_seed in seed_ids:
+        baseline = baseline_by_seed[current_seed]
+        candidate = candidate_by_seed[current_seed]
+        if baseline.traj_ids != candidate.traj_ids:
+            raise ValueError(f"paired populations differ for seed {current_seed}")
+        population = len(baseline.traj_ids)
+        populations[current_seed] = population
+        generator = np.random.default_rng(np.random.SeedSequence([int(seed), current_seed]))
+        weights = generator.multinomial(
+            population, np.full(population, 1 / population), size=n_resamples
+        )
+        baseline_values = population_regrets(baseline, weights, chunk_size=chunk_size)
+        candidate_values = population_regrets(candidate, weights, chunk_size=chunk_size)
+        baseline_point = population_regrets(baseline)
+        candidate_point = population_regrets(candidate)
+        for metric in bootstrap_differences:
+            bootstrap_differences[metric] += (
+                candidate_values[metric] - baseline_values[metric]
+            ) / len(seed_ids)
+            point_differences[metric] += float(
+                candidate_point[metric][0] - baseline_point[metric][0]
+            ) / len(seed_ids)
+    result = []
+    for metric, differences in bootstrap_differences.items():
+        low, high = _interval(differences, confidence)
+        result.append(
+            {
+                "metric": metric,
+                "method": SELECTION_BOOTSTRAP_METHOD,
+                "seed_strata": seed_ids,
+                "seed_populations": populations,
+                "n_pairs": sum(populations.values()),
+                "estimate": point_differences[metric],
+                "ci_low": low,
+                "ci_high": high,
+                "p_improvement": float(np.mean(differences < 0)),
+                "p_degradation": float(np.mean(differences > 0)),
+                "seed": int(seed),
+                "n_resamples": int(n_resamples),
+            }
+        )
+    return result

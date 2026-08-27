@@ -8,6 +8,7 @@ from staged_attribution.population_bootstrap import (
     build_metric_contributions,
     load_metric_contributions,
     paired_metric_effects,
+    paired_metric_effects_stratified_seeds,
     population_regrets,
     save_metric_contributions,
 )
@@ -128,3 +129,44 @@ def test_contribution_artifacts_round_trip_and_reject_tampering(tmp_path) -> Non
     (manifest.parent / "histograms.npz").write_bytes(b"tampered")
     with pytest.raises(ValueError, match="size mismatch|SHA256 mismatch"):
         load_metric_contributions(manifest)
+
+
+def test_selection_effect_resamples_within_seed_and_equal_weights_seed_effects() -> None:
+    real_gps, real_roads, generated = population()
+    kwargs = {
+        "mbr": {"min_lon": 0.0, "max_lon": 0.02, "min_lat": 0.0, "max_lat": 0.02},
+        "grid": {"grid_size_m": 100.0, "meters_per_lon": 111320.0, "meters_per_lat": 110540.0, "n_grid_x": 23, "n_grid_y": 23},
+    }
+    baseline = build_metric_contributions(
+        real_gps, real_roads, generated, geometries(), "porto", **kwargs
+    )
+    failed = list(generated)
+    failed[1] = {"traj_id": 2, "status": "failed", "failure": {"reason": "syntax"}}
+    candidate = build_metric_contributions(
+        real_gps, real_roads, failed, geometries(), "porto", **kwargs
+    )
+    first = paired_metric_effects_stratified_seeds(
+        {42: baseline, 314159: baseline},
+        {42: candidate, 314159: baseline},
+        n_resamples=100,
+        seed=20260826,
+        chunk_size=13,
+    )
+    second = paired_metric_effects_stratified_seeds(
+        {314159: baseline, 42: baseline},
+        {314159: baseline, 42: candidate},
+        n_resamples=100,
+        seed=20260826,
+        chunk_size=17,
+    )
+
+    assert first == second
+    validity = next(row for row in first if row["metric"] == "validity_rate")
+    assert validity["estimate"] == pytest.approx(0.25)
+    assert validity["n_pairs"] == 4
+    assert validity["seed_strata"] == [42, 314159]
+
+    with pytest.raises(ValueError, match="seed strata differ"):
+        paired_metric_effects_stratified_seeds(
+            {42: baseline}, {314159: candidate}, n_resamples=10, seed=1
+        )
