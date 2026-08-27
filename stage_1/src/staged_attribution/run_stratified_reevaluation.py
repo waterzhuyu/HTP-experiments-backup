@@ -168,7 +168,12 @@ def run_stratified_reevaluation(
                 raise ReevaluationRunError("completed reevaluation lacks terminal Stage4 evidence")
             return {**identity, "status": "completed", "completed": completed, "remaining": []}
     else:
-        root.mkdir(parents=True, exist_ok=False)
+        root.mkdir(parents=True, exist_ok=True)
+        unexpected = [path.name for path in root.iterdir() if path.name != "launcher.log"]
+        if unexpected:
+            raise ReevaluationRunError(
+                f"new reevaluation attempt contains unexpected files: {sorted(unexpected)}"
+            )
         manifest = {**identity, "status": "running", "failure": None}
         _atomic_json(manifest_path, manifest)
     completed = _verified_completed_stages(root, dag)
