@@ -124,8 +124,18 @@ def resume_plan(run_dir: str | Path, dag: tuple[StageNode, ...]) -> dict[str, ob
             raise CellRunError(f"stage marker name mismatch at {marker_path}")
         artifacts = marker.get("artifacts", {})
         for name in node.required_artifacts:
-            if name not in artifacts or not Path(artifacts[name]["path"]).is_file():
+            if not isinstance(artifacts, Mapping) or name not in artifacts:
                 raise CellRunError(f"stage marker {node.name} references missing artifact {name}")
+            record = artifacts[name]
+            if not isinstance(record, Mapping) or not isinstance(record.get("path"), str):
+                raise CellRunError(f"stage marker {node.name} has invalid artifact {name}")
+            path = Path(record["path"])
+            if not path.is_file():
+                raise CellRunError(f"stage marker {node.name} references missing artifact {name}")
+            if record.get("size_bytes") != path.stat().st_size:
+                raise CellRunError(f"stage marker {node.name} artifact {name} size mismatch")
+            if record.get("sha256") != _sha256(path):
+                raise CellRunError(f"stage marker {node.name} artifact {name} sha256 mismatch")
         completed.append(node.name)
     remaining = [node.name for node in dag if node.name not in completed]
     return {

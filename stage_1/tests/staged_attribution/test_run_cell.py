@@ -63,6 +63,19 @@ def test_resume_starts_at_first_incomplete_stage(tmp_path: Path) -> None:
     assert plan["terminal_complete"] is False
 
 
+def test_resume_rejects_artifact_changed_after_marker(tmp_path: Path) -> None:
+    dag = build_cell_dag("e0_q0")
+    artifacts = {
+        name: touch(tmp_path / "stage1" / name)
+        for name in dag[0].required_artifacts
+    }
+    write_stage_marker(tmp_path, dag[0], artifacts)
+    artifacts["stage1_model.pt"].write_text("modified")
+
+    with pytest.raises(CellRunError, match="sha256 mismatch"):
+        resume_plan(tmp_path, dag)
+
+
 def test_dry_run_resolves_cell_without_writing(tmp_path: Path) -> None:
     result = run_cell(
         config_path=Path("stage_1/configs/staged_attribution/experiment.json"),
