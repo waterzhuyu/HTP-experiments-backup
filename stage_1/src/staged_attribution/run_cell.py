@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import traceback
@@ -159,6 +160,7 @@ def run_cell(
         "q_weights": dict(cell.q_weights),
         "stages": [node.name for node in dag],
         "device": device,
+        "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
         "will_execute": not dry_run,
     }
     if dry_run:

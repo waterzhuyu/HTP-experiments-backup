@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -140,7 +141,6 @@ def _cell_command(
     config_path: str | Path,
     job: ExperimentJob,
     attempt: Path,
-    gpu_index: int,
 ) -> list[str]:
     return [
         sys.executable,
@@ -159,7 +159,7 @@ def _cell_command(
         "--run-dir",
         str(attempt),
         "--device",
-        f"cuda:{gpu_index}",
+        "cuda:0",
     ]
 
 
@@ -232,13 +232,14 @@ def run_parallel_experiment(
             attempt = next_attempt_dir(root / job.run_key)
             attempt.mkdir(parents=True, exist_ok=False)
             log_handle = (attempt / "launcher.log").open("a", encoding="utf-8")
-            command = _cell_command(config_path, job, attempt, gpu_index)
+            command = _cell_command(config_path, job, attempt)
             process = popen_factory(
                 command,
                 cwd=Path.cwd(),
                 stdout=log_handle,
                 stderr=subprocess.STDOUT,
                 text=True,
+                env={**os.environ, "CUDA_VISIBLE_DEVICES": str(gpu_index)},
             )
             running[gpu_index] = {
                 "job": job,

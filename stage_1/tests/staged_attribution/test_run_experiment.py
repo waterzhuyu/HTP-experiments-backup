@@ -89,7 +89,7 @@ def test_attempt_paths_are_append_only_and_completed_attempt_is_detected(tmp_pat
 
 
 def test_parallel_queue_uses_safe_unique_gpus_and_immutable_attempts(tmp_path: Path) -> None:
-    launches: list[tuple[list[str], Path]] = []
+    launches: list[tuple[list[str], Path, dict[str, str]]] = []
 
     class ImmediateProcess:
         returncode = 0
@@ -97,8 +97,8 @@ def test_parallel_queue_uses_safe_unique_gpus_and_immutable_attempts(tmp_path: P
         def poll(self):
             return 0
 
-    def fake_popen(command, cwd, stdout, stderr, text):
-        launches.append((list(command), Path(stdout.name).parent))
+    def fake_popen(command, cwd, stdout, stderr, text, env):
+        launches.append((list(command), Path(stdout.name).parent, dict(env)))
         return ImmediateProcess()
 
     rows = [
@@ -121,13 +121,16 @@ def test_parallel_queue_uses_safe_unique_gpus_and_immutable_attempts(tmp_path: P
     assert result["failed"] == []
     assert len(launches) == 10
     devices = []
+    visible_devices = []
     attempt_paths = []
-    for command, attempt_path in launches:
+    for command, attempt_path, environment in launches:
         device_index = command.index("--device") + 1
         run_dir_index = command.index("--run-dir") + 1
         devices.append(command[device_index])
+        visible_devices.append(environment["CUDA_VISIBLE_DEVICES"])
         attempt_paths.append(Path(command[run_dir_index]))
         assert attempt_path == Path(command[run_dir_index])
-    assert set(devices) == {"cuda:0", "cuda:1"}
+    assert set(devices) == {"cuda:0"}
+    assert set(visible_devices) == {"0", "1"}
     assert len(set(attempt_paths)) == 10
     assert all(path.name == "attempt_001" for path in attempt_paths)
