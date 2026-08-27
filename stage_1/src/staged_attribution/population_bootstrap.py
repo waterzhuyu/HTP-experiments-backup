@@ -34,6 +34,10 @@ DENSITY_METRICS = (
 )
 DOMAIN_METRICS = HISTOGRAM_METRICS + DENSITY_METRICS
 BOOTSTRAP_METHOD = "trajectory_paired_population_aware_fixed_support_v1"
+SELECTION_BOOTSTRAP_METHOD = (
+    "trajectory_paired_population_aware_fixed_support_stratified_seed_v1"
+)
+POPULATION_REGRET_METHOD = "failure_weighted_population_regret_v1"
 CONTRIBUTION_SCHEMA_VERSION = 1
 
 
