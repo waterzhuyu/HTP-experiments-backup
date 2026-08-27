@@ -3,8 +3,10 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
+from pathlib import Path
 
 from staged_attribution.pipeline import (
+    PipelineBackend,
     meters_per_normalized_coordinate,
     select_dataset_indices,
     select_stage2_train_frame,
@@ -14,6 +16,9 @@ from staged_attribution.stage2_subset_manifest import (
     build_stage2_subset_manifest,
     write_immutable_json,
 )
+
+
+CONFIG_PATH = Path("stage_1/configs/staged_attribution/experiment.json")
 
 
 def test_subset_selection_is_id_based_deterministic_and_sorted() -> None:
@@ -114,3 +119,20 @@ def test_normalized_coordinate_scale_uses_mbr_spans() -> None:
 
     assert result[0] == pytest.approx(0.14 * 83810.0)
     assert result[1] == pytest.approx(0.06 * 110540.0)
+
+
+def test_pipeline_backend_accepts_registered_noncore_adaptive_cell() -> None:
+    backend = PipelineBackend(
+        CONFIG_PATH,
+        {
+            "city": "porto",
+            "seed": 42,
+            "cell_id": "e2_q3",
+            "budget": "controlled",
+            "device": "cpu",
+        },
+    )
+
+    assert backend.cell.cell_id == "e2_q3"
+    assert backend.cell.views == frozenset({"grid"})
+    assert backend.cell.q_weights["auxiliary"] > 0

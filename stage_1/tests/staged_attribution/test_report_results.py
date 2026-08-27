@@ -8,6 +8,7 @@ import pytest
 
 from staged_attribution.report_results import (
     G_VARIANTS,
+    METRICS,
     ResultAuditError,
     RunEvidence,
     collect_core_runs,
@@ -16,7 +17,11 @@ from staged_attribution.report_results import (
 )
 from staged_attribution.config import ExperimentConfig
 from staged_attribution.run_experiment import build_jobs
-from staged_attribution.select_candidates import select_candidates
+from staged_attribution.population_bootstrap import (
+    POPULATION_REGRET_METHOD,
+    SELECTION_BOOTSTRAP_METHOD,
+)
+from staged_attribution.select_candidates import SelectionError, select_candidates
 
 
 CONFIG_PATH = Path("stage_1/configs/staged_attribution/experiment.json")
@@ -178,6 +183,42 @@ def _run(cell_id: str, base: float) -> RunEvidence:
     )
 
 
+def _corrected_selection_summary(summary: dict[str, object]) -> dict[str, object]:
+    corrected = dict(summary)
+    corrected["analysis_schema_version"] = 2
+    corrected["candidate_evidence"] = "stratified_population_aware"
+    corrected["metric_rows"] = [
+        {**row, "method": POPULATION_REGRET_METHOD}
+        for row in summary["metric_rows"]
+    ]
+    lookup = {
+        (row["city"], row["seed"], row["cell_id"], row["metric"]): row["regret"]
+        for row in corrected["metric_rows"] if row["variant"] == "g11"
+    }
+    effects = []
+    for city in sorted({key[0] for key in lookup}):
+        for cell in sorted({key[2] for key in lookup} - {"e0_q0"}):
+            for metric, (_, group) in METRICS.items():
+                values = [
+                    lookup[(city, seed, cell, metric)] - lookup[(city, seed, "e0_q0", metric)]
+                    for seed in sorted({key[1] for key in lookup if key[0] == city})
+                ]
+                estimate = sum(values) / len(values)
+                effects.append(
+                    {
+                        "reference": "e0_q0", "city": city, "cell_id": cell,
+                        "metric": metric, "group": group,
+                        "method": SELECTION_BOOTSTRAP_METHOD,
+                        "n_pairs": 2 * len(values), "n_resamples": 100,
+                        "estimate": estimate, "ci_low": estimate, "ci_high": estimate,
+                        "p_improvement": float(estimate < 0),
+                        "p_degradation": float(estimate > 0),
+                    }
+                )
+    corrected["paired_metric_effects"] = effects
+    return corrected
+
+
 def test_summary_freezes_g_e_q_and_paired_trajectory_attribution() -> None:
     bases = {
         "e0_q0": 10.0, "e1_q0": 9.0, "e2_q0": 8.0, "e3_q0": 7.0,
@@ -211,14 +252,17 @@ def test_summary_freezes_g_e_q_and_paired_trajectory_attribution() -> None:
         "sid", "sampling", "interaction", "total"
     }
 
-    selection = select_candidates(summary, phase="core")
+    with pytest.raises(SelectionError, match="schema version 2"):
+        select_candidates(summary, phase="core")
+    corrected = _corrected_selection_summary(summary)
+    selection = select_candidates(corrected, phase="core")
     assert selection["best_single"] == "e2_q0"
     assert selection["best_pair"] == "e5_q0"
     assert selection["best_q"] == "e6_q3"
     assert selection["adaptive_cells"] == ["e2_q3", "e5_q3"]
     assert selection["confirmation_cells"] == ["e0_q0"]
 
-    final = select_candidates(summary, phase="final")
+    final = select_candidates(corrected, phase="final")
     assert final["confirmation_cells"][0] == "e0_q0"
     assert "e6_q3" in final["confirmation_cells"]
 

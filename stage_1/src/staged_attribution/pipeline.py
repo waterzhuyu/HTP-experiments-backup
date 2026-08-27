@@ -214,7 +214,7 @@ class PipelineBackend:
         self.seed = int(resolved["seed"])
         self.cell_id = str(resolved["cell_id"])
         self.budget = self.config.budgets[str(resolved["budget"])]
-        self.cell = {cell.cell_id: cell for cell in self.config.core_cells()}[self.cell_id]
+        self.cell = self.config.cell(self.cell_id)
         requested_device = str(resolved.get("device", "cuda"))
         if requested_device.startswith("cuda") and not torch.cuda.is_available():
             raise CellRunError("CUDA was requested but is unavailable")

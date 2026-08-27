@@ -12,7 +12,7 @@ import numpy as np
 
 from .analyze import pareto_front
 from .report_results import METRICS
-from .statistics import aggregate_seeds
+from .population_bootstrap import POPULATION_REGRET_METHOD, SELECTION_BOOTSTRAP_METHOD
 
 
 class SelectionError(RuntimeError):
@@ -42,34 +42,45 @@ def _paired_effects(
     summary: Mapping[str, object],
     reference: str = "e0_q0",
 ) -> list[dict[str, object]]:
-    lookup = _metric_lookup(summary)
-    cells = sorted({key[2] for key in lookup})
-    cities = sorted({key[0] for key in lookup})
-    result = []
-    for cell in cells:
-        if cell == reference:
-            continue
-        for metric in METRICS:
-            for city in cities:
-                seeds = sorted({key[1] for key in lookup if key[0] == city})
-                differences = []
-                for seed in seeds:
-                    baseline_key = (city, seed, reference, metric)
-                    candidate_key = (city, seed, cell, metric)
-                    if baseline_key not in lookup or candidate_key not in lookup:
-                        raise SelectionError(f"unpaired metric evidence for {cell}/{metric}/{city}/seed_{seed}")
-                    differences.append(lookup[candidate_key] - lookup[baseline_key])
-                result.append(
-                    {
-                        "reference": reference,
-                        "city": city,
-                        "cell_id": cell,
-                        "metric": metric,
-                        "group": METRICS[metric][1],
-                        **aggregate_seeds(differences),
-                    }
-                )
-    return result
+    raw = summary.get("paired_metric_effects")
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)) or not raw:
+        raise SelectionError("candidate selection requires corrected paired_metric_effects")
+    result: list[dict[str, object]] = []
+    keys = set()
+    for source in raw:
+        if not isinstance(source, Mapping):
+            raise SelectionError("paired metric effect row must be a mapping")
+        row = dict(source)
+        if row.get("method") != SELECTION_BOOTSTRAP_METHOD:
+            raise SelectionError("paired metric effect does not use the registered trajectory bootstrap")
+        if row.get("reference") != reference:
+            raise SelectionError("paired metric effect uses an unexpected reference")
+        metric = str(row.get("metric"))
+        if metric not in METRICS:
+            raise SelectionError(f"unknown paired metric {metric}")
+        if row.get("group") != METRICS[metric][1]:
+            raise SelectionError(f"paired metric group mismatch for {metric}")
+        key = (str(row.get("city")), str(row.get("cell_id")), metric)
+        if key in keys:
+            raise SelectionError(f"duplicate paired metric effect {key}")
+        keys.add(key)
+        for field in ("estimate", "ci_low", "ci_high", "p_improvement", "p_degradation"):
+            if not isinstance(row.get(field), (int, float)) or not math.isfinite(float(row[field])):
+                raise SelectionError(f"paired metric effect has invalid {field}: {key}")
+        if int(row.get("n_pairs", 0)) <= 0 or int(row.get("n_resamples", 0)) <= 0:
+            raise SelectionError(f"paired metric effect lacks population/bootstrap coverage: {key}")
+        result.append(row)
+    cells = sorted({key[1] for key in keys})
+    cities = sorted({key[0] for key in keys})
+    expected = {
+        (city, cell, metric)
+        for city in cities for cell in cells for metric in METRICS
+    }
+    if keys != expected:
+        missing = sorted(expected - keys)
+        extra = sorted(keys - expected)
+        raise SelectionError(f"incomplete paired metric effect Cartesian coverage: missing={missing[:5]} extra={extra[:5]}")
+    return sorted(result, key=lambda row: (str(row["city"]), str(row["cell_id"]), str(row["metric"])))
 
 
 def _gate_map(summary: Mapping[str, object]) -> dict[str, dict[str, object]]:
@@ -122,6 +133,8 @@ def _mean_profiles(summary: Mapping[str, object]) -> dict[str, dict[str, float]]
     grouped: dict[tuple[str, str], list[float]] = defaultdict(list)
     for row in summary["metric_rows"]:
         if row["variant"] == "g11" and row["group"] in DOMAIN_GROUPS:
+            if row.get("method") != POPULATION_REGRET_METHOD:
+                raise SelectionError("domain profile is not population-aware primary evidence")
             grouped[(str(row["cell_id"]), str(row["metric"]))].append(float(row["regret"]))
     return {
         cell: {
@@ -160,6 +173,10 @@ def _rank_family(
 def select_candidates(summary: Mapping[str, object], phase: str = "core") -> dict[str, object]:
     if phase not in {"core", "final"}:
         raise SelectionError("selection phase must be core or final")
+    if int(summary.get("analysis_schema_version", 0)) < 2:
+        raise SelectionError("candidate selection requires corrected analysis schema version 2")
+    if summary.get("candidate_evidence") != "stratified_population_aware":
+        raise SelectionError("candidate selection requires stratified population-aware evidence")
     effects = _paired_effects(summary)
     gates = _gate_map(summary)
     profiles = _mean_profiles(summary)
