@@ -9,6 +9,7 @@ from staged_attribution.train_stage2 import (
     Stage2DataError,
     assert_equivalent_token_budget,
     build_stage2_plan,
+    build_stage2_training_arguments,
     format_training_text,
     tokenize_training_record,
 )
@@ -84,6 +85,23 @@ def test_dry_plan_does_not_require_transformers_or_a_model() -> None:
         "optimizer_steps_per_epoch": 1,
         "planned_optimizer_steps": 7,
     }
+
+
+def test_training_arguments_match_locked_transformers_api(tmp_path) -> None:
+    arguments = build_stage2_training_arguments(
+        output_dir=tmp_path / "trainer",
+        seed=42,
+        epochs=1,
+        max_steps=2,
+        batch_size=4,
+        gradient_accumulation=2,
+        learning_rate=5e-4,
+    )
+
+    assert arguments.output_dir == str(tmp_path / "trainer")
+    assert arguments.max_steps == 2
+    assert arguments.per_device_train_batch_size == 4
+    assert arguments.gradient_accumulation_steps == 2
 
 
 def test_collator_rejects_missing_answer_span() -> None:

@@ -141,6 +141,40 @@ def build_stage2_plan(
     }
 
 
+def build_stage2_training_arguments(
+    output_dir: str | Path,
+    seed: int,
+    epochs: int,
+    max_steps: int,
+    batch_size: int,
+    gradient_accumulation: int,
+    learning_rate: float,
+) -> Any:
+    """Construct arguments against the locked Transformers API."""
+    from transformers import TrainingArguments
+
+    return TrainingArguments(
+        output_dir=str(output_dir),
+        per_device_train_batch_size=batch_size,
+        gradient_accumulation_steps=gradient_accumulation,
+        num_train_epochs=epochs,
+        max_steps=max_steps,
+        learning_rate=learning_rate,
+        weight_decay=1e-4,
+        warmup_ratio=0.05,
+        lr_scheduler_type="linear",
+        max_grad_norm=1.0,
+        bf16=torch.cuda.is_available(),
+        gradient_checkpointing=True,
+        save_strategy="no",
+        logging_steps=1 if max_steps > 0 else 10,
+        report_to=[],
+        remove_unused_columns=False,
+        seed=seed,
+        data_seed=seed,
+    )
+
+
 class _TokenizedDataset(Dataset):
     def __init__(self, rows: Sequence[Mapping[str, object]]) -> None:
         self.rows = list(rows)
@@ -240,7 +274,7 @@ def run_hf_stage2(
 ) -> dict[str, object]:
     """Train the frozen Stage2 recipe; heavyweight libraries are imported only here."""
     from peft import LoraConfig, TaskType, get_peft_model
-    from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments, set_seed
+    from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, set_seed
 
     set_seed(seed)
     output = Path(output_dir)
@@ -271,26 +305,14 @@ def run_hf_stage2(
     records = frame.sort_values("traj_id").to_dict("records")
     tokenized = [tokenize_training_record(tokenizer, record) for record in records]
     collator = AssistantOnlyCollator(tokenizer)
-    arguments = TrainingArguments(
-        output_dir=str(output / "trainer"),
-        overwrite_output_dir=True,
-        per_device_train_batch_size=batch_size,
-        gradient_accumulation_steps=gradient_accumulation,
-        num_train_epochs=epochs,
-        max_steps=max_steps,
-        learning_rate=learning_rate,
-        weight_decay=1e-4,
-        warmup_ratio=0.05,
-        lr_scheduler_type="linear",
-        max_grad_norm=1.0,
-        bf16=torch.cuda.is_available(),
-        gradient_checkpointing=True,
-        save_strategy="no",
-        logging_steps=1 if max_steps > 0 else 10,
-        report_to=[],
-        remove_unused_columns=False,
-        seed=seed,
-        data_seed=seed,
+    arguments = build_stage2_training_arguments(
+        output / "trainer",
+        seed,
+        epochs,
+        max_steps,
+        batch_size,
+        gradient_accumulation,
+        learning_rate,
     )
     trainer = Trainer(
         model=model,
