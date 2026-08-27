@@ -21,6 +21,7 @@
 | 原正式训练源 | `/workspace/guozuyu/HTP-staged-attribution` | `exp/staged-attribution-gps-road-grid` | `730c2cc5b51003b31e5de49561bee39ca8979a75` | clean，保持冻结 |
 | 校正重评与统计 | `/workspace/guozuyu/HTP-staged-attribution-eval-correction` | `fix/staged-attribution-eval-correction` | `e7ec3348e2f5db34b200355fd3c5f57bce99e360` | clean，176 tests passed |
 | Stage2 资源控制候选 | `/workspace/guozuyu/HTP-staged-attribution-stage2-resource-controls` | `feat/staged-attribution-stage2-resource-controls` | `0ef07aab1121394b6c2657f553c22fce6a1519ff`（本文所审计实现） | 178 tests passed；本文另行提交 |
+| 统一执行分支 | `/workspace/guozuyu/HTP-staged-attribution-integrated` | `exp/staged-attribution-gps-road-grid-integrated` | `ba8cf2e3f80edbff10d075affaa8fe6c7592ef8b` | clean，206 tests passed |
 
 资源控制候选分支的提交：
 
@@ -30,6 +31,10 @@
 4. `0ef07aa`：续跑时重新核对 marker 中 artifact 的大小和 SHA-256，拒绝被替换或损坏的阶段产物。
 
 候选分支尚未合并到正式训练分支；正式配置 `stage_1/configs/staged_attribution/experiment.json` 仍为全量 Stage2、`batch=16`、`accumulation=1` 的原锁定口径。
+
+统一执行分支通过 merge commit `e4ddc9848257a9f98030a2b02b8b1bf5bb14e498` 同时包含资源控制父提交 `8743e8ed38a608e6dd3539fa2fa8bc4166a5f36f` 和评估修正父提交 `e7ec3348e2f5db34b200355fd3c5f57bce99e360`；`ba8cf2e` 新增统一契约测试。该测试要求：默认正式 Stage2 仍为 full/16×1、core job 数仍为 60、adaptive `E3×Q2` 可解析、训练 DAG 包含 `stage2_plan.json`、corrected reevaluation Stage4 必须同时产生四组 failure-retaining contribution manifest。
+
+源分支与统一分支的正式 `experiment.json` 逐字节 SHA-256 均为 `201b0e89425f1c159d5a779eb381a2fe9922614909bf98bcf2ee87014fc071dc`，两者在该文件上无 Git diff。因此，创建统一分支本身没有暗中选择 A/B/C。
 
 ### 2.2 数据切分
 
@@ -205,6 +210,8 @@ PYTHONPATH="$PWD:$PWD/stage_1/src" \
 ```
 
 结果：`178 passed, 21 warnings in 10.64s`。warnings 均为现有 PyTorch Transformer nested-tensor 提示。
+
+统一执行分支的相同完整测试命令结果：`206 passed, 21 warnings in 11.37s`；worktree clean。正式启动后，source training 和 corrected reevaluation/statistics 应统一从该分支的唯一冻结 revision 执行，避免训练与后处理分支发生未记录漂移。
 
 ## 10. 事实、解释与决策分离
 
