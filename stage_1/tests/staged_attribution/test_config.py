@@ -122,7 +122,33 @@ def test_adaptive_cross_product_cells_reuse_frozen_e_and_q_specs() -> None:
     assert smoke.stage1_train_trajectories == 32
     assert smoke.stage1_test_trajectories == 16
     assert smoke.stage1_batch_size == 8
+    assert smoke.stage2_train_trajectories == "full"
+    assert smoke.stage2_subset_seed == 20260826
+    assert smoke.stage2_batch_size == 16
+    assert smoke.stage2_gradient_accumulation == 1
+    assert smoke.stage2_effective_batch_size == 16
     assert config.budgets["controlled"].stage1_train_trajectories == "full"
+
+
+def test_stage2_resource_controls_are_explicit_and_preserve_effective_batch() -> None:
+    mapping = valid_mapping()
+    controlled = mapping["budgets"]["controlled"]
+    controlled.update(
+        {
+            "stage2_train_trajectories": 64_000,
+            "stage2_subset_seed": 20260826,
+            "stage2_batch_size": 8,
+            "stage2_gradient_accumulation": 2,
+        }
+    )
+
+    budget = ExperimentConfig.from_dict(mapping).budgets["controlled"]
+
+    assert budget.stage2_train_trajectories == 64_000
+    assert budget.stage2_subset_seed == 20260826
+    assert budget.stage2_batch_size == 8
+    assert budget.stage2_gradient_accumulation == 2
+    assert budget.stage2_effective_batch_size == 16
 
 
 @pytest.mark.parametrize("bad_view", ["poi", "category", "text"])
@@ -154,6 +180,27 @@ def test_rejects_missing_downstream_stage_budget() -> None:
 def test_rejects_invalid_stage1_population_budget(field: str) -> None:
     mapping = valid_mapping()
     mapping["budgets"]["smoke"][field] = 0
+
+    with pytest.raises(ConfigError, match=field):
+        ExperimentConfig.from_dict(mapping)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("stage2_train_trajectories", 0),
+        ("stage2_train_trajectories", "partial"),
+        ("stage2_subset_seed", True),
+        ("stage2_subset_seed", 1.5),
+        ("stage2_batch_size", 0),
+        ("stage2_batch_size", True),
+        ("stage2_gradient_accumulation", 0),
+        ("stage2_gradient_accumulation", True),
+    ],
+)
+def test_rejects_invalid_stage2_resource_control(field: str, value: object) -> None:
+    mapping = valid_mapping()
+    mapping["budgets"]["controlled"][field] = value
 
     with pytest.raises(ConfigError, match=field):
         ExperimentConfig.from_dict(mapping)

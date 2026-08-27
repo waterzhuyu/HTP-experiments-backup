@@ -90,6 +90,47 @@ def select_dataset_indices(
     return np.asarray(sorted(index for index, _ in ranked), dtype=np.int64)
 
 
+def trajectory_id_sha256(traj_ids: Sequence[int]) -> str:
+    return hashlib.sha256("\n".join(map(str, sorted(map(int, traj_ids)))).encode()).hexdigest()
+
+
+def select_stage2_train_frame(
+    frame: pd.DataFrame,
+    requested: int | str,
+    subset_seed: int,
+    city: str,
+) -> tuple[pd.DataFrame, dict[str, object]]:
+    if "traj_id" not in frame or frame["traj_id"].duplicated().any():
+        raise CellRunError("Stage2 train frame requires unique traj_id values")
+    source_ids = [int(value) for value in frame["traj_id"]]
+    if requested == "full":
+        selected = frame
+        method = "full_population_v1"
+        recorded_ids: list[int] | None = None
+    else:
+        indices = select_dataset_indices(
+            source_ids,
+            requested,
+            seed=subset_seed,
+            salt=f"stage2_train:{city}",
+        )
+        selected = frame.iloc[indices].sort_values("traj_id").reset_index(drop=True)
+        method = "sha256_rank_fixed_city_v1"
+        recorded_ids = [int(value) for value in selected["traj_id"]]
+    selected_ids = [int(value) for value in selected["traj_id"]]
+    return selected, {
+        "method": method,
+        "source_population": len(frame),
+        "population": len(selected),
+        "requested": requested,
+        "subset_seed": int(subset_seed),
+        "city": city,
+        "selected_traj_id_sha256": trajectory_id_sha256(selected_ids),
+        "selected_traj_ids": recorded_ids,
+        "selection_depends_on_training_seed": False,
+    }
+
+
 def meters_per_normalized_coordinate(metadata: Mapping[str, object]) -> tuple[float, float]:
     mbr = metadata["mbr"]
     grid = metadata["grid"]
@@ -344,6 +385,13 @@ class PipelineBackend:
             "stage1_test_population": len(self._dataset("test")),
             "stage1_batch_size": self.budget.stage1_batch_size,
             "stage1_epochs": self.budget.stage1_epochs,
+            "stage2_train_trajectories": self.budget.stage2_train_trajectories,
+            "stage2_subset_seed": self.budget.stage2_subset_seed,
+            "stage2_batch_size": self.budget.stage2_batch_size,
+            "stage2_gradient_accumulation": self.budget.stage2_gradient_accumulation,
+            "stage2_effective_batch_size": self.budget.stage2_effective_batch_size,
+            "stage2_epochs": self.budget.stage2_epochs,
+            "stage2_max_steps": self.budget.stage2_max_steps,
             "speed_edges": speed_edges.tolist(),
             "turn_edges": turn_edges.tolist(),
             "meters_per_normalized_coordinate": list(meters),
@@ -394,11 +442,19 @@ class PipelineBackend:
         roads = pd.read_csv(self.data_root / "rn" / "edge_info.csv")
         frames = {}
         records_by_split = {}
+        train_selection = None
         for split in ("train", "test"):
             records = _read_jsonl(run_dir / "tokens" / f"{split}_tokens.jsonl")
             records_by_split[split] = records
             raw = self._raw_frame(record["traj_id"] for record in records)
             frame = build_llm_frame(records, roads, raw, self.city)
+            if split == "train":
+                frame, train_selection = select_stage2_train_frame(
+                    frame,
+                    self.budget.stage2_train_trajectories,
+                    self.budget.stage2_subset_seed,
+                    self.city,
+                )
             path = output / f"llm_{split}.parquet"
             frame.to_parquet(path, index=False)
             frames[split] = (frame, path)
@@ -414,6 +470,7 @@ class PipelineBackend:
                 "population": len(frames["train"][0]),
                 "path": str(frames["train"][1].resolve()),
                 "sha256": _sha256(frames["train"][1]),
+                "selection": train_selection,
             },
             "test": {
                 "population": len(frames["test"][0]),
@@ -443,6 +500,8 @@ class PipelineBackend:
             self.seed,
             self.budget.stage2_epochs,
             self.budget.stage2_max_steps,
+            batch_size=self.budget.stage2_batch_size,
+            gradient_accumulation=self.budget.stage2_gradient_accumulation,
             eval_frame=eval_frame,
         )
         adapter_manifest = output / "adapter_manifest.json"
@@ -452,6 +511,10 @@ class PipelineBackend:
                 "adapter": result["adapter"],
                 "base_model": str(self.config.paths["model_root"]),
                 "seed": self.seed,
+                "train_population": len(frame),
+                "batch_size": self.budget.stage2_batch_size,
+                "gradient_accumulation": self.budget.stage2_gradient_accumulation,
+                "effective_batch_size": self.budget.stage2_effective_batch_size,
             },
         )
         gc.collect()
@@ -459,6 +522,7 @@ class PipelineBackend:
             torch.cuda.empty_cache()
         return {
             "adapter_manifest.json": adapter_manifest,
+            "stage2_plan.json": output / "stage2_plan.json",
             "stage2_metrics.json": output / "stage2_metrics.json",
             "token_budget.json": output / "token_budget.json",
         }

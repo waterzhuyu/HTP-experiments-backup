@@ -34,7 +34,15 @@ class Budget:
     stage1_batch_size: int
     stage2_epochs: int
     stage2_max_steps: int
+    stage2_train_trajectories: int | str
+    stage2_subset_seed: int
+    stage2_batch_size: int
+    stage2_gradient_accumulation: int
     stage3_trajectories: int | str
+
+    @property
+    def stage2_effective_batch_size(self) -> int:
+        return self.stage2_batch_size * self.stage2_gradient_accumulation
 
     @classmethod
     def from_dict(cls, name: str, raw: object) -> Budget:
@@ -52,6 +60,10 @@ class Budget:
         stage1_batch_size = values["stage1_batch_size"]
         stage2_epochs = values["stage2_epochs"]
         stage2_max_steps = values["stage2_max_steps"]
+        stage2_train_trajectories = values.get("stage2_train_trajectories", "full")
+        stage2_subset_seed = values.get("stage2_subset_seed", 20260826)
+        stage2_batch_size = values.get("stage2_batch_size", 16)
+        stage2_gradient_accumulation = values.get("stage2_gradient_accumulation", 1)
         stage3_trajectories = values["stage3_trajectories"]
         if not isinstance(stage1_epochs, int) or stage1_epochs <= 0:
             raise ConfigError(f"budget {name} stage1_epochs must be positive")
@@ -67,6 +79,29 @@ class Budget:
             raise ConfigError(f"budget {name} stage2_epochs must be positive")
         if not isinstance(stage2_max_steps, int) or stage2_max_steps == 0 or stage2_max_steps < -1:
             raise ConfigError(f"budget {name} stage2_max_steps must be -1 or positive")
+        if stage2_train_trajectories != "full" and (
+            not isinstance(stage2_train_trajectories, int)
+            or stage2_train_trajectories <= 0
+        ):
+            raise ConfigError(
+                f"budget {name} stage2_train_trajectories must be positive or 'full'"
+            )
+        if not isinstance(stage2_subset_seed, int) or isinstance(stage2_subset_seed, bool):
+            raise ConfigError(f"budget {name} stage2_subset_seed must be an integer")
+        if (
+            not isinstance(stage2_batch_size, int)
+            or isinstance(stage2_batch_size, bool)
+            or stage2_batch_size <= 0
+        ):
+            raise ConfigError(f"budget {name} stage2_batch_size must be positive")
+        if (
+            not isinstance(stage2_gradient_accumulation, int)
+            or isinstance(stage2_gradient_accumulation, bool)
+            or stage2_gradient_accumulation <= 0
+        ):
+            raise ConfigError(
+                f"budget {name} stage2_gradient_accumulation must be positive"
+            )
         if stage3_trajectories != "full" and (
             not isinstance(stage3_trajectories, int) or stage3_trajectories <= 0
         ):
@@ -79,6 +114,10 @@ class Budget:
             stage1_batch_size=stage1_batch_size,
             stage2_epochs=stage2_epochs,
             stage2_max_steps=stage2_max_steps,
+            stage2_train_trajectories=stage2_train_trajectories,
+            stage2_subset_seed=stage2_subset_seed,
+            stage2_batch_size=stage2_batch_size,
+            stage2_gradient_accumulation=stage2_gradient_accumulation,
             stage3_trajectories=stage3_trajectories,
         )
 

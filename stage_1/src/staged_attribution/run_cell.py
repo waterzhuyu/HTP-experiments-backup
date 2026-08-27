@@ -33,7 +33,16 @@ def build_cell_dag(cell_id: str) -> tuple[StageNode, ...]:
         StageNode("stage1", (), ("resolved_config.json", "stage1_model.pt", "stage1_metrics.json")),
         StageNode("tokens", ("stage1",), ("train_tokens.jsonl", "test_tokens.jsonl", "token_audit.json")),
         StageNode("stage2_data", ("tokens",), ("llm_train.parquet", "llm_test.parquet", "subset_manifest.json")),
-        StageNode("stage2", ("stage2_data",), ("adapter_manifest.json", "stage2_metrics.json", "token_budget.json")),
+        StageNode(
+            "stage2",
+            ("stage2_data",),
+            (
+                "adapter_manifest.json",
+                "stage2_plan.json",
+                "stage2_metrics.json",
+                "token_budget.json",
+            ),
+        ),
         StageNode("stage3", ("stage2",), ("generations.jsonl", "generation_audit.json")),
         StageNode("g_attribution", ("stage3",), ("g_variants.json",)),
         StageNode(

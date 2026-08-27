@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from staged_attribution.pipeline import (
     meters_per_normalized_coordinate,
     select_dataset_indices,
+    select_stage2_train_frame,
+    trajectory_id_sha256,
 )
 
 
@@ -26,6 +29,56 @@ def test_subset_selection_is_id_based_deterministic_and_sorted() -> None:
 def test_subset_selection_rejects_impossible_population() -> None:
     with pytest.raises(RuntimeError, match="invalid requested population"):
         select_dataset_indices([1, 2], 3, seed=1, salt="x")
+
+
+def test_stage2_fixed_subset_is_cell_and_training_seed_independent() -> None:
+    frame = pd.DataFrame({"traj_id": [50, 10, 40, 20, 30], "value": range(5)})
+
+    first, first_audit = select_stage2_train_frame(frame, 3, 20260826, "porto")
+    repeated, repeated_audit = select_stage2_train_frame(frame, 3, 20260826, "porto")
+    other_city, _ = select_stage2_train_frame(frame, 3, 20260826, "chengdu")
+    other_subset_seed, _ = select_stage2_train_frame(frame, 3, 20260827, "porto")
+
+    selected_ids = [int(value) for value in first["traj_id"]]
+    assert selected_ids == sorted(selected_ids)
+    assert first.equals(repeated)
+    assert first_audit == repeated_audit
+    assert first_audit["method"] == "sha256_rank_fixed_city_v1"
+    assert first_audit["source_population"] == 5
+    assert first_audit["population"] == 3
+    assert first_audit["requested"] == 3
+    assert first_audit["selected_traj_ids"] == selected_ids
+    assert first_audit["selected_traj_id_sha256"] == trajectory_id_sha256(selected_ids)
+    assert first_audit["selection_depends_on_training_seed"] is False
+    assert first["traj_id"].tolist() != other_city["traj_id"].tolist()
+    assert first["traj_id"].tolist() != other_subset_seed["traj_id"].tolist()
+
+
+def test_stage2_full_population_preserves_frame_order_and_audits_hash() -> None:
+    frame = pd.DataFrame({"traj_id": [30, 10, 20], "value": [3, 1, 2]})
+
+    selected, audit = select_stage2_train_frame(frame, "full", 7, "porto")
+
+    assert selected.equals(frame)
+    assert audit["method"] == "full_population_v1"
+    assert audit["source_population"] == 3
+    assert audit["population"] == 3
+    assert audit["selected_traj_ids"] is None
+    assert audit["selected_traj_id_sha256"] == trajectory_id_sha256([30, 10, 20])
+
+
+@pytest.mark.parametrize(
+    "frame,requested,match",
+    [
+        (pd.DataFrame({"traj_id": [1, 1]}), 1, "unique traj_id"),
+        (pd.DataFrame({"traj_id": [1, 2]}), 3, "invalid requested population"),
+    ],
+)
+def test_stage2_subset_rejects_invalid_population(
+    frame: pd.DataFrame, requested: int, match: str
+) -> None:
+    with pytest.raises(RuntimeError, match=match):
+        select_stage2_train_frame(frame, requested, 1, "porto")
 
 
 def test_normalized_coordinate_scale_uses_mbr_spans() -> None:
