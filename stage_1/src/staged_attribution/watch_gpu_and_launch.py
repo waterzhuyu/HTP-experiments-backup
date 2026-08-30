@@ -285,3 +285,33 @@ def main() -> None:
     parser.add_argument("--maximum-parallel", type=int, default=4)
     parser.add_argument("--poll-seconds", type=float, default=15.0)
     parser.add_argument("--minimum-free-mib", type=int, default=16000)
+    parser.add_argument("--maximum-utilization", type=int, default=20)
+    parser.add_argument("--cells", nargs="+")
+    parser.add_argument("--validate-only", action="store_true")
+    arguments = parser.parse_args()
+    contract = LaunchContract(
+        worktree=arguments.worktree,
+        config_path=arguments.config,
+        artifact_root=arguments.artifact_root,
+        expected_branch=arguments.expected_branch,
+        expected_head=arguments.expected_head,
+        expected_config_sha256=arguments.expected_config_sha256,
+        resource_option=arguments.resource_option,
+        budget=arguments.budget,
+    )
+    result = watch_and_launch(
+        contract,
+        maximum_parallel=arguments.maximum_parallel,
+        poll_seconds=arguments.poll_seconds,
+        minimum_free_mib=arguments.minimum_free_mib,
+        maximum_utilization=arguments.maximum_utilization,
+        cell_ids=arguments.cells,
+        validate_only=arguments.validate_only,
+    )
+    print(json.dumps(result, indent=2, sort_keys=True))
+    if not arguments.validate_only and result["failed"]:
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()

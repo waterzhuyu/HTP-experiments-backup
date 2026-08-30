@@ -9,6 +9,7 @@ import pytest
 from staged_attribution.watch_gpu_and_launch import (
     LaunchContract,
     _validate_resource_option,
+    main,
     single_instance_lock,
     validate_launch_contract,
     watch_and_launch,
@@ -252,3 +253,45 @@ def test_watcher_refuses_duplicate_formal_process(
 
     with pytest.raises(RuntimeError, match="already active"):
         watch_and_launch(contract)
+
+
+def test_cli_main_delegates_the_complete_launch_contract(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    import sys
+
+    config_path = _config_for_option(tmp_path, "A")
+    contract = _contract(tmp_path, config_path, "A")
+    captured = {}
+
+    def fake_watch(observed_contract, **kwargs):
+        captured["contract"] = observed_contract
+        captured.update(kwargs)
+        return {"contract_valid": True, "failed": []}
+
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.watch_and_launch", fake_watch
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "watch_gpu_and_launch",
+            "--worktree", str(contract.worktree),
+            "--config", str(contract.config_path),
+            "--artifact-root", str(contract.artifact_root),
+            "--expected-branch", contract.expected_branch,
+            "--expected-head", contract.expected_head,
+            "--expected-config-sha256", contract.expected_config_sha256,
+            "--resource-option", contract.resource_option,
+            "--poll-seconds", "7",
+            "--validate-only",
+        ],
+    )
+
+    main()
+
+    assert captured["contract"] == contract
+    assert captured["poll_seconds"] == 7
+    assert captured["validate_only"] is True
+    assert json.loads(capsys.readouterr().out)["contract_valid"] is True

@@ -63,3 +63,22 @@ manager. Required arguments are:
 --poll-seconds 15
 --minimum-free-mib 16000
 --maximum-utilization 20
+```
+
+Run it from the execution worktree with the locked environment:
+
+```text
+env PYTHONPATH=stage_1/src uv run --frozen python -m staged_attribution.watch_gpu_and_launch ...
+```
+
+Redirect stdout and stderr to a provenance log outside the Git worktree. The log
+contains one JSON event per poll, including the observed memory/utilization rows and
+eligible GPU indices. The file lock path is
+`<artifact-root>/provenance/gpu_watch_and_launch.lock`.
+
+## Failure behavior
+
+If a training process exits nonzero, the existing parallel runner stops admitting
+new jobs and waits only for already-running jobs to finish. The watcher then exits
+nonzero. It does not delete, overwrite, or resume a failed attempt. Relaunching under
+the same valid contract creates only the next numbered attempt for unfinished jobs.
