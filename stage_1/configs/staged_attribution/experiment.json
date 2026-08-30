@@ -59,6 +59,14 @@
       "stage1_batch_size": 512,
       "stage2_epochs": 2,
       "stage2_max_steps": -1,
+      "stage2_train_trajectories": 64000,
+      "stage2_subset_seed": 20260826,
+      "stage2_batch_size": 8,
+      "stage2_gradient_accumulation": 2,
+      "stage2_subset_manifests": {
+        "porto": "/home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/candidate_option_b_stage2_subsets/porto_stage2_train_64000_seed20260826.json",
+        "chengdu": "/home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/candidate_option_b_stage2_subsets/chengdu_stage2_train_64000_seed20260826.json"
+      },
       "stage3_trajectories": 1024
     },
     "confirmation": {
@@ -82,6 +90,15 @@
     "upstream_revision": "1294275d2bed5f9de86269ab285ff5e23828b947",
     "inherited_revision": "96f65dee35054ed0eec1022d7ca81371f29560f7",
     "design_revision": "390f0a99a91dbd40f2395ba2fffb1463653c5e79",
-    "excluded_views": ["poi"]
+    "excluded_views": ["poi"],
+    "stage2_resource_option": "B",
+    "stage2_resource_decision": {
+      "selected_by": "user",
+      "selected_at": "2026-08-30",
+      "stage2_subset_index": "/home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/candidate_option_b_stage2_subsets/index.json",
+      "stage2_subset_index_sha256": "8673fd0992d5f41af0ba0d810db6770edc8e4f1624d6a76cb984480fa5524bbd",
+      "porto_manifest_sha256": "026720480bfed13f9f98aa4f34611a3a0ce06b98af03e712ca60ef3f13153942",
+      "chengdu_manifest_sha256": "ba7d822c6ec0dbfe46f88d5653b127017f62918b92c81090993a2e8251acf8e4"
+    }
   }
 }

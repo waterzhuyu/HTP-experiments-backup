@@ -24,6 +24,7 @@ def _config_for_option(tmp_path: Path, option: str) -> Path:
     raw["provenance"]["stage2_resource_option"] = option
     raw["provenance"]["candidate_only"] = False
     budget = raw["budgets"]["controlled"]
+    budget.pop("stage2_subset_manifests", None)
     if option == "A":
         budget.update(
             stage2_train_trajectories="full",
@@ -88,6 +89,17 @@ def test_resource_option_contract_rejects_candidate_and_old_default(tmp_path: Pa
     from staged_attribution.config import ExperimentConfig
 
     raw = json.loads(SOURCE_CONFIG.read_text(encoding="utf-8"))
+    raw["provenance"].pop("stage2_resource_option", None)
+    raw["provenance"].pop("stage2_resource_decision", None)
+    old_budget = raw["budgets"]["controlled"]
+    for field in (
+        "stage2_train_trajectories",
+        "stage2_subset_seed",
+        "stage2_batch_size",
+        "stage2_gradient_accumulation",
+        "stage2_subset_manifests",
+    ):
+        old_budget.pop(field, None)
     old_path = tmp_path / "old.json"
     old_path.write_text(json.dumps(raw), encoding="utf-8")
     with pytest.raises(RuntimeError, match="stage2_resource_option"):
