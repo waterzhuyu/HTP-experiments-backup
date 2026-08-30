@@ -1,0 +1,254 @@
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+
+import pytest
+
+from staged_attribution.watch_gpu_and_launch import (
+    LaunchContract,
+    _validate_resource_option,
+    single_instance_lock,
+    validate_launch_contract,
+    watch_and_launch,
+)
+
+
+SOURCE_CONFIG = Path("stage_1/configs/staged_attribution/experiment.json")
+
+
+def _config_for_option(tmp_path: Path, option: str) -> Path:
+    raw = json.loads(SOURCE_CONFIG.read_text(encoding="utf-8"))
+    raw["provenance"]["stage2_resource_option"] = option
+    raw["provenance"]["candidate_only"] = False
+    budget = raw["budgets"]["controlled"]
+    if option == "A":
+        budget.update(
+            stage2_train_trajectories="full",
+            stage2_batch_size=8,
+            stage2_gradient_accumulation=2,
+        )
+    elif option == "B":
+        manifests = {}
+        for city in raw["cities"]:
+            path = tmp_path / f"{city}.json"
+            path.write_text("{}", encoding="utf-8")
+            manifests[city] = str(path)
+        budget.update(
+            stage2_train_trajectories=64000,
+            stage2_batch_size=8,
+            stage2_gradient_accumulation=2,
+            stage2_subset_manifests=manifests,
+        )
+    elif option == "C":
+        budget.update(
+            stage2_train_trajectories="full",
+            stage2_batch_size=16,
+            stage2_gradient_accumulation=1,
+        )
+    else:
+        raise AssertionError(option)
+    config_path = tmp_path / "experiment.json"
+    config_path.write_text(json.dumps(raw), encoding="utf-8")
+    return config_path
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _contract(tmp_path: Path, config_path: Path, resource_option: str) -> LaunchContract:
+    artifact_root = Path(json.loads(config_path.read_text())["paths"]["artifact_root"])
+    experiment_id = json.loads(config_path.read_text())["experiment_id"]
+    return LaunchContract(
+        worktree=tmp_path,
+        config_path=config_path,
+        artifact_root=artifact_root / "staged_attribution" / experiment_id,
+        expected_branch="locked-branch",
+        expected_head="a" * 40,
+        expected_config_sha256=_sha256(config_path),
+        resource_option=resource_option,
+    )
+
+
+@pytest.mark.parametrize("option", ["A", "B", "C"])
+def test_resource_option_contract_accepts_only_matching_formal_config(
+    tmp_path: Path, option: str
+) -> None:
+    config_path = _config_for_option(tmp_path, option)
+    from staged_attribution.config import ExperimentConfig
+
+    config = ExperimentConfig.load(config_path)
+    _validate_resource_option(config, option, "controlled")
+
+
+def test_resource_option_contract_rejects_candidate_and_old_default(tmp_path: Path) -> None:
+    from staged_attribution.config import ExperimentConfig
+
+    raw = json.loads(SOURCE_CONFIG.read_text(encoding="utf-8"))
+    old_path = tmp_path / "old.json"
+    old_path.write_text(json.dumps(raw), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="stage2_resource_option"):
+        _validate_resource_option(ExperimentConfig.load(old_path), "B", "controlled")
+
+    candidate = _config_for_option(tmp_path, "B")
+    raw = json.loads(candidate.read_text(encoding="utf-8"))
+    raw["provenance"]["candidate_only"] = True
+    candidate.write_text(json.dumps(raw), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="candidate_only"):
+        _validate_resource_option(ExperimentConfig.load(candidate), "B", "controlled")
+
+
+def test_option_b_requires_explicit_existing_city_manifests(tmp_path: Path) -> None:
+    from staged_attribution.config import ExperimentConfig
+
+    config_path = _config_for_option(tmp_path, "B")
+    raw = json.loads(config_path.read_text(encoding="utf-8"))
+    raw["budgets"]["controlled"]["stage2_subset_manifests"].pop("chengdu")
+    config_path.write_text(json.dumps(raw), encoding="utf-8")
+    with pytest.raises(ValueError, match="cover exactly"):
+        ExperimentConfig.load(config_path)
+
+    config_path = _config_for_option(tmp_path, "B")
+    raw = json.loads(config_path.read_text(encoding="utf-8"))
+    Path(raw["budgets"]["controlled"]["stage2_subset_manifests"]["porto"]).unlink()
+    with pytest.raises(RuntimeError, match="manifest files are missing"):
+        _validate_resource_option(ExperimentConfig.load(config_path), "B", "controlled")
+
+
+def test_launch_contract_rejects_git_config_and_dirty_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config_path = _config_for_option(tmp_path, "A")
+    contract = _contract(tmp_path, config_path, "A")
+    responses = {
+        ("branch", "--show-current"): "locked-branch",
+        ("rev-parse", "HEAD"): "a" * 40,
+        ("status", "--porcelain"): "",
+    }
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch._git",
+        lambda _worktree, *arguments: responses[arguments],
+    )
+
+    validate_launch_contract(contract)
+
+    responses[("status", "--porcelain")] = " M experiment.json"
+    with pytest.raises(RuntimeError, match="dirty"):
+        validate_launch_contract(contract)
+    responses[("status", "--porcelain")] = ""
+    config_path.write_text(config_path.read_text() + "\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="SHA256 drifted"):
+        validate_launch_contract(contract)
+
+
+def test_single_instance_lock_rejects_duplicate_holder(tmp_path: Path) -> None:
+    lock_path = tmp_path / "watcher.lock"
+    with single_instance_lock(lock_path):
+        with pytest.raises(RuntimeError, match="another GPU watcher"):
+            with single_instance_lock(lock_path):
+                pass
+
+
+def test_validate_only_never_calls_runner_or_creates_attempts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config_path = _config_for_option(tmp_path, "A")
+    contract = _contract(tmp_path, config_path, "A")
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.validate_launch_contract",
+        lambda _contract: __import__(
+            "staged_attribution.config", fromlist=["ExperimentConfig"]
+        ).ExperimentConfig.load(config_path),
+    )
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.query_gpus",
+        lambda: [
+            {"index": 0, "memory_total": 24576, "memory_used": 1000, "utilization": 5}
+        ],
+    )
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.run_parallel_experiment",
+        lambda *args, **kwargs: pytest.fail("runner must not be called"),
+    )
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.active_formal_processes",
+        lambda _contract: pytest.fail("validate-only must not inspect launch processes"),
+    )
+
+    result = watch_and_launch(contract, validate_only=True)
+
+    assert result["safe_gpus"] == [0]
+    assert result["pending_count"] == 60
+
+
+def test_watcher_revalidates_contract_on_every_gpu_poll_and_delegates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config_path = _config_for_option(tmp_path, "A")
+    contract = _contract(tmp_path, config_path, "A")
+    config_module = __import__("staged_attribution.config", fromlist=["ExperimentConfig"])
+    config = config_module.ExperimentConfig.load(config_path)
+    validation_count = 0
+
+    def validate(_contract):
+        nonlocal validation_count
+        validation_count += 1
+        return config
+
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.validate_launch_contract", validate
+    )
+    rows = [{"index": 2, "memory_total": 24576, "memory_used": 1000, "utilization": 5}]
+    monkeypatch.setattr("staged_attribution.watch_gpu_and_launch.query_gpus", lambda: rows)
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.active_formal_processes",
+        lambda _contract: [],
+    )
+    captured = {}
+
+    def fake_runner(*args, **kwargs):
+        captured.update(kwargs)
+        assert kwargs["query_gpu_fn"]() == rows
+        return {"completed": [], "failed": [], "pending": []}
+
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.run_parallel_experiment", fake_runner
+    )
+
+    result = watch_and_launch(contract, poll_seconds=7, maximum_parallel=3)
+
+    assert result["failed"] == []
+    assert validation_count == 3
+    assert captured["wait_for_gpu"] is True
+    assert captured["poll_seconds"] == 7
+    assert captured["maximum_parallel"] == 3
+
+
+def test_watcher_refuses_duplicate_formal_process(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config_path = _config_for_option(tmp_path, "A")
+    contract = _contract(tmp_path, config_path, "A")
+    config_module = __import__("staged_attribution.config", fromlist=["ExperimentConfig"])
+    config = config_module.ExperimentConfig.load(config_path)
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.validate_launch_contract",
+        lambda _contract: config,
+    )
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.active_formal_processes",
+        lambda _contract: [{"pid": 123, "command": "staged_attribution.run_cell"}],
+    )
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.query_gpus",
+        lambda: pytest.fail("must reject duplicate before querying GPUs"),
+    )
+    monkeypatch.setattr(
+        "staged_attribution.watch_gpu_and_launch.run_parallel_experiment",
+        lambda *args, **kwargs: pytest.fail("must reject duplicate before runner"),
+    )
+
+    with pytest.raises(RuntimeError, match="already active"):
+        watch_and_launch(contract)
