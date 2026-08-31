@@ -8,6 +8,7 @@
 - 修复分支：`fix/staged-attribution-compact-adapter`
 - 基线 revision：`6ac87be094c9c1ce4783f10291a339f04623449b`
 - 首次候选提交：`1870926cc1abf170d54ce930e1ca455fe4b61251`
+- 精确 extension-row 提交：`aa0cbc580eb5b33880d0577665fa0d09459b8578`
 - 状态：`verified / not_activated_on_formal_queue`
 
 本协议只改变每个 Stage2 PEFT adapter 的落盘表示，不改变 GPS/Road/Grid 数据、Stage1、
@@ -161,3 +162,38 @@ Transformer nested-tensor 提示。
 
 回滚只允许通过新的 Git revision 恢复完整 adapter 保存；不删除、不覆盖已经产生的 compact 或
 legacy artifact。两种格式都保留各自 provenance，并由 manifest 是否存在显式区分。
+
+## 7. 正式激活容量门禁与调度边界
+
+2026-08-31 16:15 UTC 的只读快照中，正式 worktree 仍锁定在 `6ac87be...`，正式配置
+SHA-256 仍为 `39a33c9b...c7604a`，工作树 clean，4 个 `run_cell` 存活，正式 attempt 仍只有
+既定的 4 个 `attempt_002`，失败标记为 0。E0-Q0、E1-Q0、E2-Q0 已完成 8,000/8,000
+optimizer steps 并写出 legacy adapter；E3-Q0 为 7,655/8,000。
+
+三个已写 adapter 的 Porto attempt 当前分别占 2,097,798,178、2,097,895,042 和
+2,096,909,201 bytes，其中每个 `adapter_model.safetensors` 为 1,583,305,008 bytes。
+home filesystem 精确可用 142,705,381,376 bytes。以真实 Porto attempt 为基准，并用双城市
+真实 adapter 的大小差估算 Chengdu，若首批 4 个 Porto 保持 legacy，剩余 26 Porto +
+30 Chengdu 也全部使用 legacy，仅 controlled core 预计还需 138,782,967,736 bytes。这会把
+余量压到约 2–3 GB，且尚未计入 Stage3/4、corrected reevaluation、adaptive 和 confirmation，
+因此不能证明完整实验可落盘。
+
+若首批 4 个 attempt 保持不可变、只对剩余 56 个启用本文协议，预计后续 controlled core
+写入约 63,054,128,312 bytes，相比 legacy 少写 75,728,839,424 bytes（约 70.52 GiB）。
+这是当前可以证明完整后处理仍有容量余量的方案。
+
+修复 revision 的 watcher `--validate-only` 已通过：`contract_valid=true`、resource option B、
+config SHA 匹配、当前 completed 0 / pending 60、GPU `safe_gpus=[]`；该检查不取正式锁，也没有
+启动任务。正式进程写出 adapter 后仍对完整 Porto test population 59,778 条执行
+teacher-forced evaluation（batch size 4，共 14,945 batches），因此 `8000/8000` 不是
+`run_cell` terminal 证据。
+
+推荐切换步骤如下，未获授权前不得执行：
+
+1. 仅暂停按命令行和锁识别出的 watcher Python 父进程，不向 4 个 `run_cell` 发信号；
+2. 等待 4 个 attempt 自然 terminal，逐项审计 completion/failure marker、revision、config、
+   adapter SHA、Stage3/4 与 run size；
+3. 将正式分支 fast-forward 到已验证修复 revision，保持配置 SHA 不变并重跑完整回归；
+4. 用正式 branch/name/head 再执行一次 `--validate-only`；
+5. 释放旧 watcher 后，以新 expected HEAD 启动唯一 watcher，保留所有旧 attempt；
+6. 若授权前 watcher 已派发新一批，则新 attempt 同样不可变，并在下一安全边界重新计算容量。
