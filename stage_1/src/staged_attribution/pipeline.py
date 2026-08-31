@@ -542,6 +542,7 @@ class PipelineBackend:
                 "batch_size": self.budget.stage2_batch_size,
                 "gradient_accumulation": self.budget.stage2_gradient_accumulation,
                 "effective_batch_size": self.budget.stage2_effective_batch_size,
+                "adapter_storage": result["adapter_storage"],
             },
         )
         gc.collect()

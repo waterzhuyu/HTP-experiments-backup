@@ -12,6 +12,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 
+from .adapter_storage import compact_peft_adapter
 from .evaluate_stage2 import grouped_teacher_forced_accuracy
 from .token_protocol import PREFIXES, VOCAB_SIZES, special_tokens
 
@@ -324,6 +325,11 @@ def run_hf_stage2(
     adapter_path = output / "adapter"
     model.save_pretrained(adapter_path)
     tokenizer.save_pretrained(adapter_path)
+    adapter_storage = compact_peft_adapter(
+        adapter_path,
+        base_model_path=model_path,
+        reconstruction_seed=seed,
+    )
     trainer.save_state()
     train_metrics = {key: float(value) for key, value in train_result.metrics.items()}
     teacher_forced = None
@@ -360,5 +366,6 @@ def run_hf_stage2(
         "metrics": metrics,
         "token_budget": token_budget,
         "adapter": str(adapter_path),
+        "adapter_storage": adapter_storage,
         "trainer_state": str(output / "trainer" / "trainer_state.json"),
     }
