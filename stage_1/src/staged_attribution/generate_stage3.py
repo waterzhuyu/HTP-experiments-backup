@@ -9,8 +9,7 @@ import pandas as pd
 import torch
 
 from .adapter_storage import (
-    reconstruction_seed_for_adapter,
-    validate_loaded_compact_adapter,
+    restore_and_validate_loaded_compact_adapter,
 )
 from .token_protocol import TokenProtocolError, parse_answer, special_tokens
 
@@ -114,8 +113,7 @@ def run_hf_generation(
 
     if frame["traj_id"].duplicated().any():
         raise GenerationError("generation frame contains duplicate traj_id")
-    reconstruction_seed = reconstruction_seed_for_adapter(adapter_path, fallback=seed)
-    set_seed(reconstruction_seed)
+    set_seed(seed)
     tokenizer = AutoTokenizer.from_pretrained(str(adapter_path))
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "left"
@@ -127,7 +125,7 @@ def run_hf_generation(
         str(adapter_path), torch_dtype=torch.bfloat16 if device.startswith("cuda") else torch.float32
     ).to(device)
     model.eval()
-    validate_loaded_compact_adapter(model, adapter_path)
+    restore_and_validate_loaded_compact_adapter(model, adapter_path)
     set_seed(seed)
     ordered = frame.sort_values("traj_id").reset_index(drop=True)
     results: list[dict[str, object]] = []

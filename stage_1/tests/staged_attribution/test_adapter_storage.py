@@ -13,12 +13,12 @@ from safetensors.torch import save_file
 from staged_attribution.adapter_storage import (
     ADAPTER_MODEL,
     COMPACT_MANIFEST,
+    EXTENSION_MODEL,
     AdapterStorageError,
     compact_peft_adapter,
-    reconstruction_seed_for_adapter,
+    restore_and_validate_loaded_compact_adapter,
     sha256_file,
     validate_compact_adapter,
-    validate_loaded_compact_adapter,
 )
 from staged_attribution.generate_stage3 import run_hf_generation
 
@@ -33,7 +33,9 @@ LORA = "base_model.model.model.layers.0.self_attn.q_proj.lora_A.weight"
 def _adapter(tmp_path, *, equal_bases: bool = True):
     base_model = tmp_path / "base_model"
     base_model.mkdir()
-    (base_model / "config.json").write_text('{"model_type":"qwen3"}\n')
+    (base_model / "config.json").write_text(
+        '{"model_type":"qwen3","vocab_size":8}\n'
+    )
     adapter = tmp_path / "adapter"
     adapter.mkdir()
     (adapter / "adapter_config.json").write_text(
@@ -57,10 +59,12 @@ def _adapter(tmp_path, *, equal_bases: bool = True):
 def test_compact_adapter_removes_only_reconstructible_duplicate_bases(tmp_path) -> None:
     adapter, base_model = _adapter(tmp_path)
     original_bytes = (adapter / ADAPTER_MODEL).stat().st_size
+    with safe_open(adapter / ADAPTER_MODEL, framework="pt", device="cpu") as handle:
+        expected_extension = handle.get_tensor(INPUT_BASE)[8:].clone()
     payload = compact_peft_adapter(
         adapter,
         base_model_path=base_model,
-        reconstruction_seed=42,
+        training_seed=42,
     )
 
     with safe_open(adapter / ADAPTER_MODEL, framework="pt", device="cpu") as handle:
@@ -68,13 +72,20 @@ def test_compact_adapter_removes_only_reconstructible_duplicate_bases(tmp_path) 
     assert INPUT_BASE not in keys
     assert OUTPUT_BASE not in keys
     assert keys == {INPUT_DELTA, OUTPUT_DELTA, LORA}
-    assert payload["reconstruction_seed"] == 42
+    assert payload["training_seed"] == 42
+    assert payload["base_vocab_size"] == 8
+    assert payload["base_embedding_extension_shape"] == [4, 4]
+    assert (adapter / EXTENSION_MODEL).is_file()
+    with safe_open(adapter / EXTENSION_MODEL, framework="pt", device="cpu") as handle:
+        assert torch.equal(handle.get_tensor("new_rows"), expected_extension)
     assert payload["original_bytes"] == original_bytes
-    assert payload["compact_bytes"] == (adapter / ADAPTER_MODEL).stat().st_size
+    assert payload["compact_bytes"] == (
+        (adapter / ADAPTER_MODEL).stat().st_size
+        + (adapter / EXTENSION_MODEL).stat().st_size
+    )
     assert payload["saved_bytes"] > 0
     assert payload["removed_tensors"][0]["sha256"] == payload["removed_tensors"][1]["sha256"]
     assert validate_compact_adapter(adapter) == payload
-    assert reconstruction_seed_for_adapter(adapter, fallback=9) == 42
     assert json.loads((adapter / COMPACT_MANIFEST).read_text()) == payload
 
 
@@ -82,14 +93,14 @@ def test_compaction_rejects_nonidentical_base_embeddings_without_mutation(tmp_pa
     adapter, base_model = _adapter(tmp_path, equal_bases=False)
     original_sha = sha256_file(adapter / ADAPTER_MODEL)
     with pytest.raises(AdapterStorageError, match="differ at row chunk"):
-        compact_peft_adapter(adapter, base_model_path=base_model, reconstruction_seed=42)
+        compact_peft_adapter(adapter, base_model_path=base_model, training_seed=42)
     assert sha256_file(adapter / ADAPTER_MODEL) == original_sha
     assert not (adapter / COMPACT_MANIFEST).exists()
 
 
 def test_compact_validation_rejects_model_tampering(tmp_path) -> None:
     adapter, base_model = _adapter(tmp_path)
-    compact_peft_adapter(adapter, base_model_path=base_model, reconstruction_seed=42)
+    compact_peft_adapter(adapter, base_model_path=base_model, training_seed=42)
     model_file = adapter / ADAPTER_MODEL
     data = bytearray(model_file.read_bytes())
     data[-1] ^= 1
@@ -98,30 +109,58 @@ def test_compact_validation_rejects_model_tampering(tmp_path) -> None:
         validate_compact_adapter(adapter)
 
 
-def test_legacy_adapter_uses_generation_seed_fallback(tmp_path) -> None:
+def test_compact_validation_rejects_extension_tampering(tmp_path) -> None:
+    adapter, base_model = _adapter(tmp_path)
+    compact_peft_adapter(adapter, base_model_path=base_model, training_seed=42)
+    extension_file = adapter / EXTENSION_MODEL
+    data = bytearray(extension_file.read_bytes())
+    data[-1] ^= 1
+    extension_file.write_bytes(data)
+    with pytest.raises(AdapterStorageError, match="extension SHA256 mismatch"):
+        validate_compact_adapter(adapter)
+
+
+def test_legacy_adapter_restore_is_noop(tmp_path) -> None:
     adapter = tmp_path / "adapter"
     adapter.mkdir()
-    assert reconstruction_seed_for_adapter(adapter, fallback=17) == 17
+
+    class LegacyModel:
+        def named_parameters(self):
+            raise AssertionError("legacy adapter must not inspect model parameters")
+
+    restore_and_validate_loaded_compact_adapter(LegacyModel(), adapter)
 
 
 def test_loaded_compact_adapter_verifies_reconstructed_tensor_bytes(tmp_path) -> None:
     adapter, base_model = _adapter(tmp_path)
-    payload = compact_peft_adapter(adapter, base_model_path=base_model, reconstruction_seed=42)
+    payload = compact_peft_adapter(adapter, base_model_path=base_model, training_seed=42)
     restored = torch.arange(48, dtype=torch.float32).reshape(12, 4).to(torch.bfloat16)
+    randomly_initialized = restored.clone()
+    randomly_initialized[8:] = -1
 
     class LoadedModel:
         def named_parameters(self, remove_duplicate=True):
             assert remove_duplicate is False
             for item in payload["removed_tensors"]:
+                yield item["name"], torch.nn.Parameter(
+                    randomly_initialized.clone(), requires_grad=False
+                )
+
+    model = LoadedModel()
+    restore_and_validate_loaded_compact_adapter(model, adapter)
+    restored[0, 0] += 1
+
+    class WrongBaseModel:
+        def named_parameters(self, remove_duplicate=True):
+            assert remove_duplicate is False
+            for item in payload["removed_tensors"]:
                 yield item["name"], torch.nn.Parameter(restored.clone(), requires_grad=False)
 
-    validate_loaded_compact_adapter(LoadedModel(), adapter)
-    restored[0, 0] += 1
     with pytest.raises(AdapterStorageError, match="tensor SHA256 mismatch"):
-        validate_loaded_compact_adapter(LoadedModel(), adapter)
+        restore_and_validate_loaded_compact_adapter(WrongBaseModel(), adapter)
 
 
-def test_generation_reconstructs_with_training_seed_then_resets_generation_seed(
+def test_generation_uses_generation_seed_before_and_after_model_loading(
     tmp_path, monkeypatch
 ) -> None:
     seed_calls: list[int] = []
@@ -175,11 +214,7 @@ def test_generation_reconstructs_with_training_seed_then_resets_generation_seed(
         seed_calls.append(int(value))
 
     monkeypatch.setattr(
-        "staged_attribution.generate_stage3.reconstruction_seed_for_adapter",
-        lambda _path, fallback: 7,
-    )
-    monkeypatch.setattr(
-        "staged_attribution.generate_stage3.validate_loaded_compact_adapter",
+        "staged_attribution.generate_stage3.restore_and_validate_loaded_compact_adapter",
         lambda _model, _path: None,
     )
     monkeypatch.setitem(sys.modules, "peft", SimpleNamespace(AutoPeftModelForCausalLM=FakeModel))
@@ -197,6 +232,6 @@ def test_generation_reconstructs_with_training_seed_then_resets_generation_seed(
         seed=42,
         device="cpu",
     )
-    assert load_seed == [7]
-    assert seed_calls == [7, 42]
+    assert load_seed == [42]
+    assert seed_calls == [42, 42]
     assert result["audit"] == {"population": 1, "completed": 1, "failed": 0}

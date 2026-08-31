@@ -10,9 +10,11 @@ from typing import Any
 import torch
 
 
-COMPACT_ADAPTER_FORMAT = "peft_reconstructible_base_embeddings_v1"
+COMPACT_ADAPTER_FORMAT = "peft_base_embedding_extension_v1"
 COMPACT_MANIFEST = "compact_adapter_manifest.json"
 ADAPTER_MODEL = "adapter_model.safetensors"
+EXTENSION_MODEL = "base_embedding_extension.safetensors"
+EXTENSION_TENSOR = "new_rows"
 RECONSTRUCTIBLE_SUFFIX = "token_adapter.base_layer.weight"
 
 
@@ -78,14 +80,14 @@ def compact_peft_adapter(
     adapter_path: str | Path,
     *,
     base_model_path: str | Path,
-    reconstruction_seed: int,
+    training_seed: int,
 ) -> dict[str, Any]:
-    """Remove only PEFT base embeddings that the frozen load recipe rebuilds exactly.
+    """Replace duplicate full PEFT base embeddings with one exact extension tensor.
 
     PEFT stores the resized input and output base embeddings alongside the LoRA and
-    trainable-token deltas.  For this experiment those two tensors are byte-identical,
-    deterministic functions of the immutable base model, token protocol, package
-    versions, and training seed.  The deltas remain in every per-run adapter.
+    trainable-token deltas.  For this experiment those two tensors are byte-identical.
+    Their frozen base-vocabulary rows come from the immutable base model, so only one
+    copy of the newly added rows must remain beside the LoRA and token deltas.
     """
     from safetensors import safe_open
     from safetensors.torch import save_file
@@ -105,13 +107,30 @@ def compact_peft_adapter(
     base_config = expected_base / "config.json"
     if not base_config.is_file():
         raise AdapterStorageError(f"base model config is missing: {base_config}")
+    base_config_payload = _read_json(base_config, "base model config")
+    try:
+        base_vocab_size = int(base_config_payload["vocab_size"])
+    except (KeyError, TypeError, ValueError) as error:
+        raise AdapterStorageError("base model vocab_size is invalid") from error
 
     original_bytes = model_file.stat().st_size
     original_sha256 = sha256_file(model_file)
     temporary_model = model_file.with_suffix(model_file.suffix + ".compact.tmp")
+    extension_file = root / EXTENSION_MODEL
+    temporary_extension = extension_file.with_suffix(extension_file.suffix + ".tmp")
     manifest_file = root / COMPACT_MANIFEST
     temporary_manifest = root / (COMPACT_MANIFEST + ".tmp")
-    stale = [path for path in (temporary_model, temporary_manifest, manifest_file) if path.exists()]
+    stale = [
+        path
+        for path in (
+            temporary_model,
+            temporary_extension,
+            extension_file,
+            temporary_manifest,
+            manifest_file,
+        )
+        if path.exists()
+    ]
     if stale:
         raise AdapterStorageError(f"refusing compaction with existing state: {stale}")
 
@@ -131,34 +150,55 @@ def compact_peft_adapter(
         left_dtype = left.get_dtype()
         if left_shape != right_shape or left_dtype != right.get_dtype():
             raise AdapterStorageError("reconstructible base embedding shapes or dtypes differ")
+        if base_vocab_size <= 0 or base_vocab_size >= left_shape[0]:
+            raise AdapterStorageError(
+                f"base vocab_size {base_vocab_size} is incompatible with {left_shape}"
+            )
         for start in range(0, left_shape[0], 4096):
             if not torch.equal(left[start : start + 4096], right[start : start + 4096]):
                 raise AdapterStorageError(
                     f"input/output base embeddings differ at row chunk {start}"
                 )
         shared_digest = _tensor_digest(left, left_shape[0])
+        extension = left[base_vocab_size:].clone()
         tensors = {key: handle.get_tensor(key) for key in keys if key not in removed}
         metadata = handle.metadata()
 
     save_file(tensors, temporary_model, metadata=metadata)
+    save_file({EXTENSION_TENSOR: extension}, temporary_extension, metadata={"format": "pt"})
     with safe_open(temporary_model, framework="pt", device="cpu") as handle:
         compact_keys = list(handle.keys())
     if any(key in compact_keys for key in removed) or len(compact_keys) != len(keys) - len(removed):
         temporary_model.unlink(missing_ok=True)
+        temporary_extension.unlink(missing_ok=True)
         raise AdapterStorageError("compact adapter tensor inventory is invalid")
+    with safe_open(temporary_extension, framework="pt", device="cpu") as handle:
+        if list(handle.keys()) != [EXTENSION_TENSOR]:
+            temporary_model.unlink(missing_ok=True)
+            temporary_extension.unlink(missing_ok=True)
+            raise AdapterStorageError("base embedding extension tensor inventory is invalid")
 
-    compact_bytes = temporary_model.stat().st_size
+    compact_model_bytes = temporary_model.stat().st_size
+    extension_bytes = temporary_extension.stat().st_size
+    compact_bytes = compact_model_bytes + extension_bytes
     compact_sha256 = sha256_file(temporary_model)
+    extension_sha256 = sha256_file(temporary_extension)
     payload: dict[str, Any] = {
         "schema_version": 1,
         "format": COMPACT_ADAPTER_FORMAT,
         "adapter_model": ADAPTER_MODEL,
         "adapter_model_sha256_before_compaction": original_sha256,
         "adapter_model_sha256": compact_sha256,
+        "base_embedding_extension": EXTENSION_MODEL,
+        "base_embedding_extension_sha256": extension_sha256,
+        "base_embedding_extension_tensor": EXTENSION_TENSOR,
+        "base_embedding_extension_shape": list(extension.shape),
+        "base_embedding_extension_dtype": left_dtype,
         "adapter_config_sha256": sha256_file(config_file),
         "base_model_name_or_path": str(expected_base),
         "base_model_config_sha256": sha256_file(base_config),
-        "reconstruction_seed": int(reconstruction_seed),
+        "base_vocab_size": base_vocab_size,
+        "training_seed": int(training_seed),
         "package_versions": _versions(),
         "removed_tensors": [
             {
@@ -170,11 +210,14 @@ def compact_peft_adapter(
             for key in removed
         ],
         "original_bytes": original_bytes,
+        "compact_model_bytes": compact_model_bytes,
+        "base_embedding_extension_bytes": extension_bytes,
         "compact_bytes": compact_bytes,
         "saved_bytes": original_bytes - compact_bytes,
         "reconstruction_recipe": (
-            "set_seed(reconstruction_seed); load immutable base model; "
-            "resize_token_embeddings(tokenizer_length, mean_resizing=True); load PEFT deltas"
+            "load immutable base model; resize token embeddings; load PEFT deltas; "
+            "overwrite rows [base_vocab_size:] of both token_adapter base layers "
+            "with the exact stored extension; verify both full-tensor SHA256 digests"
         ),
     }
     with temporary_manifest.open("w", encoding="utf-8") as handle:
@@ -185,6 +228,7 @@ def compact_peft_adapter(
     # Publish the manifest first.  A crash before the model replacement then fails
     # closed on SHA validation instead of silently loading a compact model as legacy.
     temporary_manifest.replace(manifest_file)
+    temporary_extension.replace(extension_file)
     temporary_model.replace(model_file)
     return payload
 
@@ -198,13 +242,16 @@ def validate_compact_adapter(adapter_path: str | Path) -> dict[str, Any] | None:
     if payload.get("schema_version") != 1 or payload.get("format") != COMPACT_ADAPTER_FORMAT:
         raise AdapterStorageError("unsupported compact adapter manifest")
     model_file = root / str(payload.get("adapter_model", ""))
+    extension_file = root / str(payload.get("base_embedding_extension", ""))
     config_file = root / "adapter_config.json"
-    if not model_file.is_file() or not config_file.is_file():
+    if not model_file.is_file() or not extension_file.is_file() or not config_file.is_file():
         raise AdapterStorageError("compact adapter files are missing")
     if sha256_file(model_file) != payload.get("adapter_model_sha256"):
         raise AdapterStorageError("compact adapter model SHA256 mismatch")
     if sha256_file(config_file) != payload.get("adapter_config_sha256"):
         raise AdapterStorageError("compact adapter config SHA256 mismatch")
+    if sha256_file(extension_file) != payload.get("base_embedding_extension_sha256"):
+        raise AdapterStorageError("base embedding extension SHA256 mismatch")
     expected_versions = payload.get("package_versions")
     if expected_versions != _versions():
         raise AdapterStorageError(
@@ -220,22 +267,40 @@ def validate_compact_adapter(adapter_path: str | Path) -> dict[str, Any] | None:
     if Path(str(adapter_config.get("base_model_name_or_path", ""))).resolve() != base_model:
         raise AdapterStorageError("compact adapter base model path mismatch")
     try:
-        int(payload["reconstruction_seed"])
+        base_vocab_size = int(payload["base_vocab_size"])
+        int(payload["training_seed"])
     except (KeyError, TypeError, ValueError) as error:
-        raise AdapterStorageError("compact adapter reconstruction seed is invalid") from error
+        raise AdapterStorageError("compact adapter vocab size or training seed is invalid") from error
+    from safetensors import safe_open
+
+    with safe_open(extension_file, framework="pt", device="cpu") as handle:
+        tensor_name = str(payload.get("base_embedding_extension_tensor", ""))
+        if list(handle.keys()) != [tensor_name]:
+            raise AdapterStorageError("base embedding extension tensor inventory mismatch")
+        extension_slice = handle.get_slice(tensor_name)
+        extension_shape = [int(value) for value in extension_slice.get_shape()]
+        if extension_shape != payload.get("base_embedding_extension_shape"):
+            raise AdapterStorageError("base embedding extension shape mismatch")
+        if extension_slice.get_dtype() != payload.get("base_embedding_extension_dtype"):
+            raise AdapterStorageError("base embedding extension dtype mismatch")
+        if not extension_shape or base_vocab_size + extension_shape[0] <= base_vocab_size:
+            raise AdapterStorageError("base embedding extension is empty")
     return payload
 
 
-def reconstruction_seed_for_adapter(adapter_path: str | Path, fallback: int) -> int:
-    payload = validate_compact_adapter(adapter_path)
-    return int(payload["reconstruction_seed"]) if payload is not None else int(fallback)
-
-
-def validate_loaded_compact_adapter(model: Any, adapter_path: str | Path) -> None:
-    """Prove that the loader reconstructed every omitted base embedding exactly."""
+@torch.no_grad()
+def restore_and_validate_loaded_compact_adapter(model: Any, adapter_path: str | Path) -> None:
+    """Restore omitted extension rows and prove both full base embeddings exactly."""
     payload = validate_compact_adapter(adapter_path)
     if payload is None:
         return
+    from safetensors.torch import load_file
+
+    extension_file = Path(adapter_path).resolve() / str(payload["base_embedding_extension"])
+    extension = load_file(extension_file, device="cpu")[
+        str(payload["base_embedding_extension_tensor"])
+    ]
+    base_vocab_size = int(payload["base_vocab_size"])
     expected = {
         item["name"]: item
         for item in payload.get("removed_tensors", [])
@@ -261,5 +326,14 @@ def validate_loaded_compact_adapter(model: Any, adapter_path: str | Path) -> Non
         shape = [int(value) for value in parameter.shape]
         if shape != item.get("shape") or _safetensors_dtype(parameter.dtype) != item.get("dtype"):
             raise AdapterStorageError(f"loaded compact adapter tensor metadata mismatch: {name}")
+        extension_matches = (
+            base_vocab_size + extension.shape[0] == shape[0]
+            and extension.shape[1:] == parameter.shape[1:]
+        )
+        if not extension_matches:
+            raise AdapterStorageError(f"loaded compact adapter extension shape mismatch: {name}")
+        parameter.data[base_vocab_size:].copy_(
+            extension.to(device=parameter.device, dtype=parameter.dtype)
+        )
         if _tensor_digest(parameter, shape[0]) != item.get("sha256"):
             raise AdapterStorageError(f"loaded compact adapter tensor SHA256 mismatch: {name}")

@@ -328,7 +328,7 @@ def run_hf_stage2(
     adapter_storage = compact_peft_adapter(
         adapter_path,
         base_model_path=model_path,
-        reconstruction_seed=seed,
+        training_seed=seed,
     )
     trainer.save_state()
     train_metrics = {key: float(value) for key, value in train_result.metrics.items()}
