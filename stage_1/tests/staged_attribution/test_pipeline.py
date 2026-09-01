@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,6 +13,7 @@ from staged_attribution.pipeline import (
     select_stage2_train_frame,
     trajectory_id_sha256,
 )
+from staged_attribution.population_bootstrap import load_metric_contributions
 from staged_attribution.stage2_subset_manifest import (
     build_stage2_subset_manifest,
     write_immutable_json,
@@ -136,3 +138,74 @@ def test_pipeline_backend_accepts_registered_noncore_adaptive_cell() -> None:
     assert backend.cell.cell_id == "e2_q3"
     assert backend.cell.views == frozenset({"grid"})
     assert backend.cell.q_weights["auxiliary"] > 0
+
+
+def test_primary_stage4_persists_population_aware_contributions(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Dataset:
+        metadata = {
+            "mbr": {
+                "min_lon": 0.0,
+                "max_lon": 1.0,
+                "min_lat": 0.0,
+                "max_lat": 1.0,
+            },
+            "grid": {
+                "grid_size_m": 100.0,
+                "meters_per_lon": 100_000.0,
+                "meters_per_lat": 100_000.0,
+                "n_grid_x": 1000,
+                "n_grid_y": 1000,
+            },
+        }
+        records_by_id = {
+            7: {"gps_seq": [[0.1, 0.1], [0.2, 0.2]]},
+        }
+
+        def __len__(self) -> int:
+            return 1
+
+        def __getitem__(self, index: int) -> dict[str, object]:
+            assert index == 0
+            return {"traj_id": 7, "point_road": [0, 0]}
+
+    run_dir = tmp_path / "attempt"
+    decode = run_dir / "decode"
+    decode.mkdir(parents=True)
+    record = {
+        "traj_id": 7,
+        "status": "reconstructed",
+        "gps_traj": [[0.1, 0.1], [0.2, 0.2]],
+        "road_traj": [0, 0],
+        "failure": None,
+    }
+    for variant in ("g00", "g10", "g01", "g11"):
+        (decode / f"{variant}_reconstructed.jsonl").write_text(
+            json.dumps(record) + "\n", encoding="utf-8"
+        )
+    backend = object.__new__(PipelineBackend)
+    backend.city = "porto"
+    monkeypatch.setattr(backend, "_dataset", lambda split: Dataset())
+    monkeypatch.setattr(
+        backend, "_road_geometries", lambda: {0: np.asarray([[0.0, 0.0], [1.0, 1.0]])}
+    )
+
+    artifacts = backend._stage4(run_dir)
+
+    expected = {"stage4_metrics.json"} | {
+        f"{variant}_contributions_manifest.json"
+        for variant in ("g00", "g10", "g01", "g11")
+    }
+    assert set(artifacts) == expected
+    metrics = json.loads(artifacts["stage4_metrics.json"].read_text())
+    for variant in ("g00", "g10", "g01", "g11"):
+        evidence = metrics[variant]["population_aware_regret"]
+        assert evidence["method"] == "failure_weighted_population_regret_v1"
+        assert all(value == pytest.approx(0.0) for value in evidence["metrics"].values())
+        loaded = load_metric_contributions(
+            artifacts[f"{variant}_contributions_manifest.json"]
+        )
+        assert loaded.traj_ids == (7,)
+        assert loaded.valid.tolist() == [True]

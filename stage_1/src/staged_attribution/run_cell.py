@@ -65,7 +65,17 @@ def build_cell_dag(cell_id: str) -> tuple[StageNode, ...]:
             ("g_attribution",),
             ("g00_reconstructed.jsonl", "g10_reconstructed.jsonl", "g01_reconstructed.jsonl", "g11_reconstructed.jsonl"),
         ),
-        StageNode("stage4", ("decode",), ("stage4_metrics.json",)),
+        StageNode(
+            "stage4",
+            ("decode",),
+            (
+                "stage4_metrics.json",
+                "g00_contributions_manifest.json",
+                "g10_contributions_manifest.json",
+                "g01_contributions_manifest.json",
+                "g11_contributions_manifest.json",
+            ),
+        ),
     )
 
 

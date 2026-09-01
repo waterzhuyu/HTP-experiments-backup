@@ -56,6 +56,13 @@ def test_integrated_training_and_corrected_evaluation_contract() -> None:
         "stage4",
     ]
     assert "stage2_plan.json" in training_dag[3].required_artifacts
+    assert set(training_dag[-1].required_artifacts) == {
+        "stage4_metrics.json",
+        "g00_contributions_manifest.json",
+        "g10_contributions_manifest.json",
+        "g01_contributions_manifest.json",
+        "g11_contributions_manifest.json",
+    }
 
     reevaluation_dag = build_reevaluation_dag()
     assert [node.name for node in reevaluation_dag] == [

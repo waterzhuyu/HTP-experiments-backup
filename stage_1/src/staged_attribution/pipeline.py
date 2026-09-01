@@ -27,6 +27,12 @@ from .generate_stage3 import run_hf_generation
 from .losses import derive_auxiliary_targets
 from .model import AttributionRQVAE
 from .prepare_llm_data import build_llm_frame, deterministic_subset
+from .population_bootstrap import (
+    POPULATION_REGRET_METHOD,
+    build_metric_contributions,
+    population_regrets,
+    save_metric_contributions,
+)
 from .run_cell import CellRunError, StageNode
 from .stage4_metrics import evaluate_population
 from .stage2_subset_manifest import (
@@ -664,14 +670,30 @@ class PipelineBackend:
                 real_gps[traj_id] = np.asarray(record["gps_seq"], dtype=np.float64)
                 real_roads[traj_id] = [int(value) for value in item["point_road"]]
         geometries = self._road_geometries()
-        metrics = {
-            variant: evaluate_population(
+        metrics = {}
+        artifacts: dict[str, Path] = {}
+        for variant, records in variants.items():
+            payload = evaluate_population(
                 real_gps, real_roads, records, geometries, self.city, invalid_penalty=2.0,
                 mbr=dataset.metadata["mbr"],
                 grid=dataset.metadata["grid"],
             )
-            for variant, records in variants.items()
-        }
+            contributions = build_metric_contributions(
+                real_gps, real_roads, records, geometries, self.city,
+                mbr=dataset.metadata["mbr"],
+                grid=dataset.metadata["grid"],
+            )
+            point = population_regrets(contributions)
+            payload["population_aware_regret"] = {
+                "method": POPULATION_REGRET_METHOD,
+                "metrics": {metric: float(value[0]) for metric, value in point.items()},
+            }
+            metrics[variant] = payload
+            manifest = save_metric_contributions(
+                contributions, output / f"{variant}_contributions"
+            )
+            artifacts[f"{variant}_contributions_manifest.json"] = manifest
         path = output / "stage4_metrics.json"
         _atomic_json(path, metrics)
-        return {"stage4_metrics.json": path}
+        artifacts["stage4_metrics.json"] = path
+        return artifacts
