@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+import time
 from collections import Counter
 from collections.abc import Mapping, Sequence
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -193,6 +195,49 @@ def _atomic_json(path: Path, value: object) -> None:
     temporary.replace(path)
 
 
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _evaluation_progress(
+    *,
+    status: str,
+    started_at: str,
+    batch_size: int,
+    batches_total: int,
+    batches_completed: int,
+    population_total: int,
+    population_completed: int,
+    supervised_tokens: int,
+    elapsed_seconds: float,
+    error: Exception | None = None,
+) -> dict[str, object]:
+    rate = batches_completed / elapsed_seconds if elapsed_seconds > 0 else 0.0
+    remaining = max(batches_total - batches_completed, 0)
+    eta_seconds = remaining / rate if rate > 0 and remaining else 0.0 if not remaining else None
+    now = _utc_now()
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "status": status,
+        "started_at": started_at,
+        "updated_at": now,
+        "finished_at": now if status in {"completed", "failed"} else None,
+        "batch_size": batch_size,
+        "batches_total": batches_total,
+        "batches_completed": batches_completed,
+        "population_total": population_total,
+        "population_completed": population_completed,
+        "supervised_tokens": supervised_tokens,
+        "elapsed_seconds": elapsed_seconds,
+        "batches_per_second": rate,
+        "eta_seconds": eta_seconds,
+        "error": None,
+    }
+    if error is not None:
+        payload["error"] = {"type": type(error).__name__, "message": str(error)}
+    return payload
+
+
 @torch.no_grad()
 def evaluate_teacher_forced_model(
     model: torch.nn.Module,
@@ -201,10 +246,21 @@ def evaluate_teacher_forced_model(
     token_groups: dict[str, set[int]],
     device: torch.device,
     batch_size: int = 4,
+    progress_path: str | Path | None = None,
+    progress_interval: int = 100,
 ) -> dict[str, object]:
+    if batch_size <= 0:
+        raise Stage2DataError("teacher-forced evaluation batch_size must be positive")
+    if progress_interval <= 0:
+        raise Stage2DataError("teacher-forced progress_interval must be positive")
     loader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, shuffle=False, collate_fn=collator
     )
+    progress = Path(progress_path) if progress_path is not None else None
+    started_at = _utc_now()
+    started = time.monotonic()
+    batches_total = len(loader)
+    batches_completed = 0
     model.eval()
     total_loss = 0.0
     total_tokens = 0
@@ -213,48 +269,120 @@ def evaluate_teacher_forced_model(
     first_errors: Counter[str] = Counter()
     exact = 0
     population = 0
-    for batch in loader:
-        batch = {name: value.to(device) for name, value in batch.items()}
-        output = model(**batch)
-        shifted_logits = output.logits[:, :-1]
-        shifted_labels = batch["labels"][:, 1:]
-        tokens = int((shifted_labels != -100).sum())
-        total_loss += float(
-            F.cross_entropy(
-                shifted_logits.reshape(-1, shifted_logits.shape[-1]),
-                shifted_labels.reshape(-1),
-                ignore_index=-100,
-                reduction="sum",
+    if progress is not None:
+        _atomic_json(
+            progress,
+            _evaluation_progress(
+                status="running",
+                started_at=started_at,
+                batch_size=batch_size,
+                batches_total=batches_total,
+                batches_completed=0,
+                population_total=len(dataset),
+                population_completed=0,
+                supervised_tokens=0,
+                elapsed_seconds=0.0,
+            ),
+        )
+    try:
+        for batch in loader:
+            batch = {name: value.to(device) for name, value in batch.items()}
+            output = model(**batch)
+            shifted_logits = output.logits[:, :-1]
+            shifted_labels = batch["labels"][:, 1:]
+            tokens = int((shifted_labels != -100).sum())
+            total_loss += float(
+                F.cross_entropy(
+                    shifted_logits.reshape(-1, shifted_logits.shape[-1]),
+                    shifted_labels.reshape(-1),
+                    ignore_index=-100,
+                    reduction="sum",
+                )
             )
-        )
-        total_tokens += tokens
-        grouped = grouped_teacher_forced_accuracy(
-            shifted_logits.argmax(dim=-1).cpu(), shifted_labels.cpu(), token_groups
-        )
-        population += int(grouped["population"])
-        exact += round(float(grouped["sequence_exact_accuracy"]) * int(grouped["population"]))
-        first_errors.update(grouped["first_error_histogram"])
-        for name in token_groups:
-            count = int(grouped["denominators"][name])
-            denominators[name] += count
-            if count:
-                correct[name] += round(float(grouped["accuracy"][name]) * count)
-    if total_tokens == 0:
-        raise Stage2DataError("teacher-forced evaluation produced no supervised tokens")
-    nll = total_loss / total_tokens
-    return {
-        "population": population,
-        "tokens": total_tokens,
-        "nll": nll,
-        "perplexity": math.exp(nll),
-        "accuracy": {
-            name: correct[name] / denominators[name] if denominators[name] else float("nan")
-            for name in token_groups
-        },
-        "denominators": denominators,
-        "sequence_exact_accuracy": exact / population,
-        "first_error_histogram": dict(first_errors),
-    }
+            total_tokens += tokens
+            grouped = grouped_teacher_forced_accuracy(
+                shifted_logits.argmax(dim=-1).cpu(), shifted_labels.cpu(), token_groups
+            )
+            population += int(grouped["population"])
+            exact += round(
+                float(grouped["sequence_exact_accuracy"]) * int(grouped["population"])
+            )
+            first_errors.update(grouped["first_error_histogram"])
+            for name in token_groups:
+                count = int(grouped["denominators"][name])
+                denominators[name] += count
+                if count:
+                    correct[name] += round(float(grouped["accuracy"][name]) * count)
+            batches_completed += 1
+            if progress is not None and (
+                batches_completed % progress_interval == 0 or batches_completed == batches_total
+            ):
+                _atomic_json(
+                    progress,
+                    _evaluation_progress(
+                        status="running",
+                        started_at=started_at,
+                        batch_size=batch_size,
+                        batches_total=batches_total,
+                        batches_completed=batches_completed,
+                        population_total=len(dataset),
+                        population_completed=population,
+                        supervised_tokens=total_tokens,
+                        elapsed_seconds=time.monotonic() - started,
+                    ),
+                )
+        if total_tokens == 0:
+            raise Stage2DataError("teacher-forced evaluation produced no supervised tokens")
+        nll = total_loss / total_tokens
+        result = {
+            "population": population,
+            "tokens": total_tokens,
+            "nll": nll,
+            "perplexity": math.exp(nll),
+            "accuracy": {
+                name: correct[name] / denominators[name]
+                if denominators[name]
+                else float("nan")
+                for name in token_groups
+            },
+            "denominators": denominators,
+            "sequence_exact_accuracy": exact / population,
+            "first_error_histogram": dict(first_errors),
+        }
+        if progress is not None:
+            _atomic_json(
+                progress,
+                _evaluation_progress(
+                    status="completed",
+                    started_at=started_at,
+                    batch_size=batch_size,
+                    batches_total=batches_total,
+                    batches_completed=batches_completed,
+                    population_total=len(dataset),
+                    population_completed=population,
+                    supervised_tokens=total_tokens,
+                    elapsed_seconds=time.monotonic() - started,
+                ),
+            )
+        return result
+    except Exception as error:
+        if progress is not None:
+            _atomic_json(
+                progress,
+                _evaluation_progress(
+                    status="failed",
+                    started_at=started_at,
+                    batch_size=batch_size,
+                    batches_total=batches_total,
+                    batches_completed=batches_completed,
+                    population_total=len(dataset),
+                    population_completed=population,
+                    supervised_tokens=total_tokens,
+                    elapsed_seconds=time.monotonic() - started,
+                    error=error,
+                ),
+            )
+        raise
 
 
 def run_hf_stage2(
@@ -349,6 +477,7 @@ def run_hf_stage2(
             collator,
             token_groups,
             next(model.parameters()).device,
+            progress_path=output / "evaluation_progress.json",
         )
     metrics = {"train": train_metrics, "teacher_forced": teacher_forced}
     token_budget = {
@@ -367,5 +496,8 @@ def run_hf_stage2(
         "token_budget": token_budget,
         "adapter": str(adapter_path),
         "adapter_storage": adapter_storage,
+        "evaluation_progress": (
+            str(output / "evaluation_progress.json") if eval_frame is not None else None
+        ),
         "trainer_state": str(output / "trainer" / "trainer_state.json"),
     }
