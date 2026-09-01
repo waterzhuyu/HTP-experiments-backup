@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 from staged_attribution.run_stratified_reevaluation_batch import (
     ReevaluationBatchError,
+    _exclusive_batch_lock,
     run_parallel_stratified_reevaluations,
 )
 
@@ -68,6 +71,45 @@ def test_batch_requires_all_source_and_subset_evidence_before_launch(tmp_path: P
     assert recorder.calls == []
 
 
+def test_batch_refuses_duplicate_queue_while_lock_is_held(tmp_path: Path) -> None:
+    source, subsets = _source_and_subsets(tmp_path)
+    recorder = PopenRecorder()
+    target = tmp_path / "target"
+    with _exclusive_batch_lock(target):
+        with pytest.raises(ReevaluationBatchError, match="another corrected reevaluation"):
+            run_parallel_stratified_reevaluations(
+                CONFIG_PATH,
+                source_root=source,
+                reevaluation_root=target,
+                subset_dir=subsets,
+                cell_ids=["e0_q0"],
+                query_gpu_fn=gpus,
+                popen_factory=recorder,
+                sleep_fn=lambda _: None,
+            )
+    assert recorder.calls == []
+
+
+def test_batch_lock_survives_parent_close_while_inherited_child_runs(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "target"
+    with _exclusive_batch_lock(target) as (_, descriptor):
+        child = subprocess.Popen(
+            [sys.executable, "-c", "import time; time.sleep(0.5)"],
+            pass_fds=(descriptor,),
+        )
+    try:
+        with pytest.raises(ReevaluationBatchError, match="another corrected reevaluation"):
+            with _exclusive_batch_lock(target):
+                pass
+    finally:
+        child.wait(timeout=5)
+
+    with _exclusive_batch_lock(target):
+        pass
+
+
 def test_batch_launches_one_queue_with_exact_source_subset_and_logical_gpu(tmp_path: Path) -> None:
     source, subsets = _source_and_subsets(tmp_path)
     recorder = PopenRecorder()
@@ -81,6 +123,7 @@ def test_batch_launches_one_queue_with_exact_source_subset_and_logical_gpu(tmp_p
 
     assert len(recorder.calls) == 6
     assert len(result["completed"]) == 6
+    assert Path(result["batch_lock"]).is_file()
     assert not result["failed"] and not result["pending"]
     for command, kwargs in recorder.calls:
         assert "staged_attribution.run_stratified_reevaluation" in command

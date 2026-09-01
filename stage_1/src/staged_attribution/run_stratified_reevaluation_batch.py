@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import os
+import socket
 import subprocess
 import sys
 import time
+from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Iterator, Sequence
 
 from .config import ExperimentConfig
 from .run_experiment import (
@@ -22,6 +26,40 @@ from .run_experiment import (
 
 class ReevaluationBatchError(RuntimeError):
     """Raised when a corrected reevaluation queue would be incomplete or duplicated."""
+
+
+@contextmanager
+def _exclusive_batch_lock(root: Path) -> Iterator[tuple[Path, int]]:
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / ".stratified_reevaluation_batch.lock"
+    descriptor = os.open(path, os.O_CREAT | os.O_RDWR, 0o644)
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            os.lseek(descriptor, 0, os.SEEK_SET)
+            holder = os.read(descriptor, 4096).decode(errors="replace").strip()
+            detail = f": {holder}" if holder else ""
+            raise ReevaluationBatchError(
+                f"another corrected reevaluation batch holds {path}{detail}"
+            ) from error
+        payload = {
+            "schema_version": 1,
+            "kind": "stratified_reevaluation_batch_lock",
+            "pid": os.getpid(),
+            "hostname": socket.gethostname(),
+            "started_at": datetime.now(timezone.utc).isoformat(),
+        }
+        content = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode()
+        os.ftruncate(descriptor, 0)
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        os.write(descriptor, content)
+        os.fsync(descriptor)
+        yield path, descriptor
+    finally:
+        # Do not explicitly unlock: children inherit this open-file description.
+        # Closing the parent's reference preserves the lock until the last child exits.
+        os.close(descriptor)
 
 
 def completed_reevaluation_attempt(job_root: str | Path) -> Path | None:
@@ -114,72 +152,79 @@ def run_parallel_stratified_reevaluations(
             f"missing_source={missing_source[:10]} missing_subset={missing_subset[:10]}"
         )
 
-    completed: list[dict[str, object]] = []
-    pending: list[ExperimentJob] = []
-    for job in jobs:
-        existing = completed_reevaluation_attempt(target / job.run_key)
-        if existing is None:
-            pending.append(job)
-        else:
-            completed.append({"run_key": job.run_key, "attempt": str(existing), "status": "existing"})
-    running: dict[int, dict[str, object]] = {}
-    failed: list[dict[str, object]] = []
-    while pending or running:
-        for gpu_index, state in list(running.items()):
-            returncode = state["process"].poll()
-            if returncode is None:
-                continue
-            state["log_handle"].close()
-            record = {
-                "run_key": state["job"].run_key,
-                "attempt": str(state["attempt"]),
-                "gpu": gpu_index,
-                "returncode": int(returncode),
-            }
-            (completed if returncode == 0 else failed).append(record)
-            del running[gpu_index]
-        if failed:
-            if running:
-                sleep_fn(poll_seconds)
-                continue
-            break
-        safe = safe_gpu_indices(query_gpu_fn(), minimum_free_mib, maximum_utilization)
-        available = [index for index in safe if index not in running]
-        slots = max(0, maximum_parallel - len(running))
-        for gpu_index in available[:slots]:
-            if not pending:
+    def _run_locked(lock_path: Path, lock_fd: int) -> dict[str, object]:
+        completed: list[dict[str, object]] = []
+        pending: list[ExperimentJob] = []
+        for job in jobs:
+            existing = completed_reevaluation_attempt(target / job.run_key)
+            if existing is None:
+                pending.append(job)
+            else:
+                completed.append({"run_key": job.run_key, "attempt": str(existing), "status": "existing"})
+        running: dict[int, dict[str, object]] = {}
+        failed: list[dict[str, object]] = []
+        while pending or running:
+            for gpu_index, state in list(running.items()):
+                returncode = state["process"].poll()
+                if returncode is None:
+                    continue
+                state["log_handle"].close()
+                record = {
+                    "run_key": state["job"].run_key,
+                    "attempt": str(state["attempt"]),
+                    "gpu": gpu_index,
+                    "returncode": int(returncode),
+                }
+                (completed if returncode == 0 else failed).append(record)
+                del running[gpu_index]
+            if failed:
+                if running:
+                    sleep_fn(poll_seconds)
+                    continue
                 break
-            job = pending.pop(0)
-            attempt = next_attempt_dir(target / job.run_key)
-            attempt.mkdir(parents=True, exist_ok=False)
-            log_handle = (attempt / "launcher.log").open("a", encoding="utf-8")
-            command = _command(
-                config_path, job, source_attempts[job.run_key],
-                _subset_path(subsets, job), attempt,
-            )
-            process = popen_factory(
-                command,
-                cwd=Path.cwd(),
-                stdout=log_handle,
-                stderr=subprocess.STDOUT,
-                text=True,
-                env={**os.environ, "CUDA_VISIBLE_DEVICES": str(gpu_index)},
-            )
-            running[gpu_index] = {
-                "job": job, "attempt": attempt, "process": process,
-                "log_handle": log_handle,
-            }
-        if pending or running:
-            if not running and not wait_for_gpu:
-                raise ReevaluationBatchError("no GPU satisfies the non-preemption threshold")
-            sleep_fn(poll_seconds)
-    return {
-        "experiment_id": config.experiment_id,
-        "reevaluation": "fixed_stratified_population_aware_v1",
-        "completed": completed,
-        "failed": failed,
-        "pending": [job.run_key for job in pending],
-    }
+            safe = safe_gpu_indices(query_gpu_fn(), minimum_free_mib, maximum_utilization)
+            available = [index for index in safe if index not in running]
+            slots = max(0, maximum_parallel - len(running))
+            for gpu_index in available[:slots]:
+                if not pending:
+                    break
+                job = pending.pop(0)
+                attempt = next_attempt_dir(target / job.run_key)
+                attempt.mkdir(parents=True, exist_ok=False)
+                log_handle = (attempt / "launcher.log").open("a", encoding="utf-8")
+                command = _command(
+                    config_path, job, source_attempts[job.run_key],
+                    _subset_path(subsets, job), attempt,
+                )
+                process = popen_factory(
+                    command,
+                    cwd=Path.cwd(),
+                    stdout=log_handle,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    pass_fds=(lock_fd,),
+                    env={**os.environ, "CUDA_VISIBLE_DEVICES": str(gpu_index)},
+                )
+                running[gpu_index] = {
+                    "job": job, "attempt": attempt, "process": process,
+                    "log_handle": log_handle,
+                }
+            if pending or running:
+                if not running and not wait_for_gpu:
+                    raise ReevaluationBatchError("no GPU satisfies the non-preemption threshold")
+                sleep_fn(poll_seconds)
+        return {
+            "experiment_id": config.experiment_id,
+            "reevaluation": "fixed_stratified_population_aware_v1",
+            "batch_lock": str(lock_path),
+            "completed": completed,
+            "failed": failed,
+            "pending": [job.run_key for job in pending],
+        }
+
+    with _exclusive_batch_lock(target) as (lock_path, lock_fd):
+        return _run_locked(lock_path, lock_fd)
+
 
 
 def main() -> None:
