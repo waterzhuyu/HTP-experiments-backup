@@ -192,10 +192,12 @@ formal run 必须来自 clean 40-char Git revision。每个 run 保存 command�
 
 `report_results` 在统计前强制验证完整 Cartesian coverage、manifest identity、同一 clean revision、artifact 位于本 attempt 内，以及 marker size/SHA256。controlled 报告必须覆盖两城×三 seed×十 cell。confirmation 必须通过 `--cells` 显式给出 baseline `e0_q0` 与 controlled 选出的候选；缺少 baseline、重复/未知 cell 或省略选择时拒绝排队和汇总，禁止默认重跑全部十 cell。
 
-十个核心 cell 之外，配置注册完整 7×4 E×Q 交叉组合，但非核心组合只能通过显式 `--cells` 运行。核心 controlled 后，`select_candidates --phase core` 从同 city 内三 seed 的 G11 regret 配对差值计算 95% t CI：任一城市的 GPS/Road/Grid/validity 指标显著劣化则拒绝；至少一个城市、一个 GPS/Road/Grid 指标显著改善，且所有 city/seed Stage1 gate 通过，方可进入 Pareto。
+十个核心 cell 之外，配置注册完整 7×4 E×Q 交叉组合，但非核心组合只能通过显式 `--cells` 运行。核心 controlled 后，`report_stratified_results` 在每个 seed 内对同一完整轨迹人群做 paired bootstrap，再等权平均 seed effect；`select_candidates --phase core` 只接受这份 failure-retaining population-aware G11 证据。任一城市的 GPS/Road/Grid/validity 指标显著劣化则拒绝；至少一个城市、一个 GPS/Road/Grid 指标显著改善，且所有 city/seed Stage1 gate 通过，方可进入 Pareto。
 
 选择器分别冻结最佳 single（E0/E1/E2）、pair（E3/E4/E5）和 Q（E6/Q0..Q3）。若最佳 Q 不是 Q0，则生成 `best_single×best_Q` 与 `best_pair×best_Q` adaptive cell；不得人工替换。adaptive controlled 完成后用 `--phase final` 重新审计，confirmation 清单必须以 `e0_q0` 开头并只包含最终合格非支配候选。城市方向相反时保留 heterogeneity，不能用两城合并成六个独立重复来掩盖。
 
 Stage1 gate 在汇总时用同 city/seed G00 `population_mean_penalized_error` 相对 E0/Q0 的比值回填 oracle ratio；codebook active/perplexity/max-share 与 loss finite 条件仍按第 8 节，不允许继续使用 `pending_e0_oracle_ratio` 参加候选选择。
+
+confirmation 完成后必须由 `report_confirmation_results --selection <final_selection.json> --cells ...` 复核：final selection 的来源路径/SHA/revision、单一 clean 40-char run revision、Option B 每城固定 64,000 条 Stage2 train manifest 与 seed、full 且逐轨迹一致的 Stage3/Stage4 test population、四路 G contribution manifest 及其嵌套 artifact hash。最终 GPS/Road/Grid 优于 baseline 的声明沿用 seed-stratified trajectory paired bootstrap 门禁，且仅当 Stage1 gate 全通过、无任一 GPS/Road/Grid/validity 显著劣化并至少有一个 GPS/Road/Grid 显著改善时允许；否则必须报告为不支持或负结果。
 
 任何没有 Stage2 adapter、generation、四路 decode、Stage4 JSON 的 cell 都是 incomplete；不得用 Stage1 排名或现有独立 tokenizer pilot 补齐。最终优于 baseline 的声称只允许来自 confirmation。smoke、controlled 与 confirmation 结果分别提交，负结果与失败不得删除。
