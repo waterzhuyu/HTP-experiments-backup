@@ -16,6 +16,7 @@
 - 固定子集生成 revision：`a2991e14d509a96830d21c5cfa8f2ae9d4fa1967`
 - 校正重评队列互斥 revision：`5d7cbc7efeb2142472733356694b48c32ba8db18`
 - 校正重评来源/启动身份门禁实现 revision：`081b97bcdc8d8953c0e4d32587688a879945597d`
+- 最终结论自动合成 revision：`0e43359bed14793bae4255798a2be9e3fa898a8a`
 - 校正 config SHA-256：`b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb`
 
 研究问题分为两个层次：
@@ -855,3 +856,45 @@ gradient accumulation、loss、评估 population、GPU 门禁或正式配置；�
 正式/后续队列，也没有创建、移动、覆盖或删除任何 attempt/旧产物。正式 watcher 继续在冻结 revision
 `6ac87be094c9c1ce4783f10291a339f04623449b` 上独立运行；后续 corrected/final analysis、selection 与
 confirmation 必须使用包含 `a933136` 及本记录的同一 clean 候选 revision。
+
+## 20. 最终 GPS/Road/Grid 结论的确定性合成
+
+源码提交 `0e43359`（`feat(experiment): freeze final conclusion synthesis`）把最终交付结论从人工浏览
+表格改为 confirmation analysis schema 7 中的机器可读 `final_conclusion`。这一步不预先写入任何正向
+或负向科学答案，而是冻结“结果出现后如何形成答案”，防止在看到 controlled、corrected 或
+confirmation 指标后改变声明口径。
+
+结论合成规则如下：
+
+1. 候选 superiority 的唯一决策来源是 `confirmation_gate`。`claim_supported=true` 才归类为
+   `cross_city_supported`；跨城市门禁不通过但至少一个预注册城市门禁通过时，仅归类为
+   `city_specific_only`；否则为 `not_supported`；
+2. overall conclusion 只有三个互斥代码：`cross_city_support`、`city_specific_support_only` 与
+   `no_confirmed_superiority`。输出保存精确 candidate/city、显著改善、显著退化、方向一致指标和城市
+   反向证据，不能靠报告撰写者重新挑选；
+3. 哈希锁定的 controlled E/Q、controlled cross-seed G 与 full-population confirmation G 只作为
+   归因解释。每行按 minimize 方向将 95% CI 分类为 improvement、degradation 或 inconclusive，并保存
+   所有 CI 排除 0 的注册行；它们不能把 confirmation 拒绝的候选提升为 superiority；
+4. `descriptive_sensitivity` 与 primary 分开计数和列示，并固定
+   `descriptive_sensitivity_used_for_headline=false`。因此 `E6-min(best pair)` 即使区间排除 0，也不能进入
+   headline、selection 或因果式主声明；
+5. 归因 group 必须来自十个注册 metrics 的现有 group 集。GPS/Road、GPS/Grid、Road/Grid 复合指标属于
+   注册轨迹证据；任何 POI 或其他未注册 group 直接拒绝生成最终结论；
+6. scope 明确保存 `modalities=[GPS,Road,Grid]`、`poi_included=false`、实际 confirmation cities/seeds，
+   并冻结五条限制：仅适用于注册的 Porto/Chengdu 人口与 seed、不能外推 POI、因果语言只限注册配对
+   对比、描述性 nonlinear E 非主证据、未验证其他数据/模型/评估总体；
+7. immutable JSON 保存全部结构化结论和 decisive attribution rows；Markdown 输出结论代码、确定性陈述、
+   跨城市/城市特定/不支持候选列表以及三类 primary decisive row 数，且再次声明 POI 排除。
+
+验证证据：confirmation 聚焦测试为 `11 passed in 10.91s`；corrected report、stratified report、
+selection launch 与 confirmation 联合回归为 `30 passed in 12.53s`；锁定环境完整回归为
+`306 passed, 23 warnings in 24.84s`。warnings 仍全部来自既有 Transformer nested-tensor 提示。
+反例覆盖：两城市方向相反时只能保留城市特定结论、两城市均无门禁支持时输出
+`no_confirmed_superiority`、显著 descriptive E 不进入 primary/headline、POI group fail closed、以及同一路径
+报告内容改变时 immutable writer 拒绝覆盖。
+
+本节未改变 E/Q/G cell、Option B 每城市 64,000 条 Stage2 population、seed、microbatch 8、gradient
+accumulation 2、loss、评估总体、GPU 安全门禁或正式配置；没有启动、重启、停止或修改 watcher、runner、
+run_cell、后续队列或任何 attempt。正式 controlled core 仍在冻结 revision `6ac87be` 上运行；真实
+`final_conclusion` 只有在 formal core 完成、corrected/adaptive/confirmation 全部通过来源与启动门禁后才会
+生成，当前状态仍为 `scientific_result_pending`。
