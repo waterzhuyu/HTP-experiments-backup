@@ -211,3 +211,53 @@ teacher-forced evaluation（batch size 4，共 14,945 batches），因此 `8000/
 4. 用正式 branch/name/head 再执行一次 `--validate-only`；
 5. 释放旧 watcher 后，以新 expected HEAD 启动唯一 watcher，保留所有旧 attempt；
 6. 若授权前 watcher 已派发新一批，则新 attempt 同样不可变，并在下一安全边界重新计算容量。
+
+## 8. 2026-09-01 正式队列与容量重基线
+
+2026-09-01 10:56 CST 的只读审计确认：正式 revision、branch、配置 SHA-256 与 clean
+状态均未漂移；controlled core 已有 8 个 Stage4 complete、4 个 active、48 个尚未创建，失败
+标记为 0。已完成且必须保持不可变的是 Porto/seed 42 的 `e0_q0`–`e3_q0/attempt_002`
+以及 `e4_q0`、`e5_q0`、`e6_q0`、`e6_q1/attempt_001`。当前 active 且同样不可变的是
+Porto/seed 42 的 `e6_q2`、`e6_q3/attempt_001` 与 Porto/seed 314159 的 `e0_q0`、
+`e1_q0/attempt_001`；四者仍由正式 watcher 父进程持有，并处于 Stage1，尚无阶段 terminal
+marker。
+
+8 个完成 Porto attempt 的精确总大小为 17,024,332,454 bytes，均值为
+2,128,041,556.75 bytes。扣除 legacy Porto adapter 的 1,583,305,008 bytes 后，观测到的
+平均非 adapter 体积为 544,736,548.75 bytes。用该非 adapter 均值以及双城市真实 adapter
+探针的字节数估算单个最终 run：
+
+- Porto legacy：2,128,041,556.75 bytes；
+- Porto compact：839,300,532.75 bytes；
+- Chengdu legacy：2,839,909,972.75 bytes；
+- Chengdu compact：1,432,524,212.75 bytes。
+
+同一快照附近 home filesystem 的精确可用空间为 132,323,553,280 bytes。若当前 4 个
+Porto active 继续按 legacy 自然完成，随后 18 个尚未创建 Porto 与 30 个尚未创建 Chengdu
+全部使用 compact，预计从当前状态还需约 66,595,280,367 bytes，预计余量约
+65,728,272,913 bytes。若当前 4 个及其余 48 个全部继续 legacy，预计还需约
+132,014,191,599 bytes，只余约 309,361,681 bytes。后者无法为 corrected reevaluation、
+adaptive、confirmation、临时文件和体积波动提供安全余量。
+
+上述数字是容量门禁估算而不是科学结果：它假设已完成 Porto run 的平均非 adapter 体积可近似
+外推到后续 run，并以真实 Chengdu adapter 与 Porto adapter 的大小差修正城市差异。每次出现
+新的 terminal attempt 或新派发批次后，必须重新读取 `du -sb` 与 `df -B1`，不得复用静态
+余量。
+
+当前激活候选为 `d60c0b8c3026a603de76846f71ac99370b52d878`。它包含 exact extension
+compact adapter、双城市全等探针和原子 `stage2/evaluation_progress.json`；完整
+`stage_1/tests` 为 246 passed。该 revision 的 `--validate-only` 已在 8 completed / 52
+non-completed 的实时状态上通过，报告 `contract_valid=true`、Option B/config SHA 匹配和
+`safe_gpus=[]`，没有取锁或创建 attempt。
+
+新的安全切换边界如下，未获用户明确授权前仍不得执行：
+
+1. 只控制由命令行、锁和 watcher 日志共同确认的唯一 watcher 父进程停止新派发，不向任何
+   active `run_cell` 发信号；
+2. 等待当前 4 个 attempt 自然 terminal，并再次审计 completion/failure marker、run size、
+   实时磁盘余量与剩余城市/cell 计数；
+3. 保留全部 12 个既有 attempt，不移动、不删除、不覆盖；
+4. 将正式 worktree fast-forward 到上述候选 revision，保持正式配置逐字节不变，重跑完整回归
+   与 `--validate-only`；
+5. 确认旧 watcher 已不再持锁后，以新 expected HEAD 启动唯一 watcher；
+6. 若授权或切换前又出现新派发，立即把新 attempt 纳入不可变集合并从步骤 2 重新计算容量。
