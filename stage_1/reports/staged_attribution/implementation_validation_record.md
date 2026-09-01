@@ -238,7 +238,7 @@ cd /workspace/guozuyu/HTP-staged-attribution-compact-adapter
 uv run --frozen pytest -q
 ```
 
-结果：`271 passed, 23 warnings in 19.72s`。warnings 为既有 PyTorch Transformer
+固定人口源证据审计加入后的最新结果：`275 passed, 23 warnings in 18.49s`。warnings 为既有 PyTorch Transformer
 nested-tensor 提示。
 
 正式冻结命令：
@@ -302,3 +302,57 @@ Notion 同步状态为 `pending_explicit_destination_authorization`。此前外�
 被安全审查拒绝；本文作为仓库内版本化权威记录保留完整事实，不绕过门禁。最终结论必须来自
 confirmation，且 Stage1 gate 全通过、GPS/Road/Grid/validity 无显著劣化、至少一个注册域显著
 改善；否则明确报告不支持或负结果。
+
+## 11. 已完成 source 的全链路证据审计与人口差异
+
+为避免等 60 个 core 全部完成后才发现源证据不可复评，在不暂停或重复派发正式队列的前提下，
+新增 `staged_attribution.audit_completed_sources`。实现提交为
+`de3935db22e2c8e59ebebcab42bbb18c7522fa5e`，随后由真实正式产物发现“原始 Stage4 人口必须等于
+未来固定分层人口”这一过强假设；语义修正提交为
+`5aff73140ed1f66f475c3b123cd91c82dae04866`。修正后的门禁分别验证：
+
+- source manifest 的实验身份、clean/full revision 与完成状态；
+- Stage1 model、test tokens、完整 LLM test parquet、Stage2 adapter manifest 和 adapter tree 的
+  immutable marker、大小与 SHA256；
+- aligned test ID/offset、token `lens_type` 公式和完整 LLM test population 一致；
+- fixed city×seed manifest 的算法、大小、排序唯一性、配额和 traj-ID SHA256；
+- 原始 Stage4 的 G00/G10/G01/G11 使用完全相同且无重复的 1,024 条人口；
+- 原始 Stage4 人口大小等于注册 corrected reevaluation 大小，但不要求其 ID 与未来 fixed subset
+  相同；二者不同会被显式记录为 `corrected_stage3_stage4_reevaluation_required=true`；
+- 精确 completed count、候选 config SHA、审计生成器 revision 与 clean worktree；
+- 输出采用 exclusive temporary file、`fsync` 和 hard-link，已有不同内容时拒绝替换。
+
+聚焦测试为 `7 passed in 2.91s`，最新仓库完整回归为 `275 passed, 23 warnings in 18.49s`。
+正式审计命令如下：
+
+```bash
+cd /workspace/guozuyu/HTP-staged-attribution-compact-adapter
+uv run --frozen python -m staged_attribution.audit_completed_sources \
+  --config stage_1/configs/staged_attribution/experiment.json \
+  --source-root /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826 \
+  --subset-root /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/fixed_stratified_reevaluation_subsets_a2991e1 \
+  --output /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/completed_source_audit_5aff731/index.json \
+  --expected-source-revision 6ac87be094c9c1ce4783f10291a339f04623449b \
+  --expected-completed-count 8 \
+  --expected-generator-revision 5aff73140ed1f66f475c3b123cd91c82dae04866 \
+  --expected-config-sha256 b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb \
+  --require-clean
+```
+
+不可变输出 SHA256 为
+`6905e0f99b0f193bd4a4146ded59d99d1fc1dc61393a29e86635bb21e4a2bf6d`；完全相同命令第二次执行后
+SHA256 不变。审计覆盖当前 8 个正式完成 source（Porto/seed42 的 E0Q0–E5Q0、E6Q0、E6Q1），
+8/8 均为 source revision `6ac87be...`，每个 adapter tree 6 个文件，完整测试人口 59,778，
+token/LLM/aligned ID 哈希均为
+`5e15c827a074a611a9a7bcddd87e85fd8a3754314462b6576e8845e92b0b33aa`。
+
+8/8 原始 Stage4 的四个 G 条件内部人口完全一致，原始人口哈希均为
+`02cb240090d83160845eb2f90583d6e5bf881bced2f72ba2d9410c8478e2b705`；固定分层人口哈希为
+`804299e36a2ea81f186210beb5a4ef722600ff6f554b77e0ddc43dfb226f0ec7`，因此 8/8 均明确标记必须
+执行 corrected Stage3→4 reevaluation。这不构成 GPS/Road/Grid 科学结论，也不表示原始 Stage4
+损坏；它证明原始 1,024 条人口不能冒充预注册分层人口，后续跨 cell/city/seed 结论必须来自
+固定清单上的纠正版复评。审计同时列出尚缺 52 个 completed source，未据此提前启动复评队列。
+
+第一次正式执行在输出前因上述人口哈希不同而拒绝，未留下 provenance 文件；该失败触发了
+`5aff731...` 的语义修正并新增“同人口大小但不同 ID 应记录而非拒绝”以及“人口大小漂移必须
+拒绝”的回归测试。整个过程没有修改任何正式 attempt、watcher、GPU 进程或历史产物。
