@@ -21,7 +21,12 @@ from staged_attribution.population_bootstrap import (
     POPULATION_REGRET_METHOD,
     SELECTION_BOOTSTRAP_METHOD,
 )
-from staged_attribution.select_candidates import SelectionError, select_candidates
+from staged_attribution.immutable_artifacts import ImmutableArtifactError
+from staged_attribution.select_candidates import (
+    SelectionError,
+    select_candidates,
+    write_selection,
+)
 
 
 CONFIG_PATH = Path("stage_1/configs/staged_attribution/experiment.json")
@@ -265,6 +270,20 @@ def test_summary_freezes_g_e_q_and_paired_trajectory_attribution() -> None:
     final = select_candidates(corrected, phase="final")
     assert final["confirmation_cells"][0] == "e0_q0"
     assert "e6_q3" in final["confirmation_cells"]
+
+
+def test_candidate_selection_is_immutable_and_idempotent(tmp_path: Path) -> None:
+    selection = {"schema_version": 1, "phase": "core", "adaptive_cells": []}
+    output = tmp_path / "selection.json"
+    assert write_selection(selection, output) == output
+    original = output.read_bytes()
+    assert write_selection(selection, output) == output
+
+    changed = dict(selection)
+    changed["phase"] = "final"
+    with pytest.raises(ImmutableArtifactError, match="refusing to replace"):
+        write_selection(changed, output)
+    assert output.read_bytes() == original
 
 
 def test_summary_rejects_inconsistent_g_population() -> None:

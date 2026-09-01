@@ -13,6 +13,7 @@ import numpy as np
 
 from .config import ExperimentConfig
 from .evaluate_stage1 import validity_gate
+from .immutable_artifacts import canonical_json_bytes, write_immutable_artifact_set
 from .population_bootstrap import (
     DOMAIN_METRICS,
     POPULATION_REGRET_METHOD,
@@ -539,7 +540,6 @@ def summarize_corrected_results(
 
 def write_corrected_report(summary: Mapping[str, object], output_dir: str | Path) -> tuple[Path, Path]:
     output = Path(output_dir)
-    output.mkdir(parents=True, exist_ok=True)
     json_path = output / "analysis.json"
     markdown_path = output / "analysis.md"
     coverage = summary["coverage"]
@@ -560,12 +560,13 @@ def write_corrected_report(summary: Mapping[str, object], output_dir: str | Path
             "",
         ]
     )
-    temporary_json = json_path.with_suffix(".json.tmp")
-    temporary_markdown = markdown_path.with_suffix(".md.tmp")
-    temporary_json.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    temporary_markdown.write_text(markdown, encoding="utf-8")
-    temporary_json.replace(json_path)
-    temporary_markdown.replace(markdown_path)
+    write_immutable_artifact_set(
+        {
+            json_path: canonical_json_bytes(summary),
+            markdown_path: markdown.encode("utf-8"),
+        },
+        label="corrected analysis",
+    )
     return json_path, markdown_path
 
 

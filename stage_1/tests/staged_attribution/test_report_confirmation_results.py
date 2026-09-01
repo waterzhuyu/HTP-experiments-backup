@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from staged_attribution.immutable_artifacts import ImmutableArtifactError
 from staged_attribution.config import ExperimentConfig
 from staged_attribution.population_bootstrap import (
     POPULATION_REGRET_METHOD,
@@ -349,6 +350,19 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
     )
     assert json.loads(json_path.read_text())["candidate_evidence"] == CONFIRMATION_EVIDENCE
     assert "claim_supported=true" in markdown_path.read_text()
+
+    original_json = json_path.read_bytes()
+    original_markdown = markdown_path.read_bytes()
+    assert write_confirmation_report(summary, tmp_path / "report") == (
+        json_path,
+        markdown_path,
+    )
+    changed = dict(summary)
+    changed["revision"] = "f" * 40
+    with pytest.raises(ImmutableArtifactError, match="refusing to replace"):
+        write_confirmation_report(changed, tmp_path / "report")
+    assert json_path.read_bytes() == original_json
+    assert markdown_path.read_bytes() == original_markdown
 
 
 def test_confirmation_collection_rejects_nested_contribution_tamper(

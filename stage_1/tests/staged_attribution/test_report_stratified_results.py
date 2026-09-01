@@ -17,7 +17,9 @@ from staged_attribution.report_stratified_results import (
     CorrectedRunEvidence,
     collect_corrected_runs,
     summarize_corrected_results,
+    write_corrected_report,
 )
+from staged_attribution.immutable_artifacts import ImmutableArtifactError
 from staged_attribution.report_results import ResultAuditError
 from staged_attribution.run_experiment import build_jobs
 from staged_attribution.select_candidates import select_candidates
@@ -149,6 +151,32 @@ def test_corrected_summary_is_selection_ready_and_seed_stratified() -> None:
     selection = select_candidates(summary, phase="core")
     assert selection["best_single"] == "e0_q0"
     assert selection["paired_effects"] == summary["paired_metric_effects"]
+
+
+def test_corrected_report_is_immutable_and_idempotent(tmp_path: Path) -> None:
+    summary = summarize_corrected_results(
+        [
+            _run("e0_q0", 42, False),
+            _run("e1_q0", 42, True),
+            _run("e0_q0", 314159, False),
+            _run("e1_q0", 314159, False),
+        ],
+        n_resamples=20,
+        bootstrap_seed=20260826,
+    )
+    output = tmp_path / "report"
+    json_path, markdown_path = write_corrected_report(summary, output)
+    original_json = json_path.read_bytes()
+    original_markdown = markdown_path.read_bytes()
+
+    assert write_corrected_report(summary, output) == (json_path, markdown_path)
+    changed = dict(summary)
+    changed["evaluation_revision"] = "f" * 40
+    with pytest.raises(ImmutableArtifactError, match="refusing to replace"):
+        write_corrected_report(changed, output)
+
+    assert json_path.read_bytes() == original_json
+    assert markdown_path.read_bytes() == original_markdown
 
 
 def test_corrected_summary_rejects_incomplete_cartesian_coverage() -> None:

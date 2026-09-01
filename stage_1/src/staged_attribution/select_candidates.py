@@ -11,6 +11,7 @@ from typing import Mapping, Sequence
 import numpy as np
 
 from .analyze import pareto_front
+from .immutable_artifacts import canonical_json_bytes, write_immutable_artifact_set
 from .report_results import METRICS
 from .population_bootstrap import POPULATION_REGRET_METHOD, SELECTION_BOOTSTRAP_METHOD
 
@@ -221,6 +222,15 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def write_selection(selection: Mapping[str, object], output: str | Path) -> Path:
+    path = Path(output)
+    write_immutable_artifact_set(
+        {path: canonical_json_bytes(selection)},
+        label="candidate selection",
+    )
+    return path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Freeze adaptive/confirmation cell selection")
     parser.add_argument("--analysis", type=Path, required=True)
@@ -231,10 +241,7 @@ def main() -> None:
     selection = select_candidates(summary, arguments.phase)
     selection["source_analysis"] = str(arguments.analysis.resolve())
     selection["source_analysis_sha256"] = _sha256(arguments.analysis)
-    arguments.output.parent.mkdir(parents=True, exist_ok=True)
-    temporary = arguments.output.with_suffix(arguments.output.suffix + ".tmp")
-    temporary.write_text(json.dumps(selection, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    temporary.replace(arguments.output)
+    write_selection(selection, arguments.output)
     print(json.dumps(selection, indent=2, sort_keys=True))
 
 
