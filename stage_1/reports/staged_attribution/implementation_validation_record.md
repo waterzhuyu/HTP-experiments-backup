@@ -238,7 +238,7 @@ cd /workspace/guozuyu/HTP-staged-attribution-compact-adapter
 uv run --frozen pytest -q
 ```
 
-不可变下游分析证据加固后的最新结果：`280 passed, 23 warnings in 18.96s`。warnings 为既有 PyTorch Transformer
+不可变下游分析证据加固后的最新结果：`281 passed, 23 warnings in 18.80s`。warnings 为既有 PyTorch Transformer
 nested-tensor 提示。
 
 正式冻结命令：
@@ -359,20 +359,28 @@ token/LLM/aligned ID 哈希均为
 
 ## 12. 下游分析、候选冻结与确认报告的不可覆盖证据协议
 
-在审计复评与确认流水线时发现，`report_stratified_results`、`select_candidates` 和
-`report_confirmation_results` 虽然先写 `.tmp`，但随后使用 `replace` 静默覆盖同名目标。这会使
+在审计 core 汇总、复评与确认流水线时发现，`report_results`、`report_stratified_results`、
+`select_candidates` 和 `report_confirmation_results` 虽然先写 `.tmp`，但随后使用 `replace`
+静默覆盖同名目标。这会使
 同一路径上的旧 `analysis.json`、`analysis.md` 或 frozen selection 被后来一次运行改写，不能满足
 实验结论的不可变证据要求。提交
 `af9d03e2ffc6321a7c2751e2daebc99ee4f0598f`（`fix(eval): preserve immutable analysis evidence`）
-新增共享 `immutable_artifacts` 协议，并将三个入口全部接入。协议具体为：
+新增共享 `immutable_artifacts` 协议，并将三个入口全部接入。
+
+后续完整写入面审计发现 core evidence index 的 `report_results.write_report` 仍有同类问题；提交
+`e39f5ebebc5537af1f85bd29d02ec7483cf183a2`（`fix(eval): preserve immutable core report`）将第四个
+顶层证据入口接入同一协议。其余 `replace` 位于受 attempt 非空/完成门禁保护的阶段产物、运行中
+状态清单，或已有“内容不同拒绝”的冻结清单，不作为可反复覆盖的顶层结论输出。
+
+四个入口共用的协议具体为：
 
 - 对一组相关产物先逐个预检；任一已有目标内容不同、不是普通文件或为符号链接时，在创建其他
   同组目标前拒绝；
 - 完全相同内容视为幂等重放；若同组一个目标完全相同而另一个缺失，只补齐缺失目标；
 - 新目标先写 exclusive `.tmp`，`flush` + `fsync` 后以 hard-link 原子发布，并 `fsync` 父目录；
 - 陈旧 `.tmp` 明确拒绝，不猜测或删除；并发发布若内容不同明确拒绝；
-- corrected analysis 的 JSON/Markdown、confirmation analysis 的 JSON/Markdown 作为相关证据集
-  整体预检；candidate selection 使用同一不可变单文件协议；
+- core/corrected/confirmation analysis 的 JSON/Markdown 分别作为相关证据集整体预检；candidate
+  selection 使用同一不可变单文件协议；
 - 未改变 bootstrap、候选 eligibility、adaptive cell、confirmation gate、GPS/Road/Grid 指标、人口或
   任何训练超参数，属于 provenance/落盘语义加固，不是科学变量。
 
@@ -389,10 +397,12 @@ uv run --frozen pytest -q \
 
 结果为 `18 passed in 7.91s`。覆盖正常首次发布、完全相同重放、缺失同伴补齐、任一同伴内容冲突时
 全组预检拒绝且尚未创建的同伴保持不存在、陈旧临时文件、符号链接，以及三个实际调用入口的
-不同内容拒绝与旧字节保持不变。完整命令 `uv run --frozen pytest -q` 结果为
-`280 passed, 23 warnings in 18.96s`；warnings 仍为既有 Transformer nested-tensor 提示。
+不同内容拒绝与旧字节保持不变。core report 的追加聚焦命令
+`uv run --frozen pytest -q stage_1/tests/staged_attribution/test_report_results.py` 为
+`7 passed in 3.00s`。最终完整命令 `uv run --frozen pytest -q` 结果为
+`281 passed, 23 warnings in 18.80s`；warnings 仍为既有 Transformer nested-tensor 提示。
 
-本提交后候选 worktree 为 clean。它没有创建真实 corrected analysis、selection 或 confirmation
+本提交后候选 worktree 为 clean。它没有创建真实 core/corrected analysis、selection 或 confirmation
 产物，因为正式 core source 仍未齐备；也没有修改正式 watcher、`run_cell`、attempt 或 GPU
 派发。该加固只保证未来结论一旦写入命名目录就不能被同路径不同内容静默替换，不能替代尚待
 执行的固定人口复评与 full confirmation。
