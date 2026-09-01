@@ -200,6 +200,8 @@ def test_full_core_summary_bootstraps_registered_e_and_q_contrasts() -> None:
         and row["metric"] == "point_to_road_jsd"
     )
     assert best_pair["expression"] == "e6_q0 - min(e3_q0, e4_q0, e5_q0)"
+    assert best_pair["inferential_role"] == "descriptive_sensitivity"
+    assert interaction["inferential_role"] == "primary"
 
     selection = select_candidates(summary, phase="core")
     assert selection["best_single"] == "e0_q0"

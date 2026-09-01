@@ -53,6 +53,7 @@ def staged_contrast_definitions() -> list[dict[str, object]]:
             "family": "E",
             "contrast": name,
             "kind": "linear",
+            "role": "primary",
             "coefficients": dict(coefficients),
         }
         for name, coefficients in E_LINEAR_CONTRASTS.items()
@@ -62,6 +63,7 @@ def staged_contrast_definitions() -> list[dict[str, object]]:
             "family": "E",
             "contrast": E_BEST_PAIR_CONTRAST,
             "kind": "nonlinear",
+            "role": "descriptive_sensitivity",
             "expression": E_BEST_PAIR_EXPRESSION,
         }
     )
@@ -70,6 +72,7 @@ def staged_contrast_definitions() -> list[dict[str, object]]:
             "family": "Q",
             "contrast": name,
             "kind": "linear",
+            "role": "primary",
             "coefficients": dict(coefficients),
         }
         for name, coefficients in Q_LINEAR_CONTRASTS.items()

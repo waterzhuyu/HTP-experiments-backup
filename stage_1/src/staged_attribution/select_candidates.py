@@ -216,6 +216,7 @@ def _audit_staged_attribution(summary: Mapping[str, object]) -> dict[str, object
         if (
             source.get("family") != definition["family"]
             or source.get("contrast_kind") != definition["kind"]
+            or source.get("inferential_role") != definition["role"]
             or source.get("method") != SELECTION_BOOTSTRAP_METHOD
             or metric not in METRICS
             or source.get("group") != METRICS.get(metric, (None, None))[1]

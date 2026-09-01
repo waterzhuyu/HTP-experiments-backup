@@ -234,6 +234,7 @@ def _corrected_selection_summary(summary: dict[str, object]) -> dict[str, object
             "family": source["family"],
             "contrast": source["contrast"],
             "contrast_kind": definition["kind"],
+            "inferential_role": definition["role"],
             "city": "porto",
             "metric": source["metric"],
             "group": METRICS[source["metric"]][1],

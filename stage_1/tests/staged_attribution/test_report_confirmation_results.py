@@ -287,6 +287,7 @@ def _selection(tmp_path: Path) -> tuple[Path, dict[str, object]]:
                     "family": definition["family"],
                     "contrast": definition["contrast"],
                     "contrast_kind": definition["kind"],
+                    "inferential_role": definition["role"],
                     "city": city,
                     "metric": metric,
                     "group": METRICS[metric][1],

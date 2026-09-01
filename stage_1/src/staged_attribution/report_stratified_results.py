@@ -456,6 +456,7 @@ def summarize_staged_attribution(
                     "family": family,
                     "contrast": contrast,
                     "contrast_kind": definition["kind"],
+                    "inferential_role": definition["role"],
                     "city": city,
                     "metric": metric,
                     "group": METRICS[metric][1],
