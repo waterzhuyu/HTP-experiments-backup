@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from staged_attribution.analyze import CORE_CELLS, staged_contrast_definitions
 from staged_attribution.report_results import (
     G_VARIANTS,
     METRICS,
@@ -191,7 +192,7 @@ def _run(cell_id: str, base: float) -> RunEvidence:
 
 def _corrected_selection_summary(summary: dict[str, object]) -> dict[str, object]:
     corrected = dict(summary)
-    corrected["analysis_schema_version"] = 3
+    corrected["analysis_schema_version"] = 4
     corrected["candidate_evidence"] = "stratified_population_aware"
     corrected["metric_rows"] = [
         {**row, "method": POPULATION_REGRET_METHOD}
@@ -222,6 +223,49 @@ def _corrected_selection_summary(summary: dict[str, object]) -> dict[str, object
                     }
                 )
     corrected["paired_metric_effects"] = effects
+    definitions = staged_contrast_definitions()
+    definition_by_name = {
+        definition["contrast"]: definition for definition in definitions
+    }
+    staged_rows = []
+    for source in summary["e_q_contrasts"]:
+        definition = definition_by_name[source["contrast"]]
+        row = {
+            "family": source["family"],
+            "contrast": source["contrast"],
+            "contrast_kind": definition["kind"],
+            "city": "porto",
+            "metric": source["metric"],
+            "group": METRICS[source["metric"]][1],
+            "orientation": "minimize",
+            "method": SELECTION_BOOTSTRAP_METHOD,
+            "seed_strata": [42],
+            "seed_populations": {42: 2},
+            "n_pairs": 2,
+            "estimate": source["estimate"],
+            "ci_low": source["estimate"],
+            "ci_high": source["estimate"],
+            "p_improvement": float(source["estimate"] < 0),
+            "p_degradation": float(source["estimate"] > 0),
+            "seed": 20260826,
+            "n_resamples": 100,
+        }
+        if definition["kind"] == "linear":
+            row["coefficients"] = definition["coefficients"]
+        else:
+            row["expression"] = definition["expression"]
+        staged_rows.append(row)
+    corrected["staged_attribution"] = {
+        "available": True,
+        "required_cells": list(CORE_CELLS),
+        "observed_cells": list(CORE_CELLS),
+        "missing_cells": [],
+        "method": SELECTION_BOOTSTRAP_METHOD,
+        "unit": "trajectory_within_seed_equal_weight_across_seeds",
+        "contrast_definitions": definitions,
+        "rows": staged_rows,
+        "city_direction_heterogeneity": [],
+    }
     return corrected
 
 
@@ -258,7 +302,7 @@ def test_summary_freezes_g_e_q_and_paired_trajectory_attribution() -> None:
         "sid", "sampling", "interaction", "total"
     }
 
-    with pytest.raises(SelectionError, match="schema version 3"):
+    with pytest.raises(SelectionError, match="schema version 4"):
         select_candidates(summary, phase="core")
     corrected = _corrected_selection_summary(summary)
     selection = select_candidates(corrected, phase="core")

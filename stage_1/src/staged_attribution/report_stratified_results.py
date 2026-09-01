@@ -11,6 +11,11 @@ from pathlib import Path
 
 import numpy as np
 
+from .analyze import (
+    CORE_CELLS,
+    E_BEST_PAIR_CONTRAST,
+    staged_contrast_definitions,
+)
 from .config import ExperimentConfig
 from .evaluate_stage1 import validity_gate
 from .immutable_artifacts import canonical_json_bytes, write_immutable_artifact_set
@@ -29,13 +34,9 @@ from .run_experiment import build_jobs
 from .run_stratified_reevaluation_batch import completed_reevaluation_attempt
 
 
-ANALYSIS_SCHEMA_VERSION = 3
+ANALYSIS_SCHEMA_VERSION = 4
 CANDIDATE_EVIDENCE = "stratified_population_aware"
 PENALTY_METHOD = "population_penalized_error_v1"
-CORE_CELLS = (
-    "e0_q0", "e1_q0", "e2_q0", "e3_q0", "e4_q0", "e5_q0",
-    "e6_q0", "e6_q1", "e6_q2", "e6_q3",
-)
 
 
 @dataclass(frozen=True)
@@ -280,6 +281,211 @@ def _stratified_penalty_effect(
         "p_degradation": float(np.mean(samples > 0)),
         "seed": int(seed),
         "n_resamples": int(n_resamples),
+    }
+
+
+def _apply_staged_contrast(
+    values: Mapping[str, np.ndarray],
+    definition: Mapping[str, object],
+) -> np.ndarray:
+    if definition["kind"] == "linear":
+        coefficients = definition["coefficients"]
+        if not isinstance(coefficients, Mapping):
+            raise ResultAuditError("linear staged contrast lacks coefficients")
+        return sum(
+            float(coefficient) * values[str(cell)]
+            for cell, coefficient in coefficients.items()
+        )
+    if definition["contrast"] != E_BEST_PAIR_CONTRAST:
+        raise ResultAuditError("unknown nonlinear staged contrast")
+    return values["e6_q0"] - np.minimum.reduce(
+        [values["e3_q0"], values["e4_q0"], values["e5_q0"]]
+    )
+
+
+def _staged_city_direction_heterogeneity(
+    rows: Sequence[Mapping[str, object]],
+) -> list[dict[str, object]]:
+    grouped: dict[tuple[str, str, str], dict[str, Mapping[str, object]]] = defaultdict(dict)
+    for row in rows:
+        key = (str(row["family"]), str(row["contrast"]), str(row["metric"]))
+        city = str(row["city"])
+        if city in grouped[key]:
+            raise ResultAuditError(f"duplicate staged city effect: {key}/{city}")
+        grouped[key][city] = row
+    result = []
+    for (family, contrast, metric), by_city in sorted(grouped.items()):
+        estimates = {
+            city: float(row["estimate"])
+            for city, row in sorted(by_city.items())
+        }
+        directions = {
+            city: (
+                "improvement" if value < 0
+                else "degradation" if value > 0
+                else "neutral"
+            )
+            for city, value in estimates.items()
+        }
+        opposed = "improvement" in directions.values() and "degradation" in directions.values()
+        result.append(
+            {
+                "family": family,
+                "contrast": contrast,
+                "metric": metric,
+                "group": METRICS[metric][1],
+                "city_estimates": estimates,
+                "city_directions": directions,
+                "opposed_direction": opposed,
+                "direction_consistent": not opposed,
+                "estimate_range": max(estimates.values()) - min(estimates.values()),
+                "method": "descriptive_city_direction_v1",
+            }
+        )
+    return result
+
+
+def summarize_staged_attribution(
+    runs: Sequence[CorrectedRunEvidence],
+    cells: Sequence[str],
+    cities: Sequence[str],
+    seeds: Sequence[int],
+    *,
+    n_resamples: int,
+    bootstrap_seed: int,
+    confidence: float,
+) -> dict[str, object]:
+    """Estimate registered E/Q contrasts on the corrected fixed population."""
+    missing = [cell for cell in CORE_CELLS if cell not in cells]
+    base = {
+        "available": not missing,
+        "required_cells": list(CORE_CELLS),
+        "observed_cells": list(cells),
+        "missing_cells": missing,
+        "method": SELECTION_BOOTSTRAP_METHOD,
+        "unit": "trajectory_within_seed_equal_weight_across_seeds",
+        "contrast_definitions": staged_contrast_definitions(),
+    }
+    if missing:
+        return {
+            **base,
+            "reason": "complete registered core coverage is required for identifiable E/Q contrasts",
+            "rows": [],
+            "city_direction_heterogeneity": [],
+        }
+
+    lookup = {(run.city, run.seed, run.cell_id): run for run in runs}
+    definitions = staged_contrast_definitions()
+    rows: list[dict[str, object]] = []
+    for city in cities:
+        sampled_contrasts = {
+            (str(definition["family"]), str(definition["contrast"]), metric): np.zeros(
+                n_resamples, dtype=np.float64
+            )
+            for definition in definitions
+            for metric in METRICS
+        }
+        point_contrasts = {key: 0.0 for key in sampled_contrasts}
+        populations: dict[int, int] = {}
+        for current_seed in seeds:
+            current = {
+                cell: lookup[(city, current_seed, cell)]
+                for cell in CORE_CELLS
+            }
+            contribution_ids = {
+                run.contributions["g11"].traj_ids for run in current.values()
+            }
+            if len(contribution_ids) != 1:
+                raise ResultAuditError(
+                    f"E/Q paired populations differ for {city}/seed_{current_seed}"
+                )
+            traj_ids = next(iter(contribution_ids))
+            population = len(traj_ids)
+            populations[int(current_seed)] = population
+            generator = np.random.default_rng(
+                np.random.SeedSequence([int(bootstrap_seed), int(current_seed)])
+            )
+            weights = generator.multinomial(
+                population,
+                np.full(population, 1 / population),
+                size=n_resamples,
+            )
+            sampled_by_metric: dict[str, dict[str, np.ndarray]] = {
+                metric: {} for metric in METRICS
+            }
+            point_by_metric: dict[str, dict[str, np.ndarray]] = {
+                metric: {} for metric in METRICS
+            }
+            for cell, run in current.items():
+                sampled = population_regrets(run.contributions["g11"], weights)
+                points = population_regrets(run.contributions["g11"])
+                penalty_ids, penalties = _penalty_vector(
+                    run.stage4["g11"], f"{city}/seed_{current_seed}/{cell}/g11"
+                )
+                if penalty_ids != traj_ids:
+                    raise ResultAuditError(
+                        f"E/Q penalty population differs for {city}/seed_{current_seed}/{cell}"
+                    )
+                sampled["population_mean_penalized_error"] = weights @ penalties / population
+                points["population_mean_penalized_error"] = np.asarray(
+                    [float(penalties.mean())], dtype=np.float64
+                )
+                for metric in METRICS:
+                    sampled_by_metric[metric][cell] = sampled[metric]
+                    point_by_metric[metric][cell] = points[metric]
+            for definition in definitions:
+                family = str(definition["family"])
+                contrast = str(definition["contrast"])
+                for metric in METRICS:
+                    key = (family, contrast, metric)
+                    sampled_contrasts[key] += _apply_staged_contrast(
+                        sampled_by_metric[metric], definition
+                    ) / len(seeds)
+                    point_contrasts[key] += float(
+                        _apply_staged_contrast(point_by_metric[metric], definition)[0]
+                    ) / len(seeds)
+
+        for definition in definitions:
+            family = str(definition["family"])
+            contrast = str(definition["contrast"])
+            for metric in METRICS:
+                key = (family, contrast, metric)
+                values = sampled_contrasts[key]
+                low, high = _interval(values, confidence)
+                row = {
+                    "family": family,
+                    "contrast": contrast,
+                    "contrast_kind": definition["kind"],
+                    "city": city,
+                    "metric": metric,
+                    "group": METRICS[metric][1],
+                    "orientation": "minimize",
+                    "method": SELECTION_BOOTSTRAP_METHOD,
+                    "seed_strata": list(seeds),
+                    "seed_populations": populations,
+                    "n_pairs": sum(populations.values()),
+                    "estimate": point_contrasts[key],
+                    "ci_low": low,
+                    "ci_high": high,
+                    "p_improvement": float(np.mean(values < 0)),
+                    "p_degradation": float(np.mean(values > 0)),
+                    "seed": int(bootstrap_seed),
+                    "n_resamples": int(n_resamples),
+                }
+                if definition["kind"] == "linear":
+                    row["coefficients"] = dict(definition["coefficients"])
+                else:
+                    row["expression"] = definition["expression"]
+                rows.append(row)
+    rows.sort(
+        key=lambda row: (
+            str(row["family"]), str(row["contrast"]), str(row["city"]), str(row["metric"])
+        )
+    )
+    return {
+        **base,
+        "rows": rows,
+        "city_direction_heterogeneity": _staged_city_direction_heterogeneity(rows),
     }
 
 
@@ -564,6 +770,15 @@ def summarize_corrected_results(
             str(row["city"]), str(row["cell_id"]), str(row["metric"])
         ),
     )
+    staged_attribution = summarize_staged_attribution(
+        runs,
+        cells,
+        cities,
+        seeds,
+        n_resamples=n_resamples,
+        bootstrap_seed=bootstrap_seed,
+        confidence=confidence,
+    )
     return {
         "schema_version": ANALYSIS_SCHEMA_VERSION,
         "analysis_schema_version": ANALYSIS_SCHEMA_VERSION,
@@ -587,6 +802,7 @@ def summarize_corrected_results(
         "g_metric_attribution": g_rows,
         "paired_metric_effects": paired,
         "city_direction_heterogeneity": summarize_city_direction_heterogeneity(paired),
+        "staged_attribution": staged_attribution,
         "evidence_rows": evidence_rows,
     }
 
@@ -610,8 +826,14 @@ def write_corrected_report(summary: Mapping[str, object], output_dir: str | Path
             f"- Opposed city directions: "
             f"{sum(bool(row['opposed_direction']) for row in summary['city_direction_heterogeneity'])}",
             f"- G-attribution rows: {len(summary['g_metric_attribution'])}",
+            f"- E/Q attribution available: "
+            f"{str(summary['staged_attribution']['available']).lower()}",
+            f"- E/Q attribution rows: {len(summary['staged_attribution']['rows'])}",
+            f"- E/Q opposed city directions: "
+            f"{sum(bool(row['opposed_direction']) for row in summary['staged_attribution']['city_direction_heterogeneity'])}",
             "",
             "All candidate effects resample trajectories within seed and average seed effects equally.",
+            "Registered E/Q contrasts reuse the same paired trajectory weights across all core cells.",
             "Failures remain in every primary population-level regret.",
             "",
         ]

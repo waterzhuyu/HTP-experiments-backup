@@ -10,7 +10,7 @@ from typing import Mapping, Sequence
 
 import numpy as np
 
-from .analyze import pareto_front
+from .analyze import pareto_front, staged_contrast_definitions
 from .immutable_artifacts import canonical_json_bytes, write_immutable_artifact_set
 from .report_results import METRICS
 from .population_bootstrap import POPULATION_REGRET_METHOD, SELECTION_BOOTSTRAP_METHOD
@@ -171,13 +171,91 @@ def _rank_family(
     return min(available, key=score.__getitem__)
 
 
+def _audit_staged_attribution(summary: Mapping[str, object]) -> dict[str, object]:
+    staged = summary.get("staged_attribution")
+    coverage = summary.get("coverage")
+    if not isinstance(staged, Mapping) or not isinstance(coverage, Mapping):
+        raise SelectionError("candidate selection requires corrected E/Q staged attribution")
+    cells = coverage.get("cells")
+    cities = coverage.get("cities")
+    if (
+        staged.get("available") is not True
+        or staged.get("required_cells") != list(CORE_CELLS)
+        or staged.get("missing_cells") != []
+        or not isinstance(cells, list)
+        or not set(CORE_CELLS).issubset(map(str, cells))
+        or not isinstance(cities, list)
+        or not cities
+    ):
+        raise SelectionError("candidate selection requires complete registered core E/Q coverage")
+    definitions = staged_contrast_definitions()
+    if staged.get("contrast_definitions") != definitions:
+        raise SelectionError("corrected E/Q contrast definitions differ from registration")
+    rows = staged.get("rows")
+    if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes)):
+        raise SelectionError("corrected E/Q attribution rows are missing")
+    definition_by_name = {
+        str(definition["contrast"]): definition for definition in definitions
+    }
+    expected = {
+        (str(city), str(definition["contrast"]), metric)
+        for city in cities
+        for definition in definitions
+        for metric in METRICS
+    }
+    observed = set()
+    for source in rows:
+        if not isinstance(source, Mapping):
+            raise SelectionError("corrected E/Q attribution row must be a mapping")
+        key = (str(source.get("city")), str(source.get("contrast")), str(source.get("metric")))
+        if key in observed or key[1] not in definition_by_name:
+            raise SelectionError(f"duplicate or unknown corrected E/Q attribution row: {key}")
+        observed.add(key)
+        definition = definition_by_name[key[1]]
+        metric = key[2]
+        if (
+            source.get("family") != definition["family"]
+            or source.get("contrast_kind") != definition["kind"]
+            or source.get("method") != SELECTION_BOOTSTRAP_METHOD
+            or metric not in METRICS
+            or source.get("group") != METRICS.get(metric, (None, None))[1]
+            or int(source.get("n_pairs", 0)) <= 0
+            or int(source.get("n_resamples", 0)) <= 0
+        ):
+            raise SelectionError(f"invalid corrected E/Q attribution identity: {key}")
+        if definition["kind"] == "linear":
+            if source.get("coefficients") != definition["coefficients"]:
+                raise SelectionError(f"corrected E/Q coefficients differ from registration: {key}")
+        elif source.get("expression") != definition["expression"]:
+            raise SelectionError(f"corrected E/Q expression differs from registration: {key}")
+        for field in ("estimate", "ci_low", "ci_high", "p_improvement", "p_degradation"):
+            if not isinstance(source.get(field), (int, float)) or not math.isfinite(float(source[field])):
+                raise SelectionError(f"invalid corrected E/Q {field}: {key}")
+    if observed != expected:
+        raise SelectionError("corrected E/Q attribution lacks complete city/contrast/metric coverage")
+    return {
+        "available": True,
+        "families": ["E", "Q"],
+        "contrasts": len(definitions),
+        "rows": len(rows),
+    }
+
+
 def select_candidates(summary: Mapping[str, object], phase: str = "core") -> dict[str, object]:
     if phase not in {"core", "final"}:
         raise SelectionError("selection phase must be core or final")
-    if int(summary.get("analysis_schema_version", 0)) < 3:
-        raise SelectionError("candidate selection requires corrected analysis schema version 3")
+    if int(summary.get("analysis_schema_version", 0)) < 4:
+        raise SelectionError("candidate selection requires corrected analysis schema version 4")
     if summary.get("candidate_evidence") != "stratified_population_aware":
         raise SelectionError("candidate selection requires stratified population-aware evidence")
+    staged_audit = _audit_staged_attribution(summary)
+    coverage = summary.get("coverage")
+    if (
+        phase == "core"
+        and isinstance(coverage, Mapping)
+        and set(map(str, coverage.get("cells", []))) != set(CORE_CELLS)
+    ):
+        raise SelectionError("core selection requires exactly the registered core cells")
     effects = _paired_effects(summary)
     gates = _gate_map(summary)
     profiles = _mean_profiles(summary)
@@ -215,6 +293,7 @@ def select_candidates(summary: Mapping[str, object], phase: str = "core") -> dic
         "confirmation_cells": sorted(set(confirmation), key=lambda value: (value != "e0_q0", value)),
         "eligibility": eligibility,
         "paired_effects": effects,
+        "staged_attribution_audit": staged_audit,
     }
 
 

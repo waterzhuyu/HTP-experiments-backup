@@ -9,6 +9,73 @@ CORE_CELLS = (
     "e6_q1", "e6_q2", "e6_q3",
 )
 
+E_LINEAR_CONTRASTS = {
+    **{
+        f"e{index}_q0_minus_e0_q0": {
+            f"e{index}_q0": 1.0,
+            "e0_q0": -1.0,
+        }
+        for index in range(1, 7)
+    },
+    "gps_road_given_grid": {
+        "e6_q0": 1.0,
+        "e4_q0": -1.0,
+        "e5_q0": -1.0,
+        "e2_q0": 1.0,
+    },
+    "gps_grid_given_road": {
+        "e6_q0": 1.0,
+        "e3_q0": -1.0,
+        "e5_q0": -1.0,
+        "e1_q0": 1.0,
+    },
+    "road_grid_given_gps": {
+        "e6_q0": 1.0,
+        "e3_q0": -1.0,
+        "e4_q0": -1.0,
+        "e0_q0": 1.0,
+    },
+}
+Q_LINEAR_CONTRASTS = {
+    "q1_minus_q0": {"e6_q1": 1.0, "e6_q0": -1.0},
+    "q2_minus_q1": {"e6_q2": 1.0, "e6_q1": -1.0},
+    "q3_minus_q2": {"e6_q3": 1.0, "e6_q2": -1.0},
+    "q3_minus_q0": {"e6_q3": 1.0, "e6_q0": -1.0},
+}
+E_BEST_PAIR_CONTRAST = "all_minus_best_pair_for_minimize"
+E_BEST_PAIR_EXPRESSION = "e6_q0 - min(e3_q0, e4_q0, e5_q0)"
+
+
+def staged_contrast_definitions() -> list[dict[str, object]]:
+    """Return the registered, serializable E/Q estimands in stable order."""
+    definitions = [
+        {
+            "family": "E",
+            "contrast": name,
+            "kind": "linear",
+            "coefficients": dict(coefficients),
+        }
+        for name, coefficients in E_LINEAR_CONTRASTS.items()
+    ]
+    definitions.append(
+        {
+            "family": "E",
+            "contrast": E_BEST_PAIR_CONTRAST,
+            "kind": "nonlinear",
+            "expression": E_BEST_PAIR_EXPRESSION,
+        }
+    )
+    definitions.extend(
+        {
+            "family": "Q",
+            "contrast": name,
+            "kind": "linear",
+            "coefficients": dict(coefficients),
+        }
+        for name, coefficients in Q_LINEAR_CONTRASTS.items()
+    )
+    return definitions
+
 
 def _core(values: Mapping[str, float]) -> dict[str, float]:
     missing = [cell for cell in CORE_CELLS if cell not in values]
@@ -22,26 +89,12 @@ def _core(values: Mapping[str, float]) -> dict[str, float]:
 
 def e_contrasts(values: Mapping[str, float]) -> dict[str, float]:
     parsed = _core(values)
-    baseline = parsed["e0_q0"]
     result = {
-        f"e{index}_q0_minus_e0_q0": parsed[f"e{index}_q0"] - baseline
-        for index in range(1, 7)
+        name: sum(parsed[cell] * coefficient for cell, coefficient in coefficients.items())
+        for name, coefficients in E_LINEAR_CONTRASTS.items()
     }
-    result.update(
-        {
-            "gps_road_given_grid": (
-                parsed["e6_q0"] - parsed["e4_q0"] - parsed["e5_q0"] + parsed["e2_q0"]
-            ),
-            "gps_grid_given_road": (
-                parsed["e6_q0"] - parsed["e3_q0"] - parsed["e5_q0"] + parsed["e1_q0"]
-            ),
-            "road_grid_given_gps": (
-                parsed["e6_q0"] - parsed["e3_q0"] - parsed["e4_q0"] + baseline
-            ),
-            "all_minus_best_pair_for_minimize": parsed["e6_q0"] - min(
-                parsed["e3_q0"], parsed["e4_q0"], parsed["e5_q0"]
-            ),
-        }
+    result[E_BEST_PAIR_CONTRAST] = parsed["e6_q0"] - min(
+        parsed["e3_q0"], parsed["e4_q0"], parsed["e5_q0"]
     )
     return result
 
@@ -49,10 +102,8 @@ def e_contrasts(values: Mapping[str, float]) -> dict[str, float]:
 def q_incremental_contrasts(values: Mapping[str, float]) -> dict[str, float]:
     parsed = _core(values)
     return {
-        "q1_minus_q0": parsed["e6_q1"] - parsed["e6_q0"],
-        "q2_minus_q1": parsed["e6_q2"] - parsed["e6_q1"],
-        "q3_minus_q2": parsed["e6_q3"] - parsed["e6_q2"],
-        "q3_minus_q0": parsed["e6_q3"] - parsed["e6_q0"],
+        name: sum(parsed[cell] * coefficient for cell, coefficient in coefficients.items())
+        for name, coefficients in Q_LINEAR_CONTRASTS.items()
     }
 
 

@@ -7,10 +7,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from staged_attribution.analyze import CORE_CELLS, staged_contrast_definitions
 from staged_attribution.immutable_artifacts import ImmutableArtifactError
 from staged_attribution.config import ExperimentConfig
 from staged_attribution.population_bootstrap import (
     POPULATION_REGRET_METHOD,
+    SELECTION_BOOTSTRAP_METHOD,
     build_metric_contributions,
     population_regrets,
     save_metric_contributions,
@@ -24,7 +26,7 @@ from staged_attribution.report_confirmation_results import (
     summarize_confirmation_results,
     write_confirmation_report,
 )
-from staged_attribution.report_results import ResultAuditError
+from staged_attribution.report_results import METRICS, ResultAuditError
 from staged_attribution.run_experiment import build_jobs
 
 
@@ -276,12 +278,58 @@ def _write_attempt(
 
 
 def _selection(tmp_path: Path) -> tuple[Path, dict[str, object]]:
+    definitions = staged_contrast_definitions()
+    staged_rows = []
+    for city in ("chengdu", "porto"):
+        for definition in definitions:
+            for metric in METRICS:
+                row = {
+                    "family": definition["family"],
+                    "contrast": definition["contrast"],
+                    "contrast_kind": definition["kind"],
+                    "city": city,
+                    "metric": metric,
+                    "group": METRICS[metric][1],
+                    "orientation": "minimize",
+                    "method": SELECTION_BOOTSTRAP_METHOD,
+                    "seed_strata": [42, 314159],
+                    "seed_populations": {42: 4, 314159: 4},
+                    "n_pairs": 8,
+                    "estimate": 0.0,
+                    "ci_low": 0.0,
+                    "ci_high": 0.0,
+                    "p_improvement": 0.0,
+                    "p_degradation": 0.0,
+                    "seed": 20260826,
+                    "n_resamples": 20,
+                }
+                if definition["kind"] == "linear":
+                    row["coefficients"] = definition["coefficients"]
+                else:
+                    row["expression"] = definition["expression"]
+                staged_rows.append(row)
     analysis = tmp_path / "selection_source.json"
     analysis.write_text(
         json.dumps(
             {
                 "candidate_evidence": "stratified_population_aware",
                 "revision": REVISION,
+                "analysis_schema_version": 4,
+                "coverage": {
+                    "cities": ["chengdu", "porto"],
+                    "cells": list(CORE_CELLS),
+                },
+                "staged_attribution": {
+                    "available": True,
+                    "required_cells": list(CORE_CELLS),
+                    "observed_cells": list(CORE_CELLS),
+                    "missing_cells": [],
+                    "method": SELECTION_BOOTSTRAP_METHOD,
+                    "unit": "trajectory_within_seed_equal_weight_across_seeds",
+                    "contrast_definitions": definitions,
+                    "rows": staged_rows,
+                    "city_direction_heterogeneity": [],
+                },
             }
         ),
         encoding="utf-8",
@@ -362,6 +410,10 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
         "cells": ["e0_q0", "e1_q0"],
     }
     assert len(summary["paired_metric_effects"]) == 20
+    assert summary["staged_attribution"]["available"] is False
+    assert set(summary["staged_attribution"]["missing_cells"]) == set(CORE_CELLS[2:])
+    assert summary["controlled_staged_attribution"]["available"] is True
+    assert len(summary["controlled_staged_attribution"]["rows"]) == 2 * 14 * 10
     assert summary["selection_audit"]["verified"] is True
     assert summary["run_revision_audit"] == {
         "uniform": True,
@@ -385,6 +437,7 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
     )
     assert json.loads(json_path.read_text())["candidate_evidence"] == CONFIRMATION_EVIDENCE
     assert "claim_supported=true" in markdown_path.read_text()
+    assert "Frozen controlled E/Q attribution rows: 280" in markdown_path.read_text()
     assert _sha256(config_path) in markdown_path.read_text()
 
     original_json = json_path.read_bytes()
@@ -475,6 +528,23 @@ def test_confirmation_selection_requires_exact_hashed_final_source(
     payload["source_analysis_sha256"] = "0" * 64
     selection_path.write_text(json.dumps(payload))
     with pytest.raises(ResultAuditError, match="hash-mismatched"):
+        audit_confirmation_selection(selection_path, CELLS)
+
+
+def test_confirmation_selection_rejects_source_without_complete_e_q_attribution(
+    tmp_path: Path,
+) -> None:
+    _, _, _, selection_path, _ = _evidence_tree(tmp_path)
+    payload = json.loads(selection_path.read_text())
+    source = Path(payload["source_analysis"])
+    source_payload = json.loads(source.read_text())
+    source_payload["staged_attribution"]["available"] = False
+    source_payload["staged_attribution"]["missing_cells"] = ["e6_q3"]
+    source.write_text(json.dumps(source_payload))
+    payload["source_analysis_sha256"] = _sha256(source)
+    selection_path.write_text(json.dumps(payload))
+
+    with pytest.raises(ResultAuditError, match="complete corrected E/Q"):
         audit_confirmation_selection(selection_path, CELLS)
 
 

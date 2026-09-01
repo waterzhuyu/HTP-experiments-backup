@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -7,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from staged_attribution.analyze import CORE_CELLS, staged_contrast_definitions
 from staged_attribution.config import ExperimentConfig
 from staged_attribution.population_bootstrap import (
     build_metric_contributions,
@@ -24,7 +26,7 @@ from staged_attribution.report_stratified_results import (
 from staged_attribution.immutable_artifacts import ImmutableArtifactError
 from staged_attribution.report_results import ResultAuditError
 from staged_attribution.run_experiment import build_jobs
-from staged_attribution.select_candidates import select_candidates
+from staged_attribution.select_candidates import SelectionError, select_candidates
 
 
 def _geometries() -> dict[int, np.ndarray]:
@@ -154,10 +156,68 @@ def test_corrected_summary_is_selection_ready_and_seed_stratified() -> None:
     )
     assert penalty["estimate"] == pytest.approx(0.475)
     assert all(row["passed"] for row in summary["stage1_gates"])
+    assert summary["staged_attribution"]["available"] is False
+    assert summary["staged_attribution"]["missing_cells"] == list(CORE_CELLS[2:])
+    assert summary["staged_attribution"]["rows"] == []
+    with pytest.raises(SelectionError, match="complete registered core E/Q coverage"):
+        select_candidates(summary, phase="core")
+
+
+def test_full_core_summary_bootstraps_registered_e_and_q_contrasts() -> None:
+    runs = [
+        _run(cell, seed, False)
+        for seed in (42, 314159)
+        for cell in CORE_CELLS
+    ]
+    summary = summarize_corrected_results(
+        runs, n_resamples=20, bootstrap_seed=20260826
+    )
+
+    staged = summary["staged_attribution"]
+    assert staged["available"] is True
+    assert staged["required_cells"] == list(CORE_CELLS)
+    assert staged["missing_cells"] == []
+    assert staged["contrast_definitions"] == staged_contrast_definitions()
+    assert len(staged["rows"]) == 14 * 10
+    assert len(staged["city_direction_heterogeneity"]) == 14 * 10
+    assert all(row["estimate"] == pytest.approx(0.0) for row in staged["rows"])
+    assert all(row["ci_low"] == pytest.approx(0.0) for row in staged["rows"])
+    assert all(row["ci_high"] == pytest.approx(0.0) for row in staged["rows"])
+    interaction = next(
+        row for row in staged["rows"]
+        if row["contrast"] == "gps_road_given_grid"
+        and row["metric"] == "travel_distance_jsd"
+    )
+    assert interaction["coefficients"] == {
+        "e6_q0": 1.0,
+        "e4_q0": -1.0,
+        "e5_q0": -1.0,
+        "e2_q0": 1.0,
+    }
+    best_pair = next(
+        row for row in staged["rows"]
+        if row["contrast"] == "all_minus_best_pair_for_minimize"
+        and row["metric"] == "point_to_road_jsd"
+    )
+    assert best_pair["expression"] == "e6_q0 - min(e3_q0, e4_q0, e5_q0)"
 
     selection = select_candidates(summary, phase="core")
     assert selection["best_single"] == "e0_q0"
-    assert selection["paired_effects"] == summary["paired_metric_effects"]
+    assert selection["staged_attribution_audit"] == {
+        "available": True,
+        "families": ["E", "Q"],
+        "contrasts": 14,
+        "rows": 140,
+    }
+
+    tampered = copy.deepcopy(summary)
+    linear_row = next(
+        row for row in tampered["staged_attribution"]["rows"]
+        if row["contrast_kind"] == "linear"
+    )
+    linear_row["coefficients"] = {"e0_q0": 0.0}
+    with pytest.raises(SelectionError, match="coefficients differ from registration"):
+        select_candidates(tampered, phase="core")
 
 
 def test_city_direction_heterogeneity_preserves_opposed_city_effects() -> None:
