@@ -99,8 +99,21 @@ cd /workspace/guozuyu/HTP-staged-attribution-compact-adapter
 PYTHONPATH=stage_1:stage_1/src uv run --frozen pytest -q stage_1/tests
 ```
 
-结果：`243 passed, 21 warnings in 12.16s`。21 个 warning 均为既有 PyTorch
+结果：在加入评估进度证据后为 `246 passed, 21 warnings in 19.35s`。21 个 warning 均为既有 PyTorch
 Transformer nested-tensor 提示。
+
+### 4.1 Stage2 全量评估进度证据
+
+功能提交 `804dd003ede42e3eaa7dacc660e597bcbd97ba28` 不改变 Stage2 数据、模型、
+forward、loss、batch size 或指标聚合，只增加原子更新的
+`stage2/evaluation_progress.json`。该文件记录 schema/status、总/完成 batch、总/完成样本、
+监督 token、耗时、吞吐、ETA、时间戳和失败类型；默认每 100 batches 更新一次。正常结束时
+状态为 `completed`，异常时保存最后一个已完成 batch 并标记 `failed`，随后原异常继续抛出。
+
+最终进度文件已加入 Stage2 DAG 的 required artifacts，由 `stage2/complete.json` 记录 size 与
+SHA-256。因此它既可在运行中提供可观测性，也会在成功运行后成为不可变实验记录。新增定向
+测试覆盖 completed、failed 和 DAG 哈希契约；与既有 `run_cell` 测试合计
+`10 passed in 2.05s`。
 
 ## 5. 双城市真实 adapter 等价性探针
 
@@ -158,7 +171,8 @@ Transformer nested-tensor 提示。
 5. 不修改四个旧 Porto `attempt_001`，不修改已创建或完成的任何正式 attempt；
 6. 不在活跃 `run_cell` 内热替换代码；如要切换 watcher，必须先得到授权并在安全边界执行；
 7. 每个 compact attempt 的 Stage2 marker 必须记录 `adapter_storage` manifest；
-8. Stage3 开始前必须通过 model/config/extension/version/full-tensor 全部校验。
+8. 每个新 attempt 必须原子更新 `evaluation_progress.json`，并在 Stage2 marker 中锁定其终态；
+9. Stage3 开始前必须通过 model/config/extension/version/full-tensor 全部校验。
 
 回滚只允许通过新的 Git revision 恢复完整 adapter 保存；不删除、不覆盖已经产生的 compact 或
 legacy artifact。两种格式都保留各自 provenance，并由 manifest 是否存在显式区分。
