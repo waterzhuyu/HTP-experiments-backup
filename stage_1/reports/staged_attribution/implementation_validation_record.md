@@ -708,3 +708,34 @@ SHA）共享同一完整链审计，不能依赖 manifest 中单独的 `verified
 本修复未启动任何新队列，未修改正式 worktree、watcher、锁、GPU 进程或现有 attempt。后续 full
 source audit、corrected analysis、core/final selection 与 adaptive/confirmation launch 必须使用修复后
 的 clean 候选 revision；不得使用在旧派生审计下生成的 selection 充当最终结论证据。
+
+## 16. 城市方向异质性与最终声明边界
+
+源码提交 `0d44a76`（`fix(experiment): gate claims on city direction`）补齐了预注册中已有但此前未被
+机器执行的规则：“Porto/Chengdu 方向相反时拒绝无条件通用结论并分别报告城市异质性”。旧的
+`confirmation_gate` 只要求任一城市至少一个 domain CI 显著改善、任一城市均无显著劣化；因此当
+Porto 显著改善而 Chengdu 点估计反向但 CI 跨零时，仍可能错误地产生
+`claim_supported=true`。旧 corrected/confirmation analysis 也没有输出专门的 city-direction 表。
+
+修复后 corrected analysis schema 升为 3，confirmation schema 升为 4。每个
+candidate×metric 保存两城点估计、`improvement/degradation/neutral` 方向、estimate range、
+`opposed_direction` 与 `direction_consistent`。无条件跨城 claim 现在同时要求：
+
+1. 所有 city/seed Stage1 gate 通过；
+2. 任一城市均无 GPS/Road/Grid/validity 显著劣化；
+3. 至少一个 GPS/Road/Grid 指标在所有注册城市点估计均小于零，且至少一城 CI 上界小于零；
+4. GPS/Road/Grid/validity 中没有任何一项出现两城相反点估计方向。
+
+每个城市另外独立输出 `city_specific_claims`，沿用该城市 Stage1 全 seed 通过、无显著劣化、至少一个
+domain 显著改善的门禁。这样异质性会阻止无条件外推，但不会删除 Porto/Chengdu 的负结果或城市
+特定证据。selection 只接受 corrected schema 3+，避免由缺失异质性字段的旧分析冻结候选。
+
+聚焦统计/selection/confirmation 测试 `25 passed in 9.34s`；完整 `stage_1/tests` 为
+`301 passed, 23 warnings in 20.53s`。新增测试构造 Porto estimate `-0.20` 且 CI 显著、Chengdu
+estimate `+0.02` 且 CI 跨零：结果必须是无条件 `claim_supported=false`、Porto city-specific 为 true、
+Chengdu 为 false，并保留两城 estimates。正式 controlled dry-run 仍精确 60 个 run key，config
+SHA-256 保持 `b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb`。
+
+本节属于首次完整结果前对既有预注册声明边界的机器化与 schema 加固，不改变 E/Q/G cell、输入、
+Option B、seed、bootstrap、显著性阈值、训练或评估 population；没有启动或修改任何正式队列、attempt
+或 GPU 进程。

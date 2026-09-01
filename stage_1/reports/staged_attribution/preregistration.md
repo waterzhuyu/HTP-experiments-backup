@@ -204,6 +204,14 @@ formal run 必须来自 clean 40-char Git revision。每个 run 保存 command�
 
 选择器分别冻结最佳 single（E0/E1/E2）、pair（E3/E4/E5）和 Q（E6/Q0..Q3）。若最佳 Q 不是 Q0，则生成 `best_single×best_Q` 与 `best_pair×best_Q` adaptive cell；不得人工替换。adaptive controlled 完成后用 `--phase final` 重新审计，confirmation 清单必须以 `e0_q0` 开头并只包含最终合格非支配候选。城市方向相反时保留 heterogeneity，不能用两城合并成六个独立重复来掩盖。
 
+城市方向规则按每个 candidate×metric 的两城 paired effect 点估计冻结：regret 差小于零为改善、大于
+零为劣化、等于零为 neutral。任一 GPS/Road/Grid/validity 指标同时出现一城改善、一城劣化，即记为
+`opposed_direction=true`，不得给出无条件跨城市优越性声明。无条件 claim 还必须至少有一个
+GPS/Road/Grid 指标在所有注册城市点估计均小于零，且至少一城 95% CI 上界小于零；原 validity、无
+显著劣化和 Stage1 gate 同时保留。城市特定 claim 则分别在该城市内应用 Stage1 全 seed 通过、无
+GPS/Road/Grid/validity 显著劣化、至少一个 GPS/Road/Grid 显著改善的同一规则。所有 opposed direction
+及两城点估计必须写入分析 JSON/Markdown；它们是异质性证据，不得被平均后删除。
+
 冻结选择同时是后续训练的启动契约，而不是仅供报告引用的备注。adaptive controlled 必须提供
 core selection 的普通非符号链接文件及其显式 SHA-256，且 `--cells` 必须按顺序精确等于其中
 `adaptive_cells`；confirmation 同理必须精确等于 final selection 的 `confirmation_cells`。启动前还要
