@@ -128,20 +128,31 @@ def _stage4_population_audit(
     _validate_stage4(payload, run_key)
     expected_hash = trajectory_id_sha256(selected_ids)
     variant_hashes = {}
+    original_ids: list[int] | None = None
     for variant in G_VARIANTS:
         rows = payload[variant]["per_trajectory"]  # type: ignore[index]
         ids = sorted(int(row["traj_id"]) for row in rows)  # type: ignore[index]
         current_hash = trajectory_id_sha256(ids)
-        if ids != selected_ids or current_hash != expected_hash:
+        if len(ids) != len(selected_ids):
             raise CompletedSourceAuditError(
-                f"{run_key}/{variant} Stage4 population differs from the fixed subset"
+                f"{run_key}/{variant} Stage4 population size differs from the "
+                "registered corrected-reevaluation size"
             )
+        if original_ids is None:
+            original_ids = ids
         variant_hashes[variant] = current_hash
+    if original_ids is None:
+        raise CompletedSourceAuditError(f"{run_key} has no Stage4 population")
+    original_hash = trajectory_id_sha256(original_ids)
+    matches_fixed_subset = original_ids == selected_ids and original_hash == expected_hash
     return {
         "population": len(selected_ids),
-        "traj_id_sha256": expected_hash,
+        "original_stage4_traj_id_sha256": original_hash,
+        "fixed_subset_traj_id_sha256": expected_hash,
         "g_variant_traj_id_sha256": variant_hashes,
-        "g_variants_use_exact_fixed_population": True,
+        "g_variants_use_exact_same_population": True,
+        "original_stage4_matches_fixed_subset": matches_fixed_subset,
+        "corrected_stage3_stage4_reevaluation_required": not matches_fixed_subset,
     }
 
 

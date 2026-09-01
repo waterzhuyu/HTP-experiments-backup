@@ -173,11 +173,17 @@ def test_completed_source_audit_is_exact_and_immutable(
     row = first["audited_completed_sources"][0]
     assert row["source_artifact_markers_verified"] is True
     assert row["stage4_population_audit"][
-        "g_variants_use_exact_fixed_population"
+        "g_variants_use_exact_same_population"
     ] is True
-    assert row["stage4_population_audit"]["traj_id_sha256"] == row[
-        "fixed_subset"
-    ]["selected_traj_id_sha256"]
+    assert row["stage4_population_audit"][
+        "original_stage4_matches_fixed_subset"
+    ] is True
+    assert row["stage4_population_audit"][
+        "corrected_stage3_stage4_reevaluation_required"
+    ] is False
+    assert row["stage4_population_audit"][
+        "fixed_subset_traj_id_sha256"
+    ] == row["fixed_subset"]["selected_traj_id_sha256"]
     assert len(first["output_sha256"]) == 64
 
     output.write_text("{}\n", encoding="utf-8")
@@ -192,7 +198,7 @@ def test_completed_source_audit_is_exact_and_immutable(
         )
 
 
-def test_completed_source_audit_rejects_stage4_population_drift(
+def test_completed_source_audit_records_stage4_population_drift(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -201,7 +207,28 @@ def test_completed_source_audit_rejects_stage4_population_drift(
     attempt = root / "controlled/porto/seed_42/e0_q0/attempt_001"
     _write_stage4(attempt, [1, 3])
 
-    with pytest.raises(CompletedSourceAuditError, match="differs from the fixed subset"):
+    result = audit_completed_sources(
+        config,
+        root,
+        subsets,
+        expected_source_revision=REVISION,
+        expected_completed_count=1,
+    )
+    audit = result["audited_completed_sources"][0]["stage4_population_audit"]
+    assert audit["original_stage4_matches_fixed_subset"] is False
+    assert audit["corrected_stage3_stage4_reevaluation_required"] is True
+
+
+def test_completed_source_audit_rejects_stage4_population_size_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, root, subsets = _fixture(tmp_path)
+    _clean_git(monkeypatch)
+    attempt = root / "controlled/porto/seed_42/e0_q0/attempt_001"
+    _write_stage4(attempt, [1])
+
+    with pytest.raises(CompletedSourceAuditError, match="population size differs"):
         audit_completed_sources(
             config,
             root,
