@@ -25,6 +25,7 @@ from .population_bootstrap import (
     SELECTION_BOOTSTRAP_METHOD,
     PopulationMetricContributions,
     g_metric_attribution,
+    g_metric_attribution_stratified_seeds,
     load_metric_contributions,
     paired_metric_effects_stratified_seeds,
     population_regrets,
@@ -34,7 +35,7 @@ from .run_experiment import build_jobs
 from .run_stratified_reevaluation_batch import completed_reevaluation_attempt
 
 
-ANALYSIS_SCHEMA_VERSION = 4
+ANALYSIS_SCHEMA_VERSION = 5
 CANDIDATE_EVIDENCE = "stratified_population_aware"
 PENALTY_METHOD = "population_penalized_error_v1"
 
@@ -540,6 +541,211 @@ def _g_penalty_attribution(
     return rows
 
 
+def _g_penalty_attribution_stratified_seeds(
+    runs_by_seed: Mapping[int, CorrectedRunEvidence],
+    *,
+    n_resamples: int,
+    seed: int,
+    confidence: float,
+) -> list[dict[str, object]]:
+    seed_ids = sorted(int(value) for value in runs_by_seed)
+    if not seed_ids:
+        raise ResultAuditError("G penalty attribution requires seed strata")
+    components = ("sid", "sampling", "interaction", "total")
+    sampled_components = {
+        component: np.zeros(n_resamples, dtype=np.float64)
+        for component in components
+    }
+    point_components = {component: 0.0 for component in components}
+    populations: dict[int, int] = {}
+    for current_seed in seed_ids:
+        run = runs_by_seed[current_seed]
+        parsed = {
+            variant: _penalty_vector(
+                run.stage4[variant], f"{run.run_key}/{variant}"
+            )
+            for variant in G_VARIANTS
+        }
+        if len({ids for ids, _ in parsed.values()}) != 1:
+            raise ResultAuditError(
+                f"G penalty populations differ for {run.run_key}"
+            )
+        population = len(parsed["g00"][0])
+        populations[current_seed] = population
+        generator = np.random.default_rng(
+            np.random.SeedSequence([int(seed), int(current_seed)])
+        )
+        weights = generator.multinomial(
+            population, np.full(population, 1 / population), size=n_resamples
+        )
+        sampled = {
+            variant: weights @ values / population
+            for variant, (_, values) in parsed.items()
+        }
+        points = {
+            variant: float(values.mean())
+            for variant, (_, values) in parsed.items()
+        }
+        current_sampled = {
+            "sid": 0.5 * (
+                (sampled["g10"] - sampled["g00"])
+                + (sampled["g11"] - sampled["g01"])
+            ),
+            "sampling": 0.5 * (
+                (sampled["g01"] - sampled["g00"])
+                + (sampled["g11"] - sampled["g10"])
+            ),
+            "interaction": sampled["g11"] - sampled["g10"] - sampled["g01"] + sampled["g00"],
+            "total": sampled["g11"] - sampled["g00"],
+        }
+        current_points = {
+            "sid": 0.5 * (
+                (points["g10"] - points["g00"])
+                + (points["g11"] - points["g01"])
+            ),
+            "sampling": 0.5 * (
+                (points["g01"] - points["g00"])
+                + (points["g11"] - points["g10"])
+            ),
+            "interaction": points["g11"] - points["g10"] - points["g01"] + points["g00"],
+            "total": points["g11"] - points["g00"],
+        }
+        for component in components:
+            sampled_components[component] += current_sampled[component] / len(seed_ids)
+            point_components[component] += current_points[component] / len(seed_ids)
+    rows = []
+    for component, values in sampled_components.items():
+        low, high = _interval(values, confidence)
+        rows.append(
+            {
+                "metric": "population_mean_penalized_error",
+                "component": component,
+                "method": SELECTION_BOOTSTRAP_METHOD,
+                "seed_strata": seed_ids,
+                "seed_populations": populations,
+                "n_pairs": sum(populations.values()),
+                "estimate": point_components[component],
+                "ci_low": low,
+                "ci_high": high,
+                "p_improvement": float(np.mean(values < 0)),
+                "p_degradation": float(np.mean(values > 0)),
+                "seed": int(seed),
+                "n_resamples": int(n_resamples),
+            }
+        )
+    return rows
+
+
+def _g_city_direction_heterogeneity(
+    rows: Sequence[Mapping[str, object]],
+) -> list[dict[str, object]]:
+    grouped: dict[
+        tuple[str, str, str], dict[str, Mapping[str, object]]
+    ] = defaultdict(dict)
+    for row in rows:
+        key = (str(row["cell_id"]), str(row["component"]), str(row["metric"]))
+        city = str(row["city"])
+        if city in grouped[key]:
+            raise ResultAuditError(f"duplicate G city effect: {key}/{city}")
+        grouped[key][city] = row
+    result = []
+    for (cell, component, metric), by_city in sorted(grouped.items()):
+        estimates = {
+            city: float(row["estimate"])
+            for city, row in sorted(by_city.items())
+        }
+        directions = {
+            city: (
+                "improvement" if value < 0
+                else "degradation" if value > 0
+                else "neutral"
+            )
+            for city, value in estimates.items()
+        }
+        opposed = "improvement" in directions.values() and "degradation" in directions.values()
+        result.append(
+            {
+                "cell_id": cell,
+                "component": component,
+                "metric": metric,
+                "group": METRICS[metric][1],
+                "city_estimates": estimates,
+                "city_directions": directions,
+                "opposed_direction": opposed,
+                "direction_consistent": not opposed,
+                "estimate_range": max(estimates.values()) - min(estimates.values()),
+                "method": "descriptive_city_direction_v1",
+            }
+        )
+    return result
+
+
+def summarize_g_attribution(
+    runs: Sequence[CorrectedRunEvidence],
+    cells: Sequence[str],
+    cities: Sequence[str],
+    seeds: Sequence[int],
+    *,
+    n_resamples: int,
+    bootstrap_seed: int,
+    confidence: float,
+) -> dict[str, object]:
+    """Estimate registered G components across equal-weight seed strata."""
+    lookup = {(run.city, run.seed, run.cell_id): run for run in runs}
+    rows: list[dict[str, object]] = []
+    for city in cities:
+        for cell in cells:
+            runs_by_seed = {
+                int(current_seed): lookup[(city, current_seed, cell)]
+                for current_seed in seeds
+            }
+            current = g_metric_attribution_stratified_seeds(
+                {
+                    current_seed: run.contributions
+                    for current_seed, run in runs_by_seed.items()
+                },
+                n_resamples=n_resamples,
+                seed=bootstrap_seed,
+                confidence=confidence,
+            )
+            current.extend(
+                _g_penalty_attribution_stratified_seeds(
+                    runs_by_seed,
+                    n_resamples=n_resamples,
+                    seed=bootstrap_seed,
+                    confidence=confidence,
+                )
+            )
+            for row in current:
+                metric = str(row["metric"])
+                rows.append(
+                    {
+                        "city": city,
+                        "cell_id": cell,
+                        "group": METRICS[metric][1],
+                        "orientation": "minimize",
+                        "inferential_role": "primary",
+                        **row,
+                    }
+                )
+    rows.sort(
+        key=lambda row: (
+            str(row["city"]), str(row["cell_id"]),
+            str(row["component"]), str(row["metric"]),
+        )
+    )
+    return {
+        "available": True,
+        "required_variants": list(G_VARIANTS),
+        "components": ["sid", "sampling", "interaction", "total"],
+        "observed_cells": list(cells),
+        "method": SELECTION_BOOTSTRAP_METHOD,
+        "unit": "trajectory_within_seed_equal_weight_across_seeds",
+        "rows": rows,
+        "city_direction_heterogeneity": _g_city_direction_heterogeneity(rows),
+    }
+
+
 def _stage1_gates(runs: Sequence[CorrectedRunEvidence]) -> list[dict[str, object]]:
     baselines = {
         (run.city, run.seed): float(run.stage4["g00"]["population_mean_penalized_error"])
@@ -780,6 +986,15 @@ def summarize_corrected_results(
         bootstrap_seed=bootstrap_seed,
         confidence=confidence,
     )
+    g_attribution = summarize_g_attribution(
+        runs,
+        cells,
+        cities,
+        seeds,
+        n_resamples=n_resamples,
+        bootstrap_seed=bootstrap_seed,
+        confidence=confidence,
+    )
     return {
         "schema_version": ANALYSIS_SCHEMA_VERSION,
         "analysis_schema_version": ANALYSIS_SCHEMA_VERSION,
@@ -800,7 +1015,9 @@ def summarize_corrected_results(
         "coverage": {"runs": len(runs), "cities": cities, "seeds": seeds, "cells": cells},
         "stage1_gates": _stage1_gates(runs),
         "metric_rows": metric_rows,
+        # Kept for per-run traceability; cross-seed claims must use g_attribution.
         "g_metric_attribution": g_rows,
+        "g_attribution": g_attribution,
         "paired_metric_effects": paired,
         "city_direction_heterogeneity": summarize_city_direction_heterogeneity(paired),
         "staged_attribution": staged_attribution,
@@ -827,6 +1044,9 @@ def write_corrected_report(summary: Mapping[str, object], output_dir: str | Path
             f"- Opposed city directions: "
             f"{sum(bool(row['opposed_direction']) for row in summary['city_direction_heterogeneity'])}",
             f"- G-attribution rows: {len(summary['g_metric_attribution'])}",
+            f"- Cross-seed G-attribution rows: {len(summary['g_attribution']['rows'])}",
+            f"- Cross-seed G opposed city directions: "
+            f"{sum(bool(row['opposed_direction']) for row in summary['g_attribution']['city_direction_heterogeneity'])}",
             f"- E/Q attribution available: "
             f"{str(summary['staged_attribution']['available']).lower()}",
             f"- E/Q attribution rows: {len(summary['staged_attribution']['rows'])}",
@@ -834,6 +1054,7 @@ def write_corrected_report(summary: Mapping[str, object], output_dir: str | Path
             f"{sum(bool(row['opposed_direction']) for row in summary['staged_attribution']['city_direction_heterogeneity'])}",
             "",
             "All candidate effects resample trajectories within seed and average seed effects equally.",
+            "Primary G components use the same trajectory-paired, equal-seed-weight bootstrap.",
             "Registered E/Q contrasts reuse the same paired trajectory weights across all core cells.",
             "Failures remain in every primary population-level regret.",
             "",

@@ -138,6 +138,24 @@ def test_corrected_summary_is_selection_ready_and_seed_stratified() -> None:
     }
     assert len(summary["metric_rows"]) == 4 * 4 * 10
     assert len(summary["g_metric_attribution"]) == 4 * 10 * 4
+    assert len(summary["g_attribution"]["rows"]) == 2 * 10 * 4
+    assert len(summary["g_attribution"]["city_direction_heterogeneity"]) == 2 * 10 * 4
+    assert summary["g_attribution"]["method"].endswith("stratified_seed_v1")
+    sid = next(
+        row for row in summary["g_attribution"]["rows"]
+        if row["cell_id"] == "e1_q0"
+        and row["metric"] == "validity_rate"
+        and row["component"] == "sid"
+    )
+    assert sid["estimate"] == pytest.approx(0.25)
+    assert sid["seed_strata"] == [42, 314159]
+    sampling = next(
+        row for row in summary["g_attribution"]["rows"]
+        if row["cell_id"] == "e1_q0"
+        and row["metric"] == "validity_rate"
+        and row["component"] == "sampling"
+    )
+    assert sampling["estimate"] == pytest.approx(0.0)
     assert len(summary["paired_metric_effects"]) == 10
     assert len(summary["city_direction_heterogeneity"]) == 10
     assert not any(
@@ -202,6 +220,7 @@ def test_full_core_summary_bootstraps_registered_e_and_q_contrasts() -> None:
     assert best_pair["expression"] == "e6_q0 - min(e3_q0, e4_q0, e5_q0)"
     assert best_pair["inferential_role"] == "descriptive_sensitivity"
     assert interaction["inferential_role"] == "primary"
+    assert len(summary["g_attribution"]["rows"]) == len(CORE_CELLS) * 10 * 4
 
     selection = select_candidates(summary, phase="core")
     assert selection["best_single"] == "e0_q0"
@@ -210,6 +229,12 @@ def test_full_core_summary_bootstraps_registered_e_and_q_contrasts() -> None:
         "families": ["E", "Q"],
         "contrasts": 14,
         "rows": 140,
+    }
+    assert selection["g_attribution_audit"] == {
+        "available": True,
+        "components": ["sid", "sampling", "interaction", "total"],
+        "cells": len(CORE_CELLS),
+        "rows": len(CORE_CELLS) * 10 * 4,
     }
 
     tampered = copy.deepcopy(summary)
@@ -220,6 +245,11 @@ def test_full_core_summary_bootstraps_registered_e_and_q_contrasts() -> None:
     linear_row["coefficients"] = {"e0_q0": 0.0}
     with pytest.raises(SelectionError, match="coefficients differ from registration"):
         select_candidates(tampered, phase="core")
+
+    tampered_g = copy.deepcopy(summary)
+    tampered_g["g_attribution"]["rows"].pop()
+    with pytest.raises(SelectionError, match="complete city/cell/metric/component"):
+        select_candidates(tampered_g, phase="core")
 
 
 def test_city_direction_heterogeneity_preserves_opposed_city_effects() -> None:

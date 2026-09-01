@@ -25,9 +25,10 @@ from .selection_launch import (
     SelectionLaunchError,
     audit_frozen_launch,
 )
+from .select_candidates import SelectionError, audit_g_attribution
 
 
-ANALYSIS_SCHEMA_VERSION = 5
+ANALYSIS_SCHEMA_VERSION = 6
 CONFIRMATION_EVIDENCE = "confirmation_population_aware"
 SELECTION_EVIDENCE = "stratified_population_aware"
 ALLOWED_CLAIM_GROUPS = frozenset({"GPS", "Road", "Grid"})
@@ -98,7 +99,7 @@ def audit_confirmation_selection(
     if expected_selection_sha256 is not None:
         if len(expected_selection_sha256) != 64 or _sha256(path) != expected_selection_sha256:
             raise ResultAuditError("final selection SHA-256 differs from the expected digest")
-        from .select_candidates import SelectionError, audit_selection_derivation
+        from .select_candidates import audit_selection_derivation
 
         try:
             selection = audit_selection_derivation(
@@ -141,7 +142,7 @@ def audit_confirmation_selection(
         )
     source_staged = source.get("staged_attribution")
     if (
-        int(source.get("analysis_schema_version", 0)) < 4
+        int(source.get("analysis_schema_version", 0)) < 5
         or not isinstance(source_staged, Mapping)
         or source_staged.get("available") is not True
         or source_staged.get("required_cells") != list(CORE_CELLS)
@@ -153,6 +154,17 @@ def audit_confirmation_selection(
         raise ResultAuditError(
             "final selection source lacks complete corrected E/Q staged attribution"
         )
+    try:
+        audit_g_attribution(source)
+    except SelectionError as error:
+        raise ResultAuditError(
+            f"final selection source lacks complete corrected G attribution: {error}"
+        ) from error
+    source_g = source.get("g_attribution")
+    if not isinstance(source_g, Mapping):
+        raise ResultAuditError(
+            "final selection source lacks complete corrected G attribution"
+        )
     return {
         "selection_path": str(path),
         "selection_sha256": _sha256(path),
@@ -162,6 +174,7 @@ def audit_confirmation_selection(
         "source_analysis_sha256": source_sha,
         "source_revision": source_revision,
         "source_staged_attribution": dict(source_staged),
+        "source_g_attribution": dict(source_g),
         "verified": True,
     }
 
@@ -623,10 +636,14 @@ def summarize_confirmation_results(
     summary["phase"] = "confirmation"
     selection_summary = dict(selection_audit)
     source_staged = selection_summary.pop("source_staged_attribution", None)
+    source_g = selection_summary.pop("source_g_attribution", None)
     if not isinstance(source_staged, Mapping):
         raise ResultAuditError("confirmation selection audit lacks corrected E/Q attribution")
+    if not isinstance(source_g, Mapping):
+        raise ResultAuditError("confirmation selection audit lacks corrected G attribution")
     summary["selection_audit"] = selection_summary
     summary["controlled_staged_attribution"] = dict(source_staged)
+    summary["controlled_g_attribution"] = dict(source_g)
     summary["report_environment_audit"] = dict(launch_audit)
     summary["run_revision_audit"] = {"uniform": True, "revision": revision}
     summary.pop("source_revision_audit", None)
@@ -692,6 +709,10 @@ def write_confirmation_report(
         f"- Paired metric effects: {len(summary['paired_metric_effects'])}",
         f"- City-direction rows: {len(summary['city_direction_heterogeneity'])}",
         f"- G-attribution rows: {len(summary['g_metric_attribution'])}",
+        f"- Confirmation cross-seed G-attribution rows: "
+        f"{len(summary['g_attribution']['rows'])}",
+        f"- Frozen controlled cross-seed G-attribution rows: "
+        f"{len(summary['controlled_g_attribution']['rows'])}",
         f"- Frozen controlled E/Q attribution rows: "
         f"{len(summary['controlled_staged_attribution']['rows'])}",
         f"- Confirmation subset can independently reconstruct E/Q: "
@@ -720,6 +741,7 @@ def write_confirmation_report(
         [
             "",
             "Trajectories are resampled within seed and seed effects are averaged equally.",
+            "Primary G attribution is cross-seed in both controlled and confirmation evidence.",
             "E/Q attribution is inherited from the hashed final-selection source; confirmation only retests selected cells.",
             "Failures remain in every primary GPS/Road/Grid population-level regret.",
             "POI is excluded from the registered experiment.",

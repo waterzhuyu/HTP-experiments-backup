@@ -26,7 +26,7 @@ from staged_attribution.report_confirmation_results import (
     summarize_confirmation_results,
     write_confirmation_report,
 )
-from staged_attribution.report_results import METRICS, ResultAuditError
+from staged_attribution.report_results import G_VARIANTS, METRICS, ResultAuditError
 from staged_attribution.run_experiment import build_jobs
 
 
@@ -309,16 +309,54 @@ def _selection(tmp_path: Path) -> tuple[Path, dict[str, object]]:
                 else:
                     row["expression"] = definition["expression"]
                 staged_rows.append(row)
+    g_rows = []
+    for city in ("chengdu", "porto"):
+        for cell in CORE_CELLS:
+            for metric in METRICS:
+                for component in ("sid", "sampling", "interaction", "total"):
+                    g_rows.append(
+                        {
+                            "city": city,
+                            "cell_id": cell,
+                            "metric": metric,
+                            "component": component,
+                            "group": METRICS[metric][1],
+                            "orientation": "minimize",
+                            "inferential_role": "primary",
+                            "method": SELECTION_BOOTSTRAP_METHOD,
+                            "seed_strata": [42, 314159],
+                            "seed_populations": {42: 4, 314159: 4},
+                            "n_pairs": 8,
+                            "estimate": 0.0,
+                            "ci_low": 0.0,
+                            "ci_high": 0.0,
+                            "p_improvement": 0.0,
+                            "p_degradation": 0.0,
+                            "seed": 20260826,
+                            "n_resamples": 20,
+                        }
+                    )
     analysis = tmp_path / "selection_source.json"
     analysis.write_text(
         json.dumps(
             {
                 "candidate_evidence": "stratified_population_aware",
                 "revision": REVISION,
-                "analysis_schema_version": 4,
+                "analysis_schema_version": 5,
                 "coverage": {
                     "cities": ["chengdu", "porto"],
+                    "seeds": [42, 314159],
                     "cells": list(CORE_CELLS),
+                },
+                "g_attribution": {
+                    "available": True,
+                    "required_variants": list(G_VARIANTS),
+                    "components": ["sid", "sampling", "interaction", "total"],
+                    "observed_cells": list(CORE_CELLS),
+                    "method": SELECTION_BOOTSTRAP_METHOD,
+                    "unit": "trajectory_within_seed_equal_weight_across_seeds",
+                    "rows": g_rows,
+                    "city_direction_heterogeneity": [],
                 },
                 "staged_attribution": {
                     "available": True,
@@ -411,10 +449,12 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
         "cells": ["e0_q0", "e1_q0"],
     }
     assert len(summary["paired_metric_effects"]) == 20
+    assert len(summary["g_attribution"]["rows"]) == 2 * len(CELLS) * 10 * 4
     assert summary["staged_attribution"]["available"] is False
     assert set(summary["staged_attribution"]["missing_cells"]) == set(CORE_CELLS[2:])
     assert summary["controlled_staged_attribution"]["available"] is True
     assert len(summary["controlled_staged_attribution"]["rows"]) == 2 * 14 * 10
+    assert len(summary["controlled_g_attribution"]["rows"]) == 2 * len(CORE_CELLS) * 10 * 4
     assert summary["selection_audit"]["verified"] is True
     assert summary["run_revision_audit"] == {
         "uniform": True,
@@ -439,6 +479,7 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
     assert json.loads(json_path.read_text())["candidate_evidence"] == CONFIRMATION_EVIDENCE
     assert "claim_supported=true" in markdown_path.read_text()
     assert "Frozen controlled E/Q attribution rows: 280" in markdown_path.read_text()
+    assert "Frozen controlled cross-seed G-attribution rows: 800" in markdown_path.read_text()
     assert _sha256(config_path) in markdown_path.read_text()
 
     original_json = json_path.read_bytes()
@@ -546,6 +587,22 @@ def test_confirmation_selection_rejects_source_without_complete_e_q_attribution(
     selection_path.write_text(json.dumps(payload))
 
     with pytest.raises(ResultAuditError, match="complete corrected E/Q"):
+        audit_confirmation_selection(selection_path, CELLS)
+
+
+def test_confirmation_selection_rejects_source_without_complete_g_attribution(
+    tmp_path: Path,
+) -> None:
+    _, _, _, selection_path, _ = _evidence_tree(tmp_path)
+    payload = json.loads(selection_path.read_text())
+    source = Path(payload["source_analysis"])
+    source_payload = json.loads(source.read_text())
+    source_payload["g_attribution"]["rows"].pop()
+    source.write_text(json.dumps(source_payload))
+    payload["source_analysis_sha256"] = _sha256(source)
+    selection_path.write_text(json.dumps(payload))
+
+    with pytest.raises(ResultAuditError, match="complete corrected G"):
         audit_confirmation_selection(selection_path, CELLS)
 
 

@@ -622,3 +622,105 @@ def g_metric_attribution(
                 }
             )
     return result
+
+
+def g_metric_attribution_stratified_seeds(
+    variants_by_seed: Mapping[int, Mapping[str, PopulationMetricContributions]],
+    *,
+    n_resamples: int,
+    seed: int,
+    confidence: float = 0.95,
+    chunk_size: int = 64,
+) -> list[dict[str, object]]:
+    """Estimate G Shapley components with paired trajectories and equal seed weight."""
+    required = ("g00", "g10", "g01", "g11")
+    seed_ids = sorted(int(value) for value in variants_by_seed)
+    if not seed_ids:
+        raise ValueError("G attribution requires at least one seed stratum")
+    if n_resamples <= 0 or not 0 < confidence < 1:
+        raise ValueError("invalid bootstrap settings")
+    metrics = DOMAIN_METRICS + ("validity_rate",)
+    components = ("sid", "sampling", "interaction", "total")
+    sampled_components = {
+        (metric, component): np.zeros(n_resamples, dtype=np.float64)
+        for metric in metrics
+        for component in components
+    }
+    point_components = {key: 0.0 for key in sampled_components}
+    populations: dict[int, int] = {}
+    for current_seed in seed_ids:
+        variants = variants_by_seed[current_seed]
+        if set(variants) != set(required):
+            raise ValueError(f"G contributions must be exactly {required} for seed {current_seed}")
+        population_ids = {variants[name].traj_ids for name in required}
+        if len(population_ids) != 1:
+            raise ValueError(f"G contribution populations differ for seed {current_seed}")
+        population = len(variants["g00"].traj_ids)
+        populations[current_seed] = population
+        generator = np.random.default_rng(
+            np.random.SeedSequence([int(seed), int(current_seed)])
+        )
+        weights = generator.multinomial(
+            population, np.full(population, 1 / population), size=n_resamples
+        )
+        sampled = {
+            name: population_regrets(variants[name], weights, chunk_size=chunk_size)
+            for name in required
+        }
+        points = {name: population_regrets(variants[name]) for name in required}
+        for metric in metrics:
+            current_sampled = {
+                "sid": 0.5 * (
+                    (sampled["g10"][metric] - sampled["g00"][metric])
+                    + (sampled["g11"][metric] - sampled["g01"][metric])
+                ),
+                "sampling": 0.5 * (
+                    (sampled["g01"][metric] - sampled["g00"][metric])
+                    + (sampled["g11"][metric] - sampled["g10"][metric])
+                ),
+                "interaction": (
+                    sampled["g11"][metric] - sampled["g10"][metric]
+                    - sampled["g01"][metric] + sampled["g00"][metric]
+                ),
+                "total": sampled["g11"][metric] - sampled["g00"][metric],
+            }
+            current_points = {
+                "sid": 0.5 * (
+                    (points["g10"][metric][0] - points["g00"][metric][0])
+                    + (points["g11"][metric][0] - points["g01"][metric][0])
+                ),
+                "sampling": 0.5 * (
+                    (points["g01"][metric][0] - points["g00"][metric][0])
+                    + (points["g11"][metric][0] - points["g10"][metric][0])
+                ),
+                "interaction": (
+                    points["g11"][metric][0] - points["g10"][metric][0]
+                    - points["g01"][metric][0] + points["g00"][metric][0]
+                ),
+                "total": points["g11"][metric][0] - points["g00"][metric][0],
+            }
+            for component in components:
+                key = (metric, component)
+                sampled_components[key] += current_sampled[component] / len(seed_ids)
+                point_components[key] += float(current_points[component]) / len(seed_ids)
+    result = []
+    for (metric, component), values in sampled_components.items():
+        low, high = _interval(values, confidence)
+        result.append(
+            {
+                "metric": metric,
+                "component": component,
+                "method": SELECTION_BOOTSTRAP_METHOD,
+                "seed_strata": seed_ids,
+                "seed_populations": populations,
+                "n_pairs": sum(populations.values()),
+                "estimate": point_components[(metric, component)],
+                "ci_low": low,
+                "ci_high": high,
+                "p_improvement": float(np.mean(values < 0)),
+                "p_degradation": float(np.mean(values > 0)),
+                "seed": int(seed),
+                "n_resamples": int(n_resamples),
+            }
+        )
+    return result

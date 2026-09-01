@@ -192,7 +192,7 @@ def _run(cell_id: str, base: float) -> RunEvidence:
 
 def _corrected_selection_summary(summary: dict[str, object]) -> dict[str, object]:
     corrected = dict(summary)
-    corrected["analysis_schema_version"] = 4
+    corrected["analysis_schema_version"] = 5
     corrected["candidate_evidence"] = "stratified_population_aware"
     corrected["metric_rows"] = [
         {**row, "method": POPULATION_REGRET_METHOD}
@@ -267,6 +267,42 @@ def _corrected_selection_summary(summary: dict[str, object]) -> dict[str, object
         "rows": staged_rows,
         "city_direction_heterogeneity": [],
     }
+    g_rows = []
+    for source in summary["g_shapley"]:
+        for component in ("sid", "sampling", "interaction", "total"):
+            estimate = source[component]
+            g_rows.append(
+                {
+                    "city": source["city"],
+                    "cell_id": source["cell_id"],
+                    "metric": source["metric"],
+                    "component": component,
+                    "group": METRICS[source["metric"]][1],
+                    "orientation": "minimize",
+                    "inferential_role": "primary",
+                    "method": SELECTION_BOOTSTRAP_METHOD,
+                    "seed_strata": [42],
+                    "seed_populations": {42: 2},
+                    "n_pairs": 2,
+                    "estimate": estimate,
+                    "ci_low": estimate,
+                    "ci_high": estimate,
+                    "p_improvement": float(estimate < 0),
+                    "p_degradation": float(estimate > 0),
+                    "seed": 20260826,
+                    "n_resamples": 100,
+                }
+            )
+    corrected["g_attribution"] = {
+        "available": True,
+        "required_variants": ["g00", "g10", "g01", "g11"],
+        "components": ["sid", "sampling", "interaction", "total"],
+        "observed_cells": list(CORE_CELLS),
+        "method": SELECTION_BOOTSTRAP_METHOD,
+        "unit": "trajectory_within_seed_equal_weight_across_seeds",
+        "rows": g_rows,
+        "city_direction_heterogeneity": [],
+    }
     return corrected
 
 
@@ -303,7 +339,7 @@ def test_summary_freezes_g_e_q_and_paired_trajectory_attribution() -> None:
         "sid", "sampling", "interaction", "total"
     }
 
-    with pytest.raises(SelectionError, match="schema version 4"):
+    with pytest.raises(SelectionError, match="schema version 5"):
         select_candidates(summary, phase="core")
     corrected = _corrected_selection_summary(summary)
     selection = select_candidates(corrected, phase="core")

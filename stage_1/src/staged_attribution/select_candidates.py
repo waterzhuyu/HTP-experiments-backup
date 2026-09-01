@@ -12,7 +12,7 @@ import numpy as np
 
 from .analyze import pareto_front, staged_contrast_definitions
 from .immutable_artifacts import canonical_json_bytes, write_immutable_artifact_set
-from .report_results import METRICS
+from .report_results import G_VARIANTS, METRICS
 from .population_bootstrap import POPULATION_REGRET_METHOD, SELECTION_BOOTSTRAP_METHOD
 
 
@@ -25,6 +25,7 @@ CORE_CELLS = (
     "e0_q0", "e1_q0", "e2_q0", "e3_q0", "e4_q0", "e5_q0",
     "e6_q0", "e6_q1", "e6_q2", "e6_q3",
 )
+G_COMPONENTS = ("sid", "sampling", "interaction", "total")
 
 
 def _metric_lookup(summary: Mapping[str, object]) -> dict[tuple[str, int, str, str], float]:
@@ -242,14 +243,95 @@ def _audit_staged_attribution(summary: Mapping[str, object]) -> dict[str, object
     }
 
 
+def audit_g_attribution(summary: Mapping[str, object]) -> dict[str, object]:
+    attribution = summary.get("g_attribution")
+    coverage = summary.get("coverage")
+    if not isinstance(attribution, Mapping) or not isinstance(coverage, Mapping):
+        raise SelectionError("candidate selection requires cross-seed G attribution")
+    cities = coverage.get("cities")
+    seeds = coverage.get("seeds")
+    cells = coverage.get("cells")
+    if (
+        attribution.get("available") is not True
+        or attribution.get("required_variants") != list(G_VARIANTS)
+        or attribution.get("components") != list(G_COMPONENTS)
+        or attribution.get("method") != SELECTION_BOOTSTRAP_METHOD
+        or attribution.get("unit") != "trajectory_within_seed_equal_weight_across_seeds"
+        or not isinstance(cities, list)
+        or not cities
+        or not isinstance(seeds, list)
+        or not seeds
+        or not isinstance(cells, list)
+        or not cells
+        or attribution.get("observed_cells") != cells
+    ):
+        raise SelectionError("cross-seed G attribution identity is incomplete")
+    rows = attribution.get("rows")
+    if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes)):
+        raise SelectionError("cross-seed G attribution rows are missing")
+    expected = {
+        (str(city), str(cell), metric, component)
+        for city in cities
+        for cell in cells
+        for metric in METRICS
+        for component in G_COMPONENTS
+    }
+    observed = set()
+    expected_seed_ids = {int(value) for value in seeds}
+    for source in rows:
+        if not isinstance(source, Mapping):
+            raise SelectionError("cross-seed G attribution row must be a mapping")
+        key = (
+            str(source.get("city")), str(source.get("cell_id")),
+            str(source.get("metric")), str(source.get("component")),
+        )
+        if key in observed:
+            raise SelectionError(f"duplicate cross-seed G attribution row: {key}")
+        observed.add(key)
+        metric = key[2]
+        populations = source.get("seed_populations")
+        try:
+            population_seed_ids = {
+                int(value) for value in populations
+            } if isinstance(populations, Mapping) else set()
+        except (TypeError, ValueError):
+            population_seed_ids = set()
+        if (
+            source.get("method") != SELECTION_BOOTSTRAP_METHOD
+            or source.get("inferential_role") != "primary"
+            or source.get("orientation") != "minimize"
+            or metric not in METRICS
+            or source.get("group") != METRICS.get(metric, (None, None))[1]
+            or key[3] not in G_COMPONENTS
+            or source.get("seed_strata") != seeds
+            or population_seed_ids != expected_seed_ids
+            or not all(int(value) > 0 for value in populations.values())
+            or int(source.get("n_pairs", 0)) <= 0
+            or int(source.get("n_resamples", 0)) <= 0
+        ):
+            raise SelectionError(f"invalid cross-seed G attribution identity: {key}")
+        for field in ("estimate", "ci_low", "ci_high", "p_improvement", "p_degradation"):
+            if not isinstance(source.get(field), (int, float)) or not math.isfinite(float(source[field])):
+                raise SelectionError(f"invalid cross-seed G {field}: {key}")
+    if observed != expected:
+        raise SelectionError("cross-seed G attribution lacks complete city/cell/metric/component coverage")
+    return {
+        "available": True,
+        "components": list(G_COMPONENTS),
+        "cells": len(cells),
+        "rows": len(rows),
+    }
+
+
 def select_candidates(summary: Mapping[str, object], phase: str = "core") -> dict[str, object]:
     if phase not in {"core", "final"}:
         raise SelectionError("selection phase must be core or final")
-    if int(summary.get("analysis_schema_version", 0)) < 4:
-        raise SelectionError("candidate selection requires corrected analysis schema version 4")
+    if int(summary.get("analysis_schema_version", 0)) < 5:
+        raise SelectionError("candidate selection requires corrected analysis schema version 5")
     if summary.get("candidate_evidence") != "stratified_population_aware":
         raise SelectionError("candidate selection requires stratified population-aware evidence")
     staged_audit = _audit_staged_attribution(summary)
+    g_audit = audit_g_attribution(summary)
     coverage = summary.get("coverage")
     if (
         phase == "core"
@@ -295,6 +377,7 @@ def select_candidates(summary: Mapping[str, object], phase: str = "core") -> dic
         "eligibility": eligibility,
         "paired_effects": effects,
         "staged_attribution_audit": staged_audit,
+        "g_attribution_audit": g_audit,
     }
 
 
