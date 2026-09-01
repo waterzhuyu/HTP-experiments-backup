@@ -46,6 +46,7 @@ class RunRecorder:
         git_revision: str,
         git_dirty: bool,
         required_artifacts: Sequence[str],
+        launch_identity: Mapping[str, object] | None = None,
     ) -> RunRecorder:
         directory = Path(run_dir)
         manifest_path = directory / cls.MANIFEST_NAME
@@ -64,28 +65,36 @@ class RunRecorder:
         required = tuple(required_artifacts)
         if not required or len(set(required)) != len(required):
             raise RecordError("required_artifacts must be a non-empty unique sequence")
+        if launch_identity is not None:
+            try:
+                json.dumps(launch_identity, sort_keys=True)
+            except (TypeError, ValueError) as error:
+                raise RecordError("launch_identity must be JSON serializable") from error
+            if launch_identity.get("verified") is not True:
+                raise RecordError("launch_identity must be verified")
         directory.mkdir(parents=True, exist_ok=True)
         recorder = cls(directory, required)
         created = _now()
-        recorder._write(
-            {
-                "schema_version": 1,
-                "experiment_id": experiment_id,
-                "cell_id": cell_id,
-                "city": city,
-                "seed": seed,
-                "budget": budget,
-                "status": "planned",
-                "command": list(command),
-                "git": {"revision": git_revision, "dirty": bool(git_dirty)},
-                "required_artifacts": list(required),
-                "artifacts": {},
-                "failure": None,
-                "created_at": created,
-                "started_at": None,
-                "finished_at": None,
-            }
-        )
+        manifest = {
+            "schema_version": 1,
+            "experiment_id": experiment_id,
+            "cell_id": cell_id,
+            "city": city,
+            "seed": seed,
+            "budget": budget,
+            "status": "planned",
+            "command": list(command),
+            "git": {"revision": git_revision, "dirty": bool(git_dirty)},
+            "required_artifacts": list(required),
+            "artifacts": {},
+            "failure": None,
+            "created_at": created,
+            "started_at": None,
+            "finished_at": None,
+        }
+        if launch_identity is not None:
+            manifest["launch_identity"] = dict(launch_identity)
+        recorder._write(manifest)
         return recorder
 
     @classmethod

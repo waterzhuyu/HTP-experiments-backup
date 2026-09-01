@@ -12,6 +12,11 @@ from typing import Any, Callable, Mapping, Sequence
 
 from .config import ExperimentConfig
 from .run_cell import run_cell
+from .selection_launch import (
+    SelectionLaunchError,
+    audit_frozen_launch,
+    requires_frozen_selection,
+)
 
 
 @dataclass(frozen=True)
@@ -122,7 +127,10 @@ def next_attempt_dir(job_root: str | Path) -> Path:
     return root / f"attempt_{number:03d}"
 
 
-def completed_attempt(job_root: str | Path) -> Path | None:
+def completed_attempt(
+    job_root: str | Path,
+    expected_launch_identity: Mapping[str, object] | None = None,
+) -> Path | None:
     for attempt in reversed(_attempts(job_root)):
         manifest_path = attempt / "run_manifest.json"
         terminal_marker = attempt / "stage4" / "complete.json"
@@ -132,7 +140,11 @@ def completed_attempt(job_root: str | Path) -> Path | None:
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             continue
-        if manifest.get("status") == "completed":
+        identity_matches = (
+            expected_launch_identity is None
+            or manifest.get("launch_identity") == expected_launch_identity
+        )
+        if manifest.get("status") == "completed" and identity_matches:
             return attempt
     return None
 
@@ -141,8 +153,9 @@ def _cell_command(
     config_path: str | Path,
     job: ExperimentJob,
     attempt: Path,
+    launch_identity: Mapping[str, object] | None = None,
 ) -> list[str]:
-    return [
+    command = [
         sys.executable,
         "-m",
         "staged_attribution.run_cell",
@@ -161,6 +174,66 @@ def _cell_command(
         "--device",
         "cuda:0",
     ]
+    if launch_identity is not None:
+        command.extend(
+            [
+                "--launch-selection",
+                str(launch_identity["selection_path"]),
+                "--expected-launch-selection-sha256",
+                str(launch_identity["selection_sha256"]),
+                "--expected-launch-revision",
+                str(launch_identity["launch_revision"]),
+                "--expected-config-sha256",
+                str(launch_identity["config_sha256"]),
+                "--launch-cells",
+                *[str(value) for value in launch_identity["cells"]],
+            ]
+        )
+    return command
+
+
+def _prepare_launch_identity(
+    config_path: str | Path,
+    config: ExperimentConfig,
+    budget: str,
+    cell_ids: Sequence[str] | None,
+    *,
+    selection_path: str | Path | None,
+    expected_selection_sha256: str | None,
+    expected_revision: str | None,
+    expected_config_sha256: str | None,
+    git_identity_fn: Callable[[], tuple[str, bool]] | None = None,
+) -> Mapping[str, object] | None:
+    required = requires_frozen_selection(config, budget, cell_ids)
+    supplied = (
+        selection_path,
+        expected_selection_sha256,
+        expected_revision,
+        expected_config_sha256,
+    )
+    if not required:
+        if any(value is not None for value in supplied):
+            raise SelectionLaunchError(
+                "frozen selection identity is only valid for adaptive or confirmation launches"
+            )
+        return None
+    if cell_ids is None or any(value is None for value in supplied):
+        raise SelectionLaunchError(
+            "adaptive/confirmation launch requires selection, selection SHA, revision, and config SHA"
+        )
+    keywords: dict[str, object] = {}
+    if git_identity_fn is not None:
+        keywords["git_identity_fn"] = git_identity_fn
+    return audit_frozen_launch(
+        config_path,
+        budget,
+        cell_ids,
+        selection_path=selection_path,
+        expected_selection_sha256=expected_selection_sha256,
+        expected_revision=expected_revision,
+        expected_config_sha256=expected_config_sha256,
+        **keywords,
+    )
 
 
 def run_parallel_experiment(
@@ -176,6 +249,11 @@ def run_parallel_experiment(
     popen_factory: Callable[..., Any] = subprocess.Popen,
     sleep_fn: Callable[[float], None] = time.sleep,
     cell_ids: Sequence[str] | None = None,
+    selection_path: str | Path | None = None,
+    expected_selection_sha256: str | None = None,
+    expected_revision: str | None = None,
+    expected_config_sha256: str | None = None,
+    git_identity_fn: Callable[[], tuple[str, bool]] | None = None,
 ) -> dict[str, object]:
     if maximum_parallel <= 0:
         raise ValueError("maximum_parallel must be positive")
@@ -183,6 +261,17 @@ def run_parallel_experiment(
         raise ValueError("poll_seconds cannot be negative")
     config = ExperimentConfig.load(config_path)
     jobs = list(build_jobs(config, budget, cell_ids))
+    launch_identity = _prepare_launch_identity(
+        config_path,
+        config,
+        budget,
+        cell_ids,
+        selection_path=selection_path,
+        expected_selection_sha256=expected_selection_sha256,
+        expected_revision=expected_revision,
+        expected_config_sha256=expected_config_sha256,
+        git_identity_fn=git_identity_fn,
+    )
     root = (
         Path(artifact_root)
         if artifact_root is not None
@@ -191,7 +280,7 @@ def run_parallel_experiment(
     completed: list[dict[str, object]] = []
     pending: list[ExperimentJob] = []
     for job in jobs:
-        existing = completed_attempt(root / job.run_key)
+        existing = completed_attempt(root / job.run_key, launch_identity)
         if existing is None:
             pending.append(job)
         else:
@@ -232,7 +321,7 @@ def run_parallel_experiment(
             attempt = next_attempt_dir(root / job.run_key)
             attempt.mkdir(parents=True, exist_ok=False)
             log_handle = (attempt / "launcher.log").open("a", encoding="utf-8")
-            command = _cell_command(config_path, job, attempt)
+            command = _cell_command(config_path, job, attempt, launch_identity)
             process = popen_factory(
                 command,
                 cwd=Path.cwd(),
@@ -259,6 +348,7 @@ def run_parallel_experiment(
         "completed": completed,
         "failed": failed,
         "pending": [job.run_key for job in pending],
+        "launch_identity": dict(launch_identity) if launch_identity is not None else None,
     }
 
 
@@ -269,9 +359,23 @@ def run_experiment(
     minimum_free_mib: int = 16000,
     maximum_utilization: int = 20,
     cell_ids: Sequence[str] | None = None,
+    selection_path: str | Path | None = None,
+    expected_selection_sha256: str | None = None,
+    expected_revision: str | None = None,
+    expected_config_sha256: str | None = None,
 ) -> list[dict[str, object]]:
     config = ExperimentConfig.load(config_path)
     jobs = build_jobs(config, budget, cell_ids)
+    launch_identity = _prepare_launch_identity(
+        config_path,
+        config,
+        budget,
+        cell_ids,
+        selection_path=selection_path,
+        expected_selection_sha256=expected_selection_sha256,
+        expected_revision=expected_revision,
+        expected_config_sha256=expected_config_sha256,
+    )
     if dry_run:
         return [
             {
@@ -281,6 +385,9 @@ def run_experiment(
                 "seed": job.seed,
                 "budget": budget,
                 "terminal_stage": job.terminal_stage,
+                "launch_identity": (
+                    dict(launch_identity) if launch_identity is not None else None
+                ),
             }
             for job in jobs
         ]
@@ -301,6 +408,22 @@ def run_experiment(
                 budget,
                 run_dir,
                 device=device,
+                launch_selection_path=(
+                    launch_identity["selection_path"] if launch_identity is not None else None
+                ),
+                expected_launch_selection_sha256=(
+                    launch_identity["selection_sha256"] if launch_identity is not None else None
+                ),
+                expected_launch_revision=(
+                    launch_identity["launch_revision"] if launch_identity is not None else None
+                ),
+                expected_config_sha256=(
+                    launch_identity["config_sha256"] if launch_identity is not None else None
+                ),
+                launch_cell_ids=(
+                    tuple(str(value) for value in launch_identity["cells"])
+                    if launch_identity is not None else None
+                ),
             )
         )
     return results
@@ -319,6 +442,10 @@ def main() -> None:
     parser.add_argument("--maximum-parallel", type=int, default=4)
     parser.add_argument("--artifact-root", type=Path)
     parser.add_argument("--cells", nargs="+")
+    parser.add_argument("--selection", type=Path)
+    parser.add_argument("--expected-selection-sha256")
+    parser.add_argument("--expected-revision")
+    parser.add_argument("--expected-config-sha256")
     arguments = parser.parse_args()
     if arguments.parallel and arguments.dry_run:
         parser.error("--parallel and --dry-run are mutually exclusive")
@@ -333,6 +460,10 @@ def main() -> None:
             minimum_free_mib=arguments.minimum_free_mib,
             maximum_utilization=arguments.maximum_utilization,
             cell_ids=arguments.cells,
+            selection_path=arguments.selection,
+            expected_selection_sha256=arguments.expected_selection_sha256,
+            expected_revision=arguments.expected_revision,
+            expected_config_sha256=arguments.expected_config_sha256,
         )
     else:
         result = run_experiment(
@@ -342,6 +473,10 @@ def main() -> None:
             arguments.minimum_free_mib,
             arguments.maximum_utilization,
             arguments.cells,
+            arguments.selection,
+            arguments.expected_selection_sha256,
+            arguments.expected_revision,
+            arguments.expected_config_sha256,
         )
     print(json.dumps(result, indent=2, sort_keys=True))
     if arguments.parallel and result["failed"]:

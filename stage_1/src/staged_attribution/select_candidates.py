@@ -222,6 +222,110 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _read_json_object(path: Path, label: str) -> dict[str, object]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SelectionError(f"invalid {label} {path}: {error}") from error
+    if not isinstance(value, dict):
+        raise SelectionError(f"{label} must be a JSON object: {path}")
+    return value
+
+
+def _validate_sha256(value: str, label: str) -> str:
+    normalized = value.lower()
+    if len(normalized) != 64 or any(
+        character not in "0123456789abcdef" for character in normalized
+    ):
+        raise SelectionError(f"{label} must be a full lowercase SHA-256 digest")
+    return normalized
+
+
+def audit_selection_derivation(
+    selection_path: str | Path,
+    expected_sha256: str,
+    expected_phase: str,
+) -> dict[str, object]:
+    """Verify that a frozen selection is an immutable deterministic analysis product."""
+    if expected_phase not in {"core", "final"}:
+        raise SelectionError("expected selection phase must be core or final")
+    expected_digest = _validate_sha256(expected_sha256, "expected selection SHA-256")
+    path = Path(selection_path).resolve()
+    if not path.is_file() or path.is_symlink() or _sha256(path) != expected_digest:
+        raise SelectionError("frozen selection is missing, symlinked, or hash-mismatched")
+    selection = _read_json_object(path, "frozen selection")
+    if selection.get("phase") != expected_phase:
+        raise SelectionError("frozen selection phase mismatch")
+    source_path = Path(str(selection.get("source_analysis", ""))).resolve()
+    source_digest = str(selection.get("source_analysis_sha256", ""))
+    if (
+        not source_path.is_file()
+        or source_path.is_symlink()
+        or len(source_digest) != 64
+        or _sha256(source_path) != source_digest
+    ):
+        raise SelectionError("selection source analysis is missing, symlinked, or hash-mismatched")
+    source = _read_json_object(source_path, "selection source analysis")
+    if (
+        source.get("candidate_evidence") != "stratified_population_aware"
+        or source.get("revision") != selection.get("source_revision")
+    ):
+        raise SelectionError("selection source is not audited stratified population evidence")
+    recomputed = select_candidates(source, expected_phase)
+    changed = {
+        field: (selection.get(field), expected)
+        for field, expected in recomputed.items()
+        if selection.get(field) != expected
+    }
+    if changed:
+        raise SelectionError(
+            f"frozen selection differs from deterministic recomputation: {sorted(changed)}"
+        )
+    return selection
+
+
+def freeze_selection(
+    analysis_path: str | Path,
+    phase: str,
+    *,
+    prior_selection_path: str | Path | None = None,
+    expected_prior_selection_sha256: str | None = None,
+) -> dict[str, object]:
+    """Build a selection and bind final selection to the preceding core decision."""
+    analysis = Path(analysis_path).resolve()
+    if not analysis.is_file() or analysis.is_symlink():
+        raise SelectionError("selection analysis must be an existing non-symlink file")
+    summary = _read_json_object(analysis, "selection analysis")
+    selection = select_candidates(summary, phase)
+    selection["source_analysis"] = str(analysis)
+    selection["source_analysis_sha256"] = _sha256(analysis)
+    if phase == "core":
+        if prior_selection_path is not None or expected_prior_selection_sha256 is not None:
+            raise SelectionError("core selection must not declare a prior selection")
+        return selection
+    if prior_selection_path is None or expected_prior_selection_sha256 is None:
+        raise SelectionError("final selection requires the frozen core selection and SHA-256")
+    prior = audit_selection_derivation(
+        prior_selection_path,
+        expected_prior_selection_sha256,
+        "core",
+    )
+    coverage = summary.get("coverage")
+    observed_cells = coverage.get("cells") if isinstance(coverage, Mapping) else None
+    expected_cells = set(CORE_CELLS) | {
+        str(value) for value in prior.get("adaptive_cells", [])
+    }
+    if not isinstance(observed_cells, list) or set(map(str, observed_cells)) != expected_cells:
+        raise SelectionError(
+            "final analysis coverage must exactly equal core plus frozen adaptive cells"
+        )
+    prior_path = Path(prior_selection_path).resolve()
+    selection["prior_selection"] = str(prior_path)
+    selection["prior_selection_sha256"] = _sha256(prior_path)
+    selection["prior_adaptive_cells"] = list(prior.get("adaptive_cells", []))
+    return selection
+
+
 def write_selection(selection: Mapping[str, object], output: str | Path) -> Path:
     path = Path(output)
     write_immutable_artifact_set(
@@ -236,11 +340,15 @@ def main() -> None:
     parser.add_argument("--analysis", type=Path, required=True)
     parser.add_argument("--phase", choices=("core", "final"), required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--prior-selection", type=Path)
+    parser.add_argument("--expected-prior-selection-sha256")
     arguments = parser.parse_args()
-    summary = json.loads(arguments.analysis.read_text(encoding="utf-8"))
-    selection = select_candidates(summary, arguments.phase)
-    selection["source_analysis"] = str(arguments.analysis.resolve())
-    selection["source_analysis_sha256"] = _sha256(arguments.analysis)
+    selection = freeze_selection(
+        arguments.analysis,
+        arguments.phase,
+        prior_selection_path=arguments.prior_selection,
+        expected_prior_selection_sha256=arguments.expected_prior_selection_sha256,
+    )
     write_selection(selection, arguments.output)
     print(json.dumps(selection, indent=2, sort_keys=True))
 

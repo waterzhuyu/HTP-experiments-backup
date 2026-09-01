@@ -62,6 +62,48 @@ def test_smoke_records_but_allows_dirty_tree(tmp_path: Path) -> None:
     assert manifest["status"] == "planned"
 
 
+def test_verified_launch_identity_is_written_unchanged(tmp_path: Path) -> None:
+    identity = {
+        "kind": "frozen_phase_launch_identity",
+        "phase": "core",
+        "cells": ["e3_q2"],
+        "selection_sha256": "b" * 64,
+        "verified": True,
+    }
+    recorder = RunRecorder.create(
+        run_dir=tmp_path / "run",
+        experiment_id="exp_v1",
+        cell_id="e3_q2",
+        city="porto",
+        seed=42,
+        budget="controlled",
+        command=["python", "-m", "staged_attribution.run_cell"],
+        git_revision="a" * 40,
+        git_dirty=False,
+        required_artifacts=REQUIRED,
+        launch_identity=identity,
+    )
+
+    assert recorder.read()["launch_identity"] == identity
+
+
+def test_unverified_launch_identity_is_rejected(tmp_path: Path) -> None:
+    with pytest.raises(RecordError, match="must be verified"):
+        RunRecorder.create(
+            run_dir=tmp_path / "run",
+            experiment_id="exp_v1",
+            cell_id="e3_q2",
+            city="porto",
+            seed=42,
+            budget="controlled",
+            command=["python", "-m", "staged_attribution.run_cell"],
+            git_revision="a" * 40,
+            git_dirty=False,
+            required_artifacts=REQUIRED,
+            launch_identity={"verified": False},
+        )
+
+
 def test_invalid_transition_is_rejected(tmp_path: Path) -> None:
     recorder = create_recorder(tmp_path)
 

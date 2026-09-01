@@ -382,12 +382,42 @@ def test_confirmation_selection_requires_exact_hashed_final_source(
     _, _, _, selection_path, _ = _evidence_tree(tmp_path)
     with pytest.raises(ResultAuditError, match="exactly match"):
         audit_confirmation_selection(selection_path, ("e0_q0",))
+    with pytest.raises(ResultAuditError, match="expected digest"):
+        audit_confirmation_selection(selection_path, CELLS, "0" * 64)
 
     payload = json.loads(selection_path.read_text())
     payload["source_analysis_sha256"] = "0" * 64
     selection_path.write_text(json.dumps(payload))
     with pytest.raises(ResultAuditError, match="hash-mismatched"):
         audit_confirmation_selection(selection_path, CELLS)
+
+
+def test_confirmation_collection_binds_every_run_to_frozen_selection(
+    tmp_path: Path,
+) -> None:
+    config_path, root, attempts, _, selection = _evidence_tree(tmp_path)
+    with pytest.raises(ResultAuditError, match="launch identity mismatch"):
+        collect_confirmation_runs(config_path, root, CELLS, selection)
+
+    for attempt in attempts:
+        manifest_path = attempt / "run_manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["launch_identity"] = {
+            "kind": "frozen_phase_launch_identity",
+            "phase": "final",
+            "cells": list(CELLS),
+            "selection_path": selection["selection_path"],
+            "selection_sha256": selection["selection_sha256"],
+            "launch_revision": REVISION,
+            "verified": True,
+        }
+        manifest_path.write_text(json.dumps(manifest))
+
+    runs = collect_confirmation_runs(config_path, root, CELLS, selection)
+    assert len(runs) == 12
+    assert {run.launch_identity["selection_sha256"] for run in runs} == {
+        selection["selection_sha256"]
+    }
 
 
 def test_confirmation_collection_rejects_nonfull_generation_identity(

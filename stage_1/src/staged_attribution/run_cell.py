@@ -13,6 +13,7 @@ from typing import Callable, Mapping
 
 from .config import ConfigError, ExperimentConfig
 from .recording import RunRecorder
+from .selection_launch import SelectionLaunchError, audit_frozen_launch
 
 
 class CellRunError(RuntimeError):
@@ -85,6 +86,25 @@ def _sha256(path: Path) -> str:
         while chunk := handle.read(1024 * 1024):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _git_identity() -> tuple[str, bool]:
+    anchor = Path(__file__).resolve().parent
+    revision = subprocess.run(
+        ["git", "-C", str(anchor), "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    dirty = bool(
+        subprocess.run(
+            ["git", "-C", str(anchor), "status", "--porcelain"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+    )
+    return revision, dirty
 
 
 def _marker_path(run_dir: Path, stage: str) -> Path:
@@ -181,6 +201,11 @@ def run_cell(
     stage_backend: Callable[[StageNode, Mapping[str, object], Path], Mapping[str, str | Path]] | None = None,
     device: str = "cuda",
     command: list[str] | None = None,
+    launch_selection_path: str | Path | None = None,
+    expected_launch_selection_sha256: str | None = None,
+    expected_launch_revision: str | None = None,
+    expected_config_sha256: str | None = None,
+    launch_cell_ids: tuple[str, ...] | None = None,
 ) -> dict[str, object]:
     config = ExperimentConfig.load(config_path)
     try:
@@ -193,6 +218,36 @@ def run_cell(
         raise CellRunError(f"unregistered seed {seed}")
     if budget not in config.budgets:
         raise CellRunError(f"unknown budget {budget}")
+    launch_values = (
+        launch_selection_path,
+        expected_launch_selection_sha256,
+        expected_launch_revision,
+        expected_config_sha256,
+        launch_cell_ids,
+    )
+    launch_identity: Mapping[str, object] | None = None
+    if any(value is not None for value in launch_values):
+        if any(value is None for value in launch_values):
+            raise CellRunError("frozen phase launch identity requires every identity field")
+        assert launch_selection_path is not None
+        assert expected_launch_selection_sha256 is not None
+        assert expected_launch_revision is not None
+        assert expected_config_sha256 is not None
+        assert launch_cell_ids is not None
+        if cell_id not in launch_cell_ids:
+            raise CellRunError("cell is absent from the frozen phase launch population")
+        try:
+            launch_identity = audit_frozen_launch(
+                config_path,
+                budget,
+                launch_cell_ids,
+                selection_path=launch_selection_path,
+                expected_selection_sha256=expected_launch_selection_sha256,
+                expected_revision=expected_launch_revision,
+                expected_config_sha256=expected_config_sha256,
+            )
+        except SelectionLaunchError as error:
+            raise CellRunError(str(error)) from error
     dag = build_cell_dag(cell_id)
     resolved = {
         "experiment_id": config.experiment_id,
@@ -207,23 +262,20 @@ def run_cell(
         "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
         "will_execute": not dry_run,
     }
+    if launch_identity is not None:
+        resolved["launch_identity"] = dict(launch_identity)
     if dry_run:
         return resolved
     root = Path(run_dir)
-    revision = subprocess.run(
-        ["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True
-    ).stdout.strip()
-    dirty = bool(
-        subprocess.run(
-            ["git", "status", "--porcelain"], check=True, capture_output=True, text=True
-        ).stdout.strip()
-    )
+    revision, dirty = _git_identity()
     resolved["git_revision"] = revision
     resolved["git_dirty"] = dirty
     manifest_path = root / RunRecorder.MANIFEST_NAME
     if manifest_path.is_file():
         recorder = RunRecorder.resume(root)
         manifest = recorder.read()
+        if manifest.get("launch_identity") != launch_identity:
+            raise CellRunError("existing run launch identity differs from this invocation")
         if manifest["status"] == "completed":
             final = resume_plan(root, dag)
             if not final["terminal_complete"]:
@@ -243,6 +295,7 @@ def run_cell(
         recorder = RunRecorder.create(
             root, config.experiment_id, cell_id, city, seed, budget,
             actual_command, revision, dirty, ("stage4_complete",),
+            launch_identity=launch_identity,
         )
         recorder.start()
     if stage_backend is None:
@@ -284,6 +337,11 @@ def main() -> None:
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--launch-selection", type=Path)
+    parser.add_argument("--expected-launch-selection-sha256")
+    parser.add_argument("--expected-launch-revision")
+    parser.add_argument("--expected-config-sha256")
+    parser.add_argument("--launch-cells", nargs="+")
     arguments = parser.parse_args()
     result = run_cell(
         arguments.config,
@@ -295,6 +353,13 @@ def main() -> None:
         dry_run=arguments.dry_run,
         device=arguments.device,
         command=sys.argv,
+        launch_selection_path=arguments.launch_selection,
+        expected_launch_selection_sha256=arguments.expected_launch_selection_sha256,
+        expected_launch_revision=arguments.expected_launch_revision,
+        expected_config_sha256=arguments.expected_config_sha256,
+        launch_cell_ids=(
+            tuple(arguments.launch_cells) if arguments.launch_cells is not None else None
+        ),
     )
     print(json.dumps(result, indent=2, sort_keys=True))
 

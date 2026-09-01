@@ -47,6 +47,7 @@ class ConfirmationRunEvidence:
     stage2_train_traj_id_sha256: str
     evaluation_traj_id_sha256: str
     evaluation_population: int
+    launch_identity: Mapping[str, object]
 
 
 def _read_json(path: Path, label: str) -> dict[str, object]:
@@ -74,6 +75,7 @@ def _traj_id_sha256(ids: Sequence[int]) -> str:
 def audit_confirmation_selection(
     selection_path: str | Path,
     cell_ids: Sequence[str],
+    expected_selection_sha256: str | None = None,
 ) -> dict[str, object]:
     selected = tuple(cell_ids)
     if not selected or len(set(selected)) != len(selected) or selected[0] != "e0_q0":
@@ -81,7 +83,19 @@ def audit_confirmation_selection(
             "confirmation audit requires an explicit unique cell list beginning with e0_q0"
         )
     path = Path(selection_path).resolve()
-    selection = _read_json(path, "final selection")
+    if expected_selection_sha256 is not None:
+        if len(expected_selection_sha256) != 64 or _sha256(path) != expected_selection_sha256:
+            raise ResultAuditError("final selection SHA-256 differs from the expected digest")
+        from .select_candidates import SelectionError, audit_selection_derivation
+
+        try:
+            selection = audit_selection_derivation(
+                path, expected_selection_sha256, "final"
+            )
+        except SelectionError as error:
+            raise ResultAuditError(str(error)) from error
+    else:
+        selection = _read_json(path, "final selection")
     declared = selection.get("confirmation_cells")
     if (
         selection.get("phase") != "final"
@@ -263,6 +277,7 @@ def _load_confirmation_run(
     config: ExperimentConfig,
     root: Path,
     job: ExperimentJob,
+    selection_audit: Mapping[str, object] | None = None,
 ) -> ConfirmationRunEvidence:
     attempt = completed_attempt(root / job.run_key)
     if attempt is None:
@@ -287,6 +302,32 @@ def _load_confirmation_run(
     revision = str(git.get("revision", ""))
     if len(revision) != 40:
         raise ResultAuditError(f"confirmation run revision is invalid: {job.run_key}")
+    launch_identity = manifest.get("launch_identity")
+    if selection_audit is not None:
+        expected_launch = {
+            "phase": "final",
+            "selection_path": selection_audit["selection_path"],
+            "selection_sha256": selection_audit["selection_sha256"],
+            "cells": selection_audit["confirmation_cells"],
+        }
+        launch_changed = {
+            field: (
+                launch_identity.get(field) if isinstance(launch_identity, Mapping) else None,
+                value,
+            )
+            for field, value in expected_launch.items()
+            if not isinstance(launch_identity, Mapping) or launch_identity.get(field) != value
+        }
+        if (
+            launch_changed
+            or not isinstance(launch_identity, Mapping)
+            or launch_identity.get("kind") != "frozen_phase_launch_identity"
+            or launch_identity.get("verified") is not True
+            or launch_identity.get("launch_revision") != revision
+        ):
+            raise ResultAuditError(
+                f"confirmation launch identity mismatch for {job.run_key}: {launch_changed}"
+            )
     stage1 = _read_json(
         read_stage_artifact(attempt, "stage1", "stage1_metrics.json"),
         "confirmation Stage1 metrics",
@@ -326,6 +367,7 @@ def _load_confirmation_run(
         stage2_train_traj_id_sha256=train_ids_sha,
         evaluation_traj_id_sha256=evaluation_hash,
         evaluation_population=len(generation_ids),
+        launch_identity=(dict(launch_identity) if isinstance(launch_identity, Mapping) else {}),
     )
 
 
@@ -333,6 +375,7 @@ def collect_confirmation_runs(
     config_path: str | Path,
     experiment_root: str | Path,
     cell_ids: Sequence[str],
+    selection_audit: Mapping[str, object] | None = None,
 ) -> list[ConfirmationRunEvidence]:
     selected = tuple(cell_ids)
     if not selected:
@@ -340,7 +383,7 @@ def collect_confirmation_runs(
     config = ExperimentConfig.load(config_path)
     jobs = list(build_jobs(config, "confirmation", selected))
     runs = [
-        _load_confirmation_run(config, Path(experiment_root), job)
+        _load_confirmation_run(config, Path(experiment_root), job, selection_audit)
         for job in jobs
     ]
     revisions = {run.evaluation_revision for run in runs}
@@ -465,6 +508,7 @@ def summarize_confirmation_results(
             "stage2_train_traj_id_sha256": run.stage2_train_traj_id_sha256,
             "evaluation_population": run.evaluation_population,
             "evaluation_traj_id_sha256": run.evaluation_traj_id_sha256,
+            "launch_selection_sha256": run.launch_identity.get("selection_sha256"),
         }
         for run in runs
     ]
@@ -533,15 +577,20 @@ def main() -> None:
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--experiment-root", type=Path, required=True)
     parser.add_argument("--selection", type=Path, required=True)
+    parser.add_argument("--expected-selection-sha256", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--cells", nargs="+", required=True)
     parser.add_argument("--n-resamples", type=int, default=10_000)
     parser.add_argument("--bootstrap-seed", type=int, default=20260826)
     parser.add_argument("--confidence", type=float, default=0.95)
     arguments = parser.parse_args()
-    selection = audit_confirmation_selection(arguments.selection, arguments.cells)
+    selection = audit_confirmation_selection(
+        arguments.selection,
+        arguments.cells,
+        arguments.expected_selection_sha256,
+    )
     runs = collect_confirmation_runs(
-        arguments.config, arguments.experiment_root, arguments.cells
+        arguments.config, arguments.experiment_root, arguments.cells, selection
     )
     summary = summarize_confirmation_results(
         runs,

@@ -204,6 +204,21 @@ formal run 必须来自 clean 40-char Git revision。每个 run 保存 command�
 
 选择器分别冻结最佳 single（E0/E1/E2）、pair（E3/E4/E5）和 Q（E6/Q0..Q3）。若最佳 Q 不是 Q0，则生成 `best_single×best_Q` 与 `best_pair×best_Q` adaptive cell；不得人工替换。adaptive controlled 完成后用 `--phase final` 重新审计，confirmation 清单必须以 `e0_q0` 开头并只包含最终合格非支配候选。城市方向相反时保留 heterogeneity，不能用两城合并成六个独立重复来掩盖。
 
+冻结选择同时是后续训练的启动契约，而不是仅供报告引用的备注。adaptive controlled 必须提供
+core selection 的普通非符号链接文件及其显式 SHA-256，且 `--cells` 必须按顺序精确等于其中
+`adaptive_cells`；confirmation 同理必须精确等于 final selection 的 `confirmation_cells`。启动前还要
+显式锁定 clean 40 位 revision 和 config SHA-256。任一字段缺失、漂移、选择不能由其哈希锁定的
+population-aware analysis 确定性重算、或 cell 集有增删/换序时，必须在 GPU 查询、锁、attempt 和
+子进程创建前失败。每个实际 run manifest 必须记录 selection path/SHA、source analysis path/SHA、
+analysis revision、config path/SHA、launch revision 和完整 phase cell 集；已有 completed attempt 只在
+该身份完全一致时复用。
+
+`--phase final` 还必须显式提供 core selection 及其 SHA-256。final analysis 的 cell coverage 必须恰好
+等于十个 core cells 与该 core selection 冻结的 `adaptive_cells` 之并集；缺少任何 adaptive 结果或混入
+观察后追加的 cell 都不得冻结 final selection。final selection 封存 prior core selection path/SHA 和
+adaptive cell 集，confirmation 启动与最终报告继续核对这条链。该约束只加强证据与派发身份，不改变
+GPS/Road/Grid 输入、Stage1/2/3/4 方法、Option B 人口、seed 或统计判据。
+
 Stage1 gate 在汇总时用同 city/seed G00 `population_mean_penalized_error` 相对 E0/Q0 的比值回填 oracle ratio；codebook active/perplexity/max-share 与 loss finite 条件仍按第 8 节，不允许继续使用 `pending_e0_oracle_ratio` 参加候选选择。
 
 confirmation 完成后必须由 `report_confirmation_results --selection <final_selection.json> --cells ...` 复核：final selection 的来源路径/SHA/revision、单一 clean 40-char run revision、Option B 每城固定 64,000 条 Stage2 train manifest 与 seed、full 且逐轨迹一致的 Stage3/Stage4 test population、四路 G contribution manifest 及其嵌套 artifact hash。最终 GPS/Road/Grid 优于 baseline 的声明沿用 seed-stratified trajectory paired bootstrap 门禁，且仅当 Stage1 gate 全通过、无任一 GPS/Road/Grid/validity 显著劣化并至少有一个 GPS/Road/Grid 显著改善时允许；否则必须报告为不支持或负结果。
