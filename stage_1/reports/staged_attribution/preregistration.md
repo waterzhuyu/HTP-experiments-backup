@@ -202,6 +202,16 @@ formal run 必须来自 clean 40-char Git revision。每个 run 保存 command�
 
 十个核心 cell 之外，配置注册完整 7×4 E×Q 交叉组合，但非核心组合只能通过显式 `--cells` 运行。核心 controlled 后，`report_stratified_results` 在每个 seed 内对同一完整轨迹人群做 paired bootstrap，再等权平均 seed effect；`select_candidates --phase core` 只接受这份 failure-retaining population-aware G11 证据。任一城市的 GPS/Road/Grid/validity 指标显著劣化则拒绝；至少一个城市、一个 GPS/Road/Grid 指标显著改善，且所有 city/seed Stage1 gate 通过，方可进入 Pareto。
 
+同一 corrected analysis 还必须在完整十个 core cells 上输出机器可审计的 `staged_attribution`。对每个
+city×seed，十个 cell 必须共享完全相同的固定轨迹 ID 与同一组 trajectory-bootstrap 权重；随后对 seed
+等权平均。E 的 primary estimands 为 E1..E6 各自减 E0，以及第 10 节的三个可识别条件二阶交互；Q 的
+primary estimands 为 Q1−Q0、Q2−Q1、Q3−Q2、Q3−Q0。每个 estimand 都必须覆盖全部十个注册指标，
+包括 validity regret 与失败保留的 population mean penalized error，并按城市分别保存 estimate、95% CI
+和方向。`E6 - min(E3,E4,E5)` 仅作为 `descriptive_sensitivity`，不得驱动 eligibility 或因果式主结论。
+缺少任一 core cell 时必须明确输出 `available=false` 和 missing cells，且 selection 必须 fail closed。
+final selection 的哈希源分析必须保留这份完整 E/Q 证据；confirmation 通常只含 baseline 与已选候选，
+因此不得声称可独立重建 E/Q，它只从冻结源继承 controlled E/Q 证据并独立复验候选相对 baseline。
+
 选择器分别冻结最佳 single（E0/E1/E2）、pair（E3/E4/E5）和 Q（E6/Q0..Q3）。若最佳 Q 不是 Q0，则生成 `best_single×best_Q` 与 `best_pair×best_Q` adaptive cell；不得人工替换。adaptive controlled 完成后用 `--phase final` 重新审计，confirmation 清单必须以 `e0_q0` 开头并只包含最终合格非支配候选。城市方向相反时保留 heterogeneity，不能用两城合并成六个独立重复来掩盖。
 
 城市方向规则按每个 candidate×metric 的两城 paired effect 点估计冻结：regret 差小于零为改善、大于

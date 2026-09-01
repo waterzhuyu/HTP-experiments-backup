@@ -774,3 +774,44 @@ config SHA-256 保持
 本修复未启动任何新队列，未修改正式 worktree、watcher、锁、GPU 进程或既有 attempt。后续完整
 source audit、corrected analysis、core/final selection、confirmation 与最终报告必须全部使用包含本修复
 的同一 clean 候选 revision；旧 CLI 生成的报告不足以作为最终交付证据。
+
+## 18. 修正固定总体上的 E/Q 分阶段归因
+
+源码提交 `be74383`（`feat(experiment): add corrected E-Q attribution`）补齐了分阶段归因的实质性
+证据缺口；提交 `7f7bb53`（`fix(experiment): label nonlinear E contrast descriptive`）进一步冻结了
+非线性敏感性对比的声明边界。此前未修正的 core report 虽有 E/Q 点估计，但它是 evidence index，
+不得用于选择或最终声明；修正后的 schema 3 只提供 failure-retaining fixed-population 的 candidate−E0、
+G 分解和城市方向，没有在同一总体上回答改善究竟来自 E 组合还是 Q 阶梯。
+
+修复后 corrected analysis schema 升为 4，confirmation schema 升为 5，并新增
+`staged_attribution`：
+
+1. 对每个 city×seed，要求十个 core cells 的 G11 contribution 与 penalty 轨迹 ID 逐项完全相同；
+2. 每个 seed 只生成一组 multinomial trajectory-bootstrap 权重，并在十个 cells 间配对复用，随后对
+   seed effect 等权平均，避免把 cell 或 seed 当作独立轨迹；
+3. E primary 对比为 E1..E6 各减 E0，以及预注册三个可识别条件交互：GPS×Road|Grid、
+   GPS×Grid|Road、Road×Grid|GPS；
+4. Q primary 对比为 Q1−Q0、Q2−Q1、Q3−Q2 与 Q3−Q0；
+5. 每个对比覆盖十个注册指标，含 GPS/Road/Grid、validity regret 与失败保留的
+   `population_mean_penalized_error`，保存每城市 estimate、95% CI、bootstrap 方向概率及城市方向异质性；
+6. `E6 - min(E3,E4,E5)` 标记为 `descriptive_sensitivity`。它保留点估计和 bootstrap 区间，但不能被
+   当作 primary 交互、eligibility 或因果式主结论；
+7. 缺任一 core cell 时输出 `available=false`、精确 missing cells 与零 E/Q rows。selection 只接受
+   schema 4、完整 14 contrasts×10 metrics×cities、注册系数/表达式逐字段一致的证据；任何系数篡改、
+   重复/缺失 row 或旧 schema 均 fail closed；
+8. final selection 的 source analysis 哈希继续锁定完整 E/Q 证据。confirmation 子集自身明确保持
+   `staged_attribution.available=false`，最终报告另存 `controlled_staged_attribution`，从已哈希并重算的
+   final-selection source 继承 E/Q 证据；confirmation 只负责在 full population 上重验已选候选。
+
+验证证据：E/Q、selection、launch、confirmation 聚焦测试为 `31 passed in 10.83s`；锁定环境完整
+回归 `uv run --frozen pytest -q` 为 `304 passed, 23 warnings in 22.72s`，warnings 仍全是既有
+Transformer nested-tensor 提示。新增测试覆盖完整 core 产生每城市 140 rows、所有同值 cell 的零对比、
+注册交互系数、非线性 role、partial core 拒绝 selection、系数篡改拒绝，以及 confirmation source
+缺完整 E/Q 时拒绝最终报告。controlled dry-run 仍精确 60 个 run keys；candidate config SHA-256 保持
+`b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb`。
+
+本节只改变完整 core 之后的校正分析、选择 schema 与报告证据链，没有改变 E/Q/G cell、Option B
+64,000×2 Stage2 population、seed、microbatch、gradient accumulation、训练 loss、评估 population 或
+安全 GPU 门禁；没有启动新队列、创建真实 corrected/selection/confirmation artifact，也没有修改正式
+worktree、watcher、锁、GPU 进程或任何既有 attempt。后续 source audit、corrected/final analysis 与
+confirmation 必须使用包含上述两个提交及本记录的同一 clean revision。
