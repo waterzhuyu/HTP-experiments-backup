@@ -20,6 +20,10 @@ from .population_bootstrap import (
 from .report_results import G_VARIANTS, METRICS, ResultAuditError, read_stage_artifact
 from .report_stratified_results import summarize_corrected_results
 from .run_experiment import ExperimentJob, build_jobs, completed_attempt
+from .selection_launch import (
+    SelectionLaunchError,
+    audit_frozen_launch,
+)
 
 
 ANALYSIS_SCHEMA_VERSION = 4
@@ -82,7 +86,14 @@ def audit_confirmation_selection(
         raise ResultAuditError(
             "confirmation audit requires an explicit unique cell list beginning with e0_q0"
         )
-    path = Path(selection_path).resolve()
+    candidate = Path(selection_path).expanduser()
+    if not candidate.is_absolute():
+        candidate = Path.cwd() / candidate
+    if candidate.is_symlink() or not candidate.is_file():
+        raise ResultAuditError(
+            "final selection must be an existing non-symlink file"
+        )
+    path = candidate.resolve()
     if expected_selection_sha256 is not None:
         if len(expected_selection_sha256) != 64 or _sha256(path) != expected_selection_sha256:
             raise ResultAuditError("final selection SHA-256 differs from the expected digest")
@@ -90,7 +101,7 @@ def audit_confirmation_selection(
 
         try:
             selection = audit_selection_derivation(
-                path, expected_selection_sha256, "final"
+                candidate, expected_selection_sha256, "final"
             )
         except SelectionError as error:
             raise ResultAuditError(str(error)) from error
@@ -108,9 +119,16 @@ def audit_confirmation_selection(
     source_revision = str(selection.get("source_revision", ""))
     if len(source_revision) != 40:
         raise ResultAuditError("final selection lacks a full source revision")
-    source_path = Path(str(selection.get("source_analysis", ""))).resolve()
+    source_candidate = Path(str(selection.get("source_analysis", ""))).expanduser()
+    if not source_candidate.is_absolute():
+        source_candidate = path.parent / source_candidate
+    if source_candidate.is_symlink() or not source_candidate.is_file():
+        raise ResultAuditError(
+            "final selection source analysis must be an existing non-symlink file"
+        )
+    source_path = source_candidate.resolve()
     source_sha = str(selection.get("source_analysis_sha256", ""))
-    if not source_path.is_file() or len(source_sha) != 64 or _sha256(source_path) != source_sha:
+    if len(source_sha) != 64 or _sha256(source_path) != source_sha:
         raise ResultAuditError("final selection source analysis is missing or hash-mismatched")
     source = _read_json(source_path, "final-selection source analysis")
     if (
@@ -278,6 +296,7 @@ def _load_confirmation_run(
     root: Path,
     job: ExperimentJob,
     selection_audit: Mapping[str, object] | None = None,
+    launch_audit: Mapping[str, object] | None = None,
 ) -> ConfirmationRunEvidence:
     attempt = completed_attempt(root / job.run_key)
     if attempt is None:
@@ -303,30 +322,37 @@ def _load_confirmation_run(
     if len(revision) != 40:
         raise ResultAuditError(f"confirmation run revision is invalid: {job.run_key}")
     launch_identity = manifest.get("launch_identity")
-    if selection_audit is not None:
-        expected_launch = {
-            "phase": "final",
-            "selection_path": selection_audit["selection_path"],
-            "selection_sha256": selection_audit["selection_sha256"],
-            "cells": selection_audit["confirmation_cells"],
-        }
+    if selection_audit is not None or launch_audit is not None:
+        if selection_audit is None or launch_audit is None:
+            raise ResultAuditError(
+                "confirmation collection requires selection and launch audits together"
+            )
         launch_changed = {
             field: (
                 launch_identity.get(field) if isinstance(launch_identity, Mapping) else None,
                 value,
             )
-            for field, value in expected_launch.items()
-            if not isinstance(launch_identity, Mapping) or launch_identity.get(field) != value
+            for field, value in launch_audit.items()
+            if not isinstance(launch_identity, Mapping)
+            or launch_identity.get(field) != value
         }
+        unexpected_launch_fields = sorted(
+            set(launch_identity) - set(launch_audit)
+            if isinstance(launch_identity, Mapping)
+            else set()
+        )
         if (
             launch_changed
+            or unexpected_launch_fields
             or not isinstance(launch_identity, Mapping)
             or launch_identity.get("kind") != "frozen_phase_launch_identity"
             or launch_identity.get("verified") is not True
             or launch_identity.get("launch_revision") != revision
         ):
             raise ResultAuditError(
-                f"confirmation launch identity mismatch for {job.run_key}: {launch_changed}"
+                "confirmation launch identity mismatch for "
+                f"{job.run_key}: changed={launch_changed}, "
+                f"unexpected={unexpected_launch_fields}"
             )
     stage1 = _read_json(
         read_stage_artifact(attempt, "stage1", "stage1_metrics.json"),
@@ -376,6 +402,7 @@ def collect_confirmation_runs(
     experiment_root: str | Path,
     cell_ids: Sequence[str],
     selection_audit: Mapping[str, object] | None = None,
+    launch_audit: Mapping[str, object] | None = None,
 ) -> list[ConfirmationRunEvidence]:
     selected = tuple(cell_ids)
     if not selected:
@@ -383,7 +410,13 @@ def collect_confirmation_runs(
     config = ExperimentConfig.load(config_path)
     jobs = list(build_jobs(config, "confirmation", selected))
     runs = [
-        _load_confirmation_run(config, Path(experiment_root), job, selection_audit)
+        _load_confirmation_run(
+            config,
+            Path(experiment_root),
+            job,
+            selection_audit,
+            launch_audit,
+        )
         for job in jobs
     ]
     revisions = {run.evaluation_revision for run in runs}
@@ -521,6 +554,7 @@ def _confirmation_gate(summary: Mapping[str, object]) -> dict[str, dict[str, obj
 def summarize_confirmation_results(
     runs: Sequence[ConfirmationRunEvidence],
     selection_audit: Mapping[str, object],
+    launch_audit: Mapping[str, object],
     *,
     n_resamples: int = 10_000,
     bootstrap_seed: int = 20260826,
@@ -538,11 +572,41 @@ def summarize_confirmation_results(
     if set(summary["coverage"]["cells"]) != set(expected_cells):
         raise ResultAuditError("confirmation coverage differs from frozen final selection")
     revision = str(summary["revision"])
+    expected_launch = {
+        "kind": "frozen_phase_launch_identity",
+        "phase": "final",
+        "cells": list(expected_cells),
+        "selection_path": selection_audit["selection_path"],
+        "selection_sha256": selection_audit["selection_sha256"],
+        "source_analysis": selection_audit["source_analysis"],
+        "source_analysis_sha256": selection_audit["source_analysis_sha256"],
+        "analysis_revision": selection_audit["source_revision"],
+        "launch_revision": revision,
+        "verified": True,
+    }
+    launch_changed = {
+        field: (launch_audit.get(field), value)
+        for field, value in expected_launch.items()
+        if launch_audit.get(field) != value
+    }
+    config_path = launch_audit.get("config_path")
+    config_sha = str(launch_audit.get("config_sha256", ""))
+    if (
+        launch_changed
+        or launch_audit.get("schema_version") != 1
+        or not isinstance(config_path, str)
+        or not config_path
+        or len(config_sha) != 64
+    ):
+        raise ResultAuditError(
+            f"confirmation report environment differs from frozen launch: {launch_changed}"
+        )
     summary["schema_version"] = ANALYSIS_SCHEMA_VERSION
     summary["analysis_schema_version"] = ANALYSIS_SCHEMA_VERSION
     summary["candidate_evidence"] = CONFIRMATION_EVIDENCE
     summary["phase"] = "confirmation"
     summary["selection_audit"] = dict(selection_audit)
+    summary["report_environment_audit"] = dict(launch_audit)
     summary["run_revision_audit"] = {"uniform": True, "revision": revision}
     summary.pop("source_revision_audit", None)
     summary["population_identity_by_city"] = {
@@ -597,6 +661,9 @@ def write_confirmation_report(
         "",
         f"- Confirmation revision: `{summary['revision']}`",
         f"- Verified final selection: `{summary['selection_audit']['selection_sha256']}`",
+        f"- Verified selection analysis: "
+        f"`{summary['selection_audit']['source_analysis_sha256']}`",
+        f"- Verified config: `{summary['report_environment_audit']['config_sha256']}`",
         f"- Completed runs: {coverage['runs']}",
         f"- Cities: {', '.join(coverage['cities'])}",
         f"- Seeds: {', '.join(str(value) for value in coverage['seeds'])}",
@@ -651,23 +718,42 @@ def main() -> None:
     parser.add_argument("--experiment-root", type=Path, required=True)
     parser.add_argument("--selection", type=Path, required=True)
     parser.add_argument("--expected-selection-sha256", required=True)
+    parser.add_argument("--expected-revision", required=True)
+    parser.add_argument("--expected-config-sha256", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--cells", nargs="+", required=True)
     parser.add_argument("--n-resamples", type=int, default=10_000)
     parser.add_argument("--bootstrap-seed", type=int, default=20260826)
     parser.add_argument("--confidence", type=float, default=0.95)
     arguments = parser.parse_args()
+    try:
+        launch_audit = audit_frozen_launch(
+            arguments.config,
+            "confirmation",
+            arguments.cells,
+            selection_path=arguments.selection,
+            expected_selection_sha256=arguments.expected_selection_sha256,
+            expected_revision=arguments.expected_revision,
+            expected_config_sha256=arguments.expected_config_sha256,
+        )
+    except SelectionLaunchError as error:
+        raise ResultAuditError(str(error)) from error
     selection = audit_confirmation_selection(
         arguments.selection,
         arguments.cells,
         arguments.expected_selection_sha256,
     )
     runs = collect_confirmation_runs(
-        arguments.config, arguments.experiment_root, arguments.cells, selection
+        arguments.config,
+        arguments.experiment_root,
+        arguments.cells,
+        selection,
+        launch_audit,
     )
     summary = summarize_confirmation_results(
         runs,
         selection,
+        launch_audit,
         n_resamples=arguments.n_resamples,
         bootstrap_seed=arguments.bootstrap_seed,
         confidence=arguments.confidence,

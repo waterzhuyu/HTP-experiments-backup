@@ -302,6 +302,27 @@ def _selection(tmp_path: Path) -> tuple[Path, dict[str, object]]:
     return selection, audit_confirmation_selection(selection, CELLS)
 
 
+def _launch_audit(
+    config_path: Path,
+    selection: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "kind": "frozen_phase_launch_identity",
+        "phase": "final",
+        "cells": list(CELLS),
+        "selection_path": selection["selection_path"],
+        "selection_sha256": selection["selection_sha256"],
+        "source_analysis": selection["source_analysis"],
+        "source_analysis_sha256": selection["source_analysis_sha256"],
+        "analysis_revision": selection["source_revision"],
+        "config_path": str(config_path.resolve()),
+        "config_sha256": _sha256(config_path),
+        "launch_revision": REVISION,
+        "verified": True,
+    }
+
+
 def _evidence_tree(tmp_path: Path):
     config_path, manifests = _test_config(tmp_path)
     config = ExperimentConfig.load(config_path)
@@ -326,7 +347,11 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
     assert {run.evaluation_population for run in runs} == {4}
 
     summary = summarize_confirmation_results(
-        runs, selection, n_resamples=500, bootstrap_seed=20260826
+        runs,
+        selection,
+        _launch_audit(config_path, selection),
+        n_resamples=500,
+        bootstrap_seed=20260826,
     )
     assert summary["analysis_schema_version"] == ANALYSIS_SCHEMA_VERSION
     assert summary["candidate_evidence"] == CONFIRMATION_EVIDENCE
@@ -342,6 +367,9 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
         "uniform": True,
         "revision": REVISION,
     }
+    assert summary["report_environment_audit"]["config_sha256"] == _sha256(
+        config_path
+    )
     assert summary["confirmation_gate"]["e1_q0"]["claim_supported"] is True
     assert summary["confirmation_gate"]["e1_q0"]["direction_consistent_improvement"]
     assert not summary["confirmation_gate"]["e1_q0"]["opposed_city_directions"]
@@ -357,6 +385,7 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
     )
     assert json.loads(json_path.read_text())["candidate_evidence"] == CONFIRMATION_EVIDENCE
     assert "claim_supported=true" in markdown_path.read_text()
+    assert _sha256(config_path) in markdown_path.read_text()
 
     original_json = json_path.read_bytes()
     original_markdown = markdown_path.read_bytes()
@@ -449,32 +478,54 @@ def test_confirmation_selection_requires_exact_hashed_final_source(
         audit_confirmation_selection(selection_path, CELLS)
 
 
+def test_confirmation_selection_rejects_leaf_symlinks(tmp_path: Path) -> None:
+    _, _, _, selection_path, _ = _evidence_tree(tmp_path)
+    selection_link = tmp_path / "selection_link.json"
+    selection_link.symlink_to(selection_path)
+    with pytest.raises(ResultAuditError, match="non-symlink"):
+        audit_confirmation_selection(selection_link, CELLS, _sha256(selection_path))
+
+    payload = json.loads(selection_path.read_text())
+    source = Path(payload["source_analysis"])
+    source_link = tmp_path / "source_link.json"
+    source_link.symlink_to(source)
+    payload["source_analysis"] = str(source_link)
+    selection_path.write_text(json.dumps(payload))
+    with pytest.raises(ResultAuditError, match="non-symlink"):
+        audit_confirmation_selection(selection_path, CELLS)
+
+
 def test_confirmation_collection_binds_every_run_to_frozen_selection(
     tmp_path: Path,
 ) -> None:
     config_path, root, attempts, _, selection = _evidence_tree(tmp_path)
-    with pytest.raises(ResultAuditError, match="launch identity mismatch"):
+    with pytest.raises(ResultAuditError, match="requires selection and launch audits together"):
         collect_confirmation_runs(config_path, root, CELLS, selection)
+
+    launch_audit = _launch_audit(config_path, selection)
 
     for attempt in attempts:
         manifest_path = attempt / "run_manifest.json"
         manifest = json.loads(manifest_path.read_text())
-        manifest["launch_identity"] = {
-            "kind": "frozen_phase_launch_identity",
-            "phase": "final",
-            "cells": list(CELLS),
-            "selection_path": selection["selection_path"],
-            "selection_sha256": selection["selection_sha256"],
-            "launch_revision": REVISION,
-            "verified": True,
-        }
+        manifest["launch_identity"] = launch_audit
         manifest_path.write_text(json.dumps(manifest))
 
-    runs = collect_confirmation_runs(config_path, root, CELLS, selection)
+    runs = collect_confirmation_runs(
+        config_path, root, CELLS, selection, launch_audit
+    )
     assert len(runs) == 12
     assert {run.launch_identity["selection_sha256"] for run in runs} == {
         selection["selection_sha256"]
     }
+
+    manifest_path = attempts[0] / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["launch_identity"]["config_sha256"] = "0" * 64
+    manifest_path.write_text(json.dumps(manifest))
+    with pytest.raises(ResultAuditError, match="launch identity mismatch"):
+        collect_confirmation_runs(
+            config_path, root, CELLS, selection, launch_audit
+        )
 
 
 def test_confirmation_collection_rejects_nonfull_generation_identity(
