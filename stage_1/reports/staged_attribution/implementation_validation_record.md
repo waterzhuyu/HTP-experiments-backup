@@ -665,6 +665,8 @@ uv run --frozen python -m staged_attribution.report_confirmation_results \
   --experiment-root <SOURCE_EXPERIMENT_ROOT> \
   --selection <FINAL_SELECTION_JSON> \
   --expected-selection-sha256 <FINAL_SELECTION_SHA256> \
+  --expected-revision <CLEAN_PHASE_REVISION> \
+  --expected-config-sha256 b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb \
   --cells <EXACT_CONFIRMATION_CELLS_IN_FROZEN_ORDER> \
   --output-dir <IMMUTABLE_CONFIRMATION_REPORT_DIR>
 ```
@@ -695,7 +697,8 @@ core+adaptive 精确 coverage。现在该链进入通用派生审计：
 4. final source analysis coverage 必须恰好是十个 core cells 与冻结 adaptive cells 的并集。
 
 因此 confirmation 启动和 `report_confirmation_results` 的生产 CLI（强制显式 expected selection
-SHA）共享同一完整链审计，不能依赖 manifest 中单独的 `verified=true` 或只校验 final 文件本身。
+SHA、revision 与 config SHA）共享同一完整链审计，不能依赖 manifest 中单独的 `verified=true` 或只
+校验 final 文件本身。
 `selection_launch` 保留额外的 defense-in-depth 检查。
 
 验证：selection/final-report 聚焦测试 `12 passed in 8.57s`；完整 `stage_1/tests` 为
@@ -739,3 +742,35 @@ SHA-256 保持 `b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb
 本节属于首次完整结果前对既有预注册声明边界的机器化与 schema 加固，不改变 E/Q/G cell、输入、
 Option B、seed、bootstrap、显著性阈值、训练或评估 population；没有启动或修改任何正式队列、attempt
 或 GPU 进程。
+
+## 17. 最终报告生成环境与逐 attempt 启动身份绑定
+
+源码提交 `5f75df3`（`fix(experiment): bind final report environment`）修复了最终不可变报告入口仍有的
+两处身份缺口。第一，`audit_confirmation_selection` 过去先 `Path.resolve()` 再进入 selection 派生
+审计，使调用者给出的叶节点 selection 符号链接在生产报告路径上被提前消解；source-analysis 直读路径
+也没有独立拒绝叶节点符号链接。现在两者都先在调用者/selection 声明的叶节点上要求“存在、普通文件、
+非符号链接”，再 canonicalize、哈希和确定性重算。
+
+第二，旧最终报告 CLI 只强制 selection SHA。它没有在报告写出前重新证明当前代码来自与冻结 selection
+相同的 clean revision，也没有要求 config SHA；逐 run 审计只比对 launch identity 的 phase、cells、
+selection path/SHA 与 revision 子集，未重验 source-analysis path/SHA、analysis revision、config
+path/SHA 等完整字段。修复后：
+
+1. 最终报告 CLI 新增必填 `--expected-revision` 与 `--expected-config-sha256`；
+2. 报告写出前复用 `selection_launch.audit_frozen_launch`，因此执行与 confirmation 训练启动相同的
+   clean worktree、HEAD、config、final-selection、prior core-selection 和精确 cell-order 门禁；
+3. 每个 completed confirmation attempt 的 `launch_identity` 必须与该次冻结门禁输出逐字段完全相等，
+   任何缺失、替换或额外身份字段都拒绝纳入；
+4. summary 封存 `report_environment_audit`，Markdown 同时打印 config SHA、final-selection SHA 与
+   selection-source analysis SHA，令最终 GPS/Road/Grid 结论可从报告反查完整实现与配置身份。
+
+验证：最终报告/selection-launch 聚焦测试 `14 passed in 9.16s`；完整 `stage_1/tests` 为
+`302 passed, 23 warnings in 21.21s`，warnings 仍是既有 Transformer nested-tensor 提示。新增负向测试
+覆盖 selection/source-analysis 叶节点符号链接、只传 selection 而不传 launch audit、以及 attempt 中
+config SHA 替换；均在读取训练指标或写报告前失败。正式 controlled dry-run 仍精确枚举 60 个 run key，
+config SHA-256 保持
+`b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb`。
+
+本修复未启动任何新队列，未修改正式 worktree、watcher、锁、GPU 进程或既有 attempt。后续完整
+source audit、corrected analysis、core/final selection、confirmation 与最终报告必须全部使用包含本修复
+的同一 clean 候选 revision；旧 CLI 生成的报告不足以作为最终交付证据。
