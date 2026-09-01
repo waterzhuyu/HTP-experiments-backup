@@ -238,6 +238,149 @@ def _evaluation_progress(
     return payload
 
 
+class _TrainingProgressRecorder:
+    """Persist optimizer-step progress without participating in training decisions."""
+
+    def __init__(
+        self,
+        path: str | Path,
+        steps_total: int,
+        progress_interval: int = 100,
+    ) -> None:
+        if steps_total <= 0:
+            raise Stage2DataError("training progress steps_total must be positive")
+        if progress_interval <= 0:
+            raise Stage2DataError("training progress_interval must be positive")
+        self.path = Path(path)
+        self.steps_total = int(steps_total)
+        self.progress_interval = int(progress_interval)
+        self.started_at = _utc_now()
+        self.started = time.monotonic()
+        self.steps_completed = 0
+        self.epoch = 0.0
+        self.last_metrics: dict[str, float] = {}
+        self._write("running")
+
+    @staticmethod
+    def _finite_metrics(metrics: Mapping[str, object] | None) -> dict[str, float]:
+        if metrics is None:
+            return {}
+        result: dict[str, float] = {}
+        for name in ("loss", "grad_norm", "learning_rate"):
+            value = metrics.get(name)
+            if value is None:
+                continue
+            try:
+                numeric = float(value)
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(numeric):
+                result[name] = numeric
+        return result
+
+    def _payload(
+        self,
+        status: str,
+        error: Exception | None = None,
+    ) -> dict[str, object]:
+        elapsed = max(time.monotonic() - self.started, 0.0)
+        rate = self.steps_completed / elapsed if elapsed > 0 else 0.0
+        remaining = max(self.steps_total - self.steps_completed, 0)
+        if remaining == 0:
+            eta_seconds: float | None = 0.0
+        elif rate > 0:
+            eta_seconds = remaining / rate
+        else:
+            eta_seconds = None
+        now = _utc_now()
+        payload: dict[str, object] = {
+            "schema_version": 1,
+            "status": status,
+            "started_at": self.started_at,
+            "updated_at": now,
+            "finished_at": now if status in {"completed", "failed"} else None,
+            "steps_total": self.steps_total,
+            "steps_completed": self.steps_completed,
+            "epoch": self.epoch,
+            "elapsed_seconds": elapsed,
+            "steps_per_second": rate,
+            "eta_seconds": eta_seconds,
+            "last_metrics": dict(self.last_metrics),
+            "error": None,
+        }
+        if error is not None:
+            payload["error"] = {"type": type(error).__name__, "message": str(error)}
+        return payload
+
+    def _write(self, status: str, error: Exception | None = None) -> None:
+        _atomic_json(self.path, self._payload(status, error))
+
+    def update(
+        self,
+        steps_completed: int,
+        epoch: float | None = None,
+        metrics: Mapping[str, object] | None = None,
+        force: bool = False,
+    ) -> bool:
+        step = int(steps_completed)
+        if step < self.steps_completed:
+            raise Stage2DataError("training progress cannot move backwards")
+        self.steps_completed = min(step, self.steps_total)
+        if epoch is not None:
+            numeric_epoch = float(epoch)
+            if math.isfinite(numeric_epoch):
+                self.epoch = numeric_epoch
+        self.last_metrics.update(self._finite_metrics(metrics))
+        should_write = (
+            force
+            or self.steps_completed == self.steps_total
+            or self.steps_completed % self.progress_interval == 0
+        )
+        if should_write:
+            self._write("running")
+        return should_write
+
+    def complete(
+        self,
+        steps_completed: int,
+        epoch: float | None = None,
+        metrics: Mapping[str, object] | None = None,
+    ) -> None:
+        self.update(steps_completed, epoch, metrics, force=False)
+        if self.steps_completed != self.steps_total:
+            raise Stage2DataError(
+                "training returned before the planned optimizer-step count was reached"
+            )
+        self._write("completed")
+
+    def fail(self, error: Exception) -> None:
+        self._write("failed", error)
+
+
+def _training_progress_callback(recorder: _TrainingProgressRecorder) -> object:
+    """Build the locked Transformers callback while keeping imports lazy."""
+    from transformers import TrainerCallback
+
+    class TrainingProgressCallback(TrainerCallback):
+        def on_train_begin(self, args, state, control, **kwargs):
+            recorder.update(state.global_step, state.epoch, force=True)
+            return control
+
+        def on_log(self, args, state, control, logs=None, **kwargs):
+            recorder.update(state.global_step, state.epoch, logs)
+            return control
+
+        def on_step_end(self, args, state, control, **kwargs):
+            recorder.update(state.global_step, state.epoch)
+            return control
+
+        def on_train_end(self, args, state, control, **kwargs):
+            recorder.complete(state.global_step, state.epoch)
+            return control
+
+    return TrainingProgressCallback()
+
+
 @torch.no_grad()
 def evaluate_teacher_forced_model(
     model: torch.nn.Module,
@@ -403,12 +546,18 @@ def run_hf_stage2(
 ) -> dict[str, object]:
     """Train the frozen Stage2 recipe; heavyweight libraries are imported only here."""
     from peft import LoraConfig, TaskType, get_peft_model
-    from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, set_seed
+    from transformers import (
+        AutoModelForCausalLM,
+        AutoTokenizer,
+        Trainer,
+        set_seed,
+    )
 
     set_seed(seed)
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
     plan = build_stage2_plan(frame, epochs, max_steps, batch_size, gradient_accumulation)
+    _atomic_json(output / "stage2_plan.json", plan)
     tokenizer = AutoTokenizer.from_pretrained(str(model_path))
     tokenizer.pad_token = tokenizer.eos_token
     protocol_tokens = special_tokens(num_roads)
@@ -443,13 +592,28 @@ def run_hf_stage2(
         gradient_accumulation,
         learning_rate,
     )
-    trainer = Trainer(
-        model=model,
-        args=arguments,
-        train_dataset=_TokenizedDataset(tokenized),
-        data_collator=collator,
+    training_progress = _TrainingProgressRecorder(
+        output / "training_progress.json",
+        int(plan["planned_optimizer_steps"]),
     )
-    train_result = trainer.train()
+
+    try:
+        trainer = Trainer(
+            model=model,
+            args=arguments,
+            train_dataset=_TokenizedDataset(tokenized),
+            data_collator=collator,
+            callbacks=[_training_progress_callback(training_progress)],
+        )
+        train_result = trainer.train()
+        training_progress.complete(
+            trainer.state.global_step,
+            trainer.state.epoch,
+            train_result.metrics,
+        )
+    except Exception as error:
+        training_progress.fail(error)
+        raise
     adapter_path = output / "adapter"
     model.save_pretrained(adapter_path)
     tokenizer.save_pretrained(adapter_path)
@@ -487,7 +651,6 @@ def run_hf_stage2(
         "added_special_tokens": int(added),
         "protocol_token_count": len(protocol_tokens),
     }
-    _atomic_json(output / "stage2_plan.json", plan)
     _atomic_json(output / "stage2_metrics.json", metrics)
     _atomic_json(output / "token_budget.json", token_budget)
     return {
@@ -496,6 +659,7 @@ def run_hf_stage2(
         "token_budget": token_budget,
         "adapter": str(adapter_path),
         "adapter_storage": adapter_storage,
+        "training_progress": str(output / "training_progress.json"),
         "evaluation_progress": (
             str(output / "evaluation_progress.json") if eval_frame is not None else None
         ),

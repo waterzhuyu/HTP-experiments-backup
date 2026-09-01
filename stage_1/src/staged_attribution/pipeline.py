@@ -550,6 +550,7 @@ class PipelineBackend:
             torch.cuda.empty_cache()
         return {
             "adapter_manifest.json": adapter_manifest,
+            "training_progress.json": output / "training_progress.json",
             "evaluation_progress.json": output / "evaluation_progress.json",
             "stage2_plan.json": output / "stage2_plan.json",
             "stage2_metrics.json": output / "stage2_metrics.json",

@@ -38,6 +38,7 @@ def build_cell_dag(cell_id: str) -> tuple[StageNode, ...]:
             ("stage2_data",),
             (
                 "adapter_manifest.json",
+                "training_progress.json",
                 "evaluation_progress.json",
                 "stage2_plan.json",
                 "stage2_metrics.json",
