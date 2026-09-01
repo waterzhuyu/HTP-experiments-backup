@@ -130,9 +130,12 @@ def audit_frozen_launch(
         raise SelectionLaunchError("launch implementation revision mismatch")
     if dirty:
         raise SelectionLaunchError("phase launch requires a clean Git worktree")
-    resolved_config = Path(config_path).resolve()
-    if not resolved_config.is_file() or resolved_config.is_symlink():
+    config_candidate = Path(config_path).expanduser()
+    if not config_candidate.is_absolute():
+        config_candidate = Path.cwd() / config_candidate
+    if config_candidate.is_symlink() or not config_candidate.is_file():
         raise SelectionLaunchError("phase config must be an existing non-symlink file")
+    resolved_config = config_candidate.resolve()
     if _sha256(resolved_config) != config_sha:
         raise SelectionLaunchError("phase config SHA-256 mismatch")
     try:

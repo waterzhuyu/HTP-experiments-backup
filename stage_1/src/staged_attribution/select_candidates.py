@@ -241,6 +241,45 @@ def _validate_sha256(value: str, label: str) -> str:
     return normalized
 
 
+def _existing_non_symlink_file(value: str | Path, message: str) -> Path:
+    """Return a canonical file path without hiding a symlink at the leaf."""
+    candidate = Path(value).expanduser()
+    if not candidate.is_absolute():
+        candidate = Path.cwd() / candidate
+    if candidate.is_symlink() or not candidate.is_file():
+        raise SelectionError(message)
+    return candidate.resolve()
+
+
+def _audit_final_selection_chain(
+    selection: Mapping[str, object],
+    source: Mapping[str, object],
+) -> None:
+    """Revalidate the frozen core decision that constrained a final selection."""
+    prior_path = selection.get("prior_selection")
+    prior_sha = selection.get("prior_selection_sha256")
+    prior_cells = selection.get("prior_adaptive_cells")
+    if not isinstance(prior_path, str) or not isinstance(prior_sha, str):
+        raise SelectionError("final selection lacks its frozen core-selection identity")
+    prior = audit_selection_derivation(prior_path, prior_sha, "core")
+    if prior_cells != prior.get("adaptive_cells"):
+        raise SelectionError("final/core adaptive-cell identity mismatch")
+    if prior.get("source_revision") != selection.get("source_revision"):
+        raise SelectionError("final/core selection revision mismatch")
+    coverage = source.get("coverage")
+    observed_cells = coverage.get("cells") if isinstance(coverage, Mapping) else None
+    expected_cells = set(CORE_CELLS) | {
+        str(value) for value in prior.get("adaptive_cells", [])
+    }
+    if (
+        not isinstance(observed_cells, list)
+        or set(map(str, observed_cells)) != expected_cells
+    ):
+        raise SelectionError(
+            "final analysis coverage must exactly equal core plus frozen adaptive cells"
+        )
+
+
 def audit_selection_derivation(
     selection_path: str | Path,
     expected_sha256: str,
@@ -250,21 +289,24 @@ def audit_selection_derivation(
     if expected_phase not in {"core", "final"}:
         raise SelectionError("expected selection phase must be core or final")
     expected_digest = _validate_sha256(expected_sha256, "expected selection SHA-256")
-    path = Path(selection_path).resolve()
-    if not path.is_file() or path.is_symlink() or _sha256(path) != expected_digest:
+    path = _existing_non_symlink_file(
+        selection_path,
+        "frozen selection is missing, symlinked, or hash-mismatched",
+    )
+    if _sha256(path) != expected_digest:
         raise SelectionError("frozen selection is missing, symlinked, or hash-mismatched")
     selection = _read_json_object(path, "frozen selection")
     if selection.get("phase") != expected_phase:
         raise SelectionError("frozen selection phase mismatch")
-    source_path = Path(str(selection.get("source_analysis", ""))).resolve()
+    source_path = _existing_non_symlink_file(
+        str(selection.get("source_analysis", "")),
+        "selection source analysis is missing, symlinked, or hash-mismatched",
+    )
     source_digest = str(selection.get("source_analysis_sha256", ""))
-    if (
-        not source_path.is_file()
-        or source_path.is_symlink()
-        or len(source_digest) != 64
-        or _sha256(source_path) != source_digest
-    ):
-        raise SelectionError("selection source analysis is missing, symlinked, or hash-mismatched")
+    if len(source_digest) != 64 or _sha256(source_path) != source_digest:
+        raise SelectionError(
+            "selection source analysis is missing, symlinked, or hash-mismatched"
+        )
     source = _read_json_object(source_path, "selection source analysis")
     if (
         source.get("candidate_evidence") != "stratified_population_aware"
@@ -281,6 +323,8 @@ def audit_selection_derivation(
         raise SelectionError(
             f"frozen selection differs from deterministic recomputation: {sorted(changed)}"
         )
+    if expected_phase == "final":
+        _audit_final_selection_chain(selection, source)
     return selection
 
 
@@ -292,9 +336,10 @@ def freeze_selection(
     expected_prior_selection_sha256: str | None = None,
 ) -> dict[str, object]:
     """Build a selection and bind final selection to the preceding core decision."""
-    analysis = Path(analysis_path).resolve()
-    if not analysis.is_file() or analysis.is_symlink():
-        raise SelectionError("selection analysis must be an existing non-symlink file")
+    analysis = _existing_non_symlink_file(
+        analysis_path,
+        "selection analysis must be an existing non-symlink file",
+    )
     summary = _read_json_object(analysis, "selection analysis")
     selection = select_candidates(summary, phase)
     selection["source_analysis"] = str(analysis)
@@ -310,6 +355,8 @@ def freeze_selection(
         expected_prior_selection_sha256,
         "core",
     )
+    if prior.get("source_revision") != selection.get("source_revision"):
+        raise SelectionError("final/core selection revision mismatch")
     coverage = summary.get("coverage")
     observed_cells = coverage.get("cells") if isinstance(coverage, Mapping) else None
     expected_cells = set(CORE_CELLS) | {

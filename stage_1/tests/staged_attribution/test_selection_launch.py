@@ -7,7 +7,11 @@ from pathlib import Path
 import pytest
 
 import staged_attribution.select_candidates as select_candidates_module
-from staged_attribution.select_candidates import SelectionError, freeze_selection
+from staged_attribution.select_candidates import (
+    SelectionError,
+    audit_selection_derivation,
+    freeze_selection,
+)
 from staged_attribution.selection_launch import (
     SelectionLaunchError,
     audit_frozen_launch,
@@ -206,6 +210,68 @@ def test_confirmation_launch_requires_final_chain_and_baseline_order(
             expected_config_sha256=CONFIG_SHA,
             git_identity_fn=lambda: (REVISION, False),
         )
+
+
+def test_selection_audit_rejects_symlinked_leaf_files(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    selection, selection_sha = _selection_tree(
+        tmp_path, monkeypatch, phase="core", cells=["e3_q2"]
+    )
+    selection_link = tmp_path / "selection_link.json"
+    selection_link.symlink_to(selection)
+    with pytest.raises(SelectionError, match="symlinked"):
+        audit_selection_derivation(selection_link, selection_sha, "core")
+
+    payload = json.loads(selection.read_text())
+    source = Path(payload["source_analysis"])
+    source_link = tmp_path / "source_link.json"
+    source_link.symlink_to(source)
+    payload["source_analysis"] = str(source_link)
+    selection.write_text(json.dumps(payload))
+    with pytest.raises(SelectionError, match="source analysis.*symlinked"):
+        audit_selection_derivation(selection, _sha256(selection), "core")
+
+    config_link = tmp_path / "config_link.json"
+    config_link.symlink_to(CONFIG_PATH.resolve())
+    with pytest.raises(SelectionLaunchError, match="config.*non-symlink"):
+        audit_frozen_launch(
+            config_link,
+            "controlled",
+            ["e3_q2"],
+            selection_path=selection,
+            expected_selection_sha256=_sha256(selection),
+            expected_revision=REVISION,
+            expected_config_sha256=CONFIG_SHA,
+            git_identity_fn=lambda: (REVISION, False),
+        )
+
+
+def test_final_selection_audit_revalidates_prior_core_chain(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    selection, _ = _selection_tree(
+        tmp_path,
+        monkeypatch,
+        phase="final",
+        cells=["e0_q0", "e1_q0"],
+    )
+    original = json.loads(selection.read_text())
+    audit_selection_derivation(selection, _sha256(selection), "final")
+
+    missing_prior = dict(original)
+    missing_prior.pop("prior_selection")
+    selection.write_text(json.dumps(missing_prior))
+    with pytest.raises(SelectionError, match="lacks its frozen core-selection"):
+        audit_selection_derivation(selection, _sha256(selection), "final")
+
+    wrong_cells = dict(original)
+    wrong_cells["prior_adaptive_cells"] = ["e3_q2"]
+    selection.write_text(json.dumps(wrong_cells))
+    with pytest.raises(SelectionError, match="adaptive-cell identity mismatch"):
+        audit_selection_derivation(selection, _sha256(selection), "final")
 
 
 def test_final_freeze_binds_prior_core_selection_and_exact_adaptive_coverage(
