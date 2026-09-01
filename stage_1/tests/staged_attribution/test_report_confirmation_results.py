@@ -21,6 +21,7 @@ from staged_attribution.report_confirmation_results import (
     ANALYSIS_SCHEMA_VERSION,
     CONFIRMATION_EVIDENCE,
     _confirmation_gate,
+    _final_conclusion,
     audit_confirmation_selection,
     collect_confirmation_runs,
     summarize_confirmation_results,
@@ -471,6 +472,14 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
         for row in summary["confirmation_gate"]["e1_q0"]["city_specific_claims"].values()
     )
     assert not summary["confirmation_gate"]["e1_q0"]["significant_degradation"]
+    assert summary["final_conclusion"]["conclusion_code"] == "cross_city_support"
+    assert summary["final_conclusion"]["cross_city_supported_cells"] == ["e1_q0"]
+    assert summary["final_conclusion"]["scope"]["poi_included"] is False
+    assert (
+        summary["final_conclusion"]["registered_attribution"]["controlled_e_q"]
+        ["descriptive_sensitivity_used_for_headline"]
+        is False
+    )
     assert len(summary["population_identity_by_city"]) == 2
 
     json_path, markdown_path = write_confirmation_report(
@@ -480,6 +489,8 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
     assert "claim_supported=true" in markdown_path.read_text()
     assert "Frozen controlled E/Q attribution rows: 280" in markdown_path.read_text()
     assert "Frozen controlled cross-seed G-attribution rows: 800" in markdown_path.read_text()
+    assert "Registered final GPS/Road/Grid conclusion" in markdown_path.read_text()
+    assert "Conclusion code: `cross_city_support`" in markdown_path.read_text()
     assert _sha256(config_path) in markdown_path.read_text()
 
     original_json = json_path.read_bytes()
@@ -544,6 +555,136 @@ def test_confirmation_gate_rejects_unconditional_claim_on_opposed_city_direction
     ]
     assert gate["city_specific_claims"]["porto"]["claim_supported"] is True
     assert gate["city_specific_claims"]["chengdu"]["claim_supported"] is False
+
+
+def test_final_conclusion_is_gate_only_and_keeps_descriptive_rows_out_of_headline() -> None:
+    summary = {
+        "coverage": {"cities": ["chengdu", "porto"], "seeds": [42, 314159]},
+        "confirmation_gate": {
+            "e1_q0": {
+                "claim_supported": False,
+                "significant_improvement": [
+                    {"city": "porto", "metric": "gps_travel_jsd"}
+                ],
+                "significant_degradation": [],
+                "direction_consistent_improvement": [],
+                "opposed_city_directions": [
+                    {
+                        "metric": "gps_travel_jsd",
+                        "city_estimates": {"porto": -0.2, "chengdu": 0.1},
+                    }
+                ],
+                "city_specific_claims": {
+                    "chengdu": {"claim_supported": False},
+                    "porto": {"claim_supported": True},
+                },
+            },
+            "e2_q0": {
+                "claim_supported": False,
+                "significant_improvement": [],
+                "significant_degradation": [],
+                "direction_consistent_improvement": [],
+                "opposed_city_directions": [],
+                "city_specific_claims": {
+                    "chengdu": {"claim_supported": False},
+                    "porto": {"claim_supported": False},
+                },
+            },
+        },
+        "controlled_staged_attribution": {
+            "available": True,
+            "rows": [
+                {
+                    "family": "E",
+                    "contrast": "e1_q0_minus_e0_q0",
+                    "city": "porto",
+                    "metric": "gps_travel_jsd",
+                    "group": "GPS",
+                    "inferential_role": "primary",
+                    "estimate": -0.2,
+                    "ci_low": -0.3,
+                    "ci_high": -0.1,
+                },
+                {
+                    "family": "E",
+                    "contrast": "all_minus_best_pair_for_minimize",
+                    "city": "porto",
+                    "metric": "gps_travel_jsd",
+                    "group": "GPS",
+                    "inferential_role": "descriptive_sensitivity",
+                    "estimate": -0.4,
+                    "ci_low": -0.5,
+                    "ci_high": -0.3,
+                },
+            ],
+        },
+        "controlled_g_attribution": {
+            "available": True,
+            "rows": [
+                {
+                    "cell_id": "e1_q0",
+                    "component": "sid",
+                    "city": "porto",
+                    "metric": "gps_travel_jsd",
+                    "group": "GPS",
+                    "inferential_role": "primary",
+                    "estimate": 0.1,
+                    "ci_low": 0.05,
+                    "ci_high": 0.2,
+                }
+            ],
+        },
+        "g_attribution": {
+            "available": True,
+            "rows": [
+                {
+                    "cell_id": "e1_q0",
+                    "component": "sid",
+                    "city": "porto",
+                    "metric": "gps_travel_jsd",
+                    "group": "GPS",
+                    "inferential_role": "primary",
+                    "estimate": -0.1,
+                    "ci_low": -0.2,
+                    "ci_high": 0.01,
+                }
+            ],
+        },
+    }
+
+    conclusion = _final_conclusion(summary)
+
+    assert conclusion["conclusion_code"] == "city_specific_support_only"
+    assert conclusion["cross_city_supported_cells"] == []
+    assert conclusion["city_specific_supported_cells"] == [
+        {"cell_id": "e1_q0", "cities": ["porto"]}
+    ]
+    assert conclusion["unsupported_cells"] == ["e2_q0"]
+    e_q = conclusion["registered_attribution"]["controlled_e_q"]
+    assert e_q["primary_counts"] == {
+        "improvement": 1,
+        "degradation": 0,
+        "inconclusive": 0,
+    }
+    assert e_q["descriptive_sensitivity_counts"] == {
+        "improvement": 1,
+        "degradation": 0,
+        "inconclusive": 0,
+    }
+    assert len(e_q["primary_ci_excludes_zero"]) == 1
+    assert e_q["descriptive_sensitivity_used_for_headline"] is False
+    assert conclusion["decision_source"] == "confirmation_gate_only"
+
+    summary["confirmation_gate"]["e1_q0"]["city_specific_claims"]["porto"][
+        "claim_supported"
+    ] = False
+    no_support = _final_conclusion(summary)
+    assert no_support["conclusion_code"] == "no_confirmed_superiority"
+    assert no_support["unsupported_cells"] == ["e1_q0", "e2_q0"]
+
+    summary["g_attribution"]["rows"][0]["group"] = "POI"
+    with pytest.raises(ResultAuditError, match="out-of-scope confirmation G"):
+        _final_conclusion(summary)
 
 
 def test_confirmation_collection_rejects_nested_contribution_tamper(

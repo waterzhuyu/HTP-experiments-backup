@@ -28,10 +28,11 @@ from .selection_launch import (
 from .select_candidates import SelectionError, audit_g_attribution
 
 
-ANALYSIS_SCHEMA_VERSION = 6
+ANALYSIS_SCHEMA_VERSION = 7
 CONFIRMATION_EVIDENCE = "confirmation_population_aware"
 SELECTION_EVIDENCE = "stratified_population_aware"
 ALLOWED_CLAIM_GROUPS = frozenset({"GPS", "Road", "Grid"})
+REGISTERED_ATTRIBUTION_GROUPS = frozenset(metadata[1] for metadata in METRICS.values())
 
 
 @dataclass(frozen=True)
@@ -580,6 +581,210 @@ def _confirmation_gate(summary: Mapping[str, object]) -> dict[str, dict[str, obj
     return result
 
 
+def _registered_attribution_summary(
+    block: object,
+    *,
+    label: str,
+    identity_fields: Sequence[str],
+) -> dict[str, object]:
+    if not isinstance(block, Mapping) or block.get("available") is not True:
+        raise ResultAuditError(f"final conclusion lacks available {label}")
+    rows = block.get("rows")
+    if not isinstance(rows, list) or not rows:
+        raise ResultAuditError(f"final conclusion lacks {label} rows")
+    primary_counts = {name: 0 for name in ("improvement", "degradation", "inconclusive")}
+    descriptive_counts = {
+        name: 0 for name in ("improvement", "degradation", "inconclusive")
+    }
+    primary_decisive: list[dict[str, object]] = []
+    descriptive_decisive: list[dict[str, object]] = []
+    for raw_row in rows:
+        if not isinstance(raw_row, Mapping):
+            raise ResultAuditError(f"final conclusion found malformed {label} row")
+        group = str(raw_row.get("group", ""))
+        if group not in REGISTERED_ATTRIBUTION_GROUPS:
+            raise ResultAuditError(
+                f"final conclusion found out-of-scope {label} group: {group}"
+            )
+        try:
+            estimate = float(raw_row["estimate"])
+            ci_low = float(raw_row["ci_low"])
+            ci_high = float(raw_row["ci_high"])
+        except (KeyError, TypeError, ValueError) as error:
+            raise ResultAuditError(
+                f"final conclusion found non-numeric {label} row"
+            ) from error
+        if not all(math.isfinite(value) for value in (estimate, ci_low, ci_high)):
+            raise ResultAuditError(f"final conclusion found non-finite {label} row")
+        if ci_low > ci_high:
+            raise ResultAuditError(f"final conclusion found inverted {label} interval")
+        outcome = (
+            "improvement"
+            if ci_high < 0
+            else "degradation"
+            if ci_low > 0
+            else "inconclusive"
+        )
+        role = str(raw_row.get("inferential_role", ""))
+        if role not in {"primary", "descriptive_sensitivity"}:
+            raise ResultAuditError(
+                f"final conclusion found unregistered {label} role: {role}"
+            )
+        reference = {
+            field: raw_row[field]
+            for field in identity_fields
+            if field in raw_row
+        }
+        if len(reference) != len(identity_fields):
+            raise ResultAuditError(f"final conclusion found unidentified {label} row")
+        reference.update(
+            {
+                "group": group,
+                "estimate": estimate,
+                "ci_low": ci_low,
+                "ci_high": ci_high,
+                "outcome": outcome,
+            }
+        )
+        if role == "primary":
+            primary_counts[outcome] += 1
+            if outcome != "inconclusive":
+                primary_decisive.append(reference)
+        else:
+            descriptive_counts[outcome] += 1
+            if outcome != "inconclusive":
+                descriptive_decisive.append(reference)
+    def stable_key(row: Mapping[str, object]) -> tuple[str, ...]:
+        return tuple(str(row[field]) for field in identity_fields)
+
+    primary_decisive.sort(key=stable_key)
+    descriptive_decisive.sort(key=stable_key)
+    return {
+        "rows": len(rows),
+        "primary_counts": primary_counts,
+        "primary_ci_excludes_zero": primary_decisive,
+        "descriptive_sensitivity_counts": descriptive_counts,
+        "descriptive_sensitivity_ci_excludes_zero": descriptive_decisive,
+        "descriptive_sensitivity_used_for_headline": False,
+    }
+
+
+def _final_conclusion(summary: Mapping[str, object]) -> dict[str, object]:
+    coverage = summary.get("coverage")
+    gates = summary.get("confirmation_gate")
+    if not isinstance(coverage, Mapping) or not isinstance(gates, Mapping) or not gates:
+        raise ResultAuditError("final conclusion requires coverage and confirmation gates")
+    cities = coverage.get("cities")
+    seeds = coverage.get("seeds")
+    if not isinstance(cities, list) or not cities or not isinstance(seeds, list) or not seeds:
+        raise ResultAuditError("final conclusion requires registered cities and seeds")
+
+    candidate_outcomes: dict[str, dict[str, object]] = {}
+    cross_city_supported: list[str] = []
+    city_specific_supported: list[dict[str, object]] = []
+    unsupported: list[str] = []
+    for raw_cell, raw_gate in sorted(gates.items(), key=lambda item: str(item[0])):
+        cell = str(raw_cell)
+        if not isinstance(raw_gate, Mapping):
+            raise ResultAuditError(f"final conclusion found malformed gate for {cell}")
+        raw_city_claims = raw_gate.get("city_specific_claims")
+        if not isinstance(raw_city_claims, Mapping):
+            raise ResultAuditError(f"final conclusion lacks city gates for {cell}")
+        supported_cities = sorted(
+            str(city)
+            for city, claim in raw_city_claims.items()
+            if isinstance(claim, Mapping) and claim.get("claim_supported") is True
+        )
+        if raw_gate.get("claim_supported") is True:
+            classification = "cross_city_supported"
+            cross_city_supported.append(cell)
+        elif supported_cities:
+            classification = "city_specific_only"
+            city_specific_supported.append(
+                {"cell_id": cell, "cities": supported_cities}
+            )
+        else:
+            classification = "not_supported"
+            unsupported.append(cell)
+        candidate_outcomes[cell] = {
+            "classification": classification,
+            "supported_cities": supported_cities,
+            "significant_improvement": list(raw_gate.get("significant_improvement", [])),
+            "significant_degradation": list(raw_gate.get("significant_degradation", [])),
+            "direction_consistent_improvement": list(
+                raw_gate.get("direction_consistent_improvement", [])
+            ),
+            "opposed_city_directions": list(raw_gate.get("opposed_city_directions", [])),
+        }
+
+    if cross_city_supported:
+        conclusion_code = "cross_city_support"
+        statement = (
+            "Registered confirmation supports cross-city superiority for: "
+            + ", ".join(cross_city_supported)
+            + "."
+        )
+    elif city_specific_supported:
+        conclusion_code = "city_specific_support_only"
+        rendered = ", ".join(
+            f"{row['cell_id']}[{','.join(row['cities'])}]"
+            for row in city_specific_supported
+        )
+        statement = (
+            "Registered confirmation does not support unconditional cross-city superiority; "
+            f"city-specific support remains for: {rendered}."
+        )
+    else:
+        conclusion_code = "no_confirmed_superiority"
+        statement = "Registered confirmation supports no candidate superiority over the baseline."
+
+    return {
+        "available": True,
+        "scope": {
+            "modalities": ["GPS", "Road", "Grid"],
+            "poi_included": False,
+            "cities": list(cities),
+            "confirmation_seeds": list(seeds),
+        },
+        "decision_source": "confirmation_gate_only",
+        "conclusion_code": conclusion_code,
+        "statement": statement,
+        "cross_city_supported_cells": cross_city_supported,
+        "city_specific_supported_cells": city_specific_supported,
+        "unsupported_cells": unsupported,
+        "candidate_outcomes": candidate_outcomes,
+        "registered_attribution": {
+            "controlled_e_q": _registered_attribution_summary(
+                summary.get("controlled_staged_attribution"),
+                label="controlled E/Q attribution",
+                identity_fields=("family", "contrast", "city", "metric"),
+            ),
+            "controlled_g": _registered_attribution_summary(
+                summary.get("controlled_g_attribution"),
+                label="controlled G attribution",
+                identity_fields=("cell_id", "component", "city", "metric"),
+            ),
+            "confirmation_g": _registered_attribution_summary(
+                summary.get("g_attribution"),
+                label="confirmation G attribution",
+                identity_fields=("cell_id", "component", "city", "metric"),
+            ),
+        },
+        "claim_boundary": (
+            "Candidate superiority is decided only by the frozen confirmation gate. "
+            "Controlled E/Q and controlled/confirmation G rows explain registered attribution "
+            "but cannot promote a rejected candidate; descriptive sensitivity is never headline evidence."
+        ),
+        "limitations": [
+            "Evidence is limited to the registered Porto and Chengdu populations and seeds.",
+            "POI is excluded; no POI conclusion is supported.",
+            "Causal language is limited to the registered paired E/Q and G contrasts.",
+            "Descriptive nonlinear E sensitivity is not primary or selection evidence.",
+            "Generalization beyond the registered data, models, and evaluation populations is untested.",
+        ],
+    }
+
+
 def summarize_confirmation_results(
     runs: Sequence[ConfirmationRunEvidence],
     selection_audit: Mapping[str, object],
@@ -683,6 +888,7 @@ def summarize_confirmation_results(
         "confirmation_gate.claim_supported is true. Opposed city directions forbid that claim; "
         "city-specific claims use city_specific_claims, and all negative outcomes remain evidence."
     )
+    summary["final_conclusion"] = _final_conclusion(summary)
     return summary
 
 
@@ -739,6 +945,26 @@ def write_confirmation_report(
             )
     lines.extend(
         [
+            "",
+            "## Registered final GPS/Road/Grid conclusion",
+            "",
+            f"- Conclusion code: `{summary['final_conclusion']['conclusion_code']}`",
+            f"- Statement: {summary['final_conclusion']['statement']}",
+            "- Scope: GPS, Road, Grid; POI excluded",
+            f"- Cross-city supported cells: "
+            f"{', '.join(summary['final_conclusion']['cross_city_supported_cells']) or 'none'}",
+            f"- City-specific-only cells: "
+            f"{len(summary['final_conclusion']['city_specific_supported_cells'])}",
+            f"- Unsupported cells: "
+            f"{', '.join(summary['final_conclusion']['unsupported_cells']) or 'none'}",
+            f"- Controlled E/Q primary decisive rows: "
+            f"{len(summary['final_conclusion']['registered_attribution']['controlled_e_q']['primary_ci_excludes_zero'])}",
+            f"- Controlled G primary decisive rows: "
+            f"{len(summary['final_conclusion']['registered_attribution']['controlled_g']['primary_ci_excludes_zero'])}",
+            f"- Confirmation G primary decisive rows: "
+            f"{len(summary['final_conclusion']['registered_attribution']['confirmation_g']['primary_ci_excludes_zero'])}",
+            "- Descriptive nonlinear E sensitivity used for headline: false",
+            "",
             "",
             "Trajectories are resampled within seed and seed effects are averaged equally.",
             "Primary G attribution is cross-seed in both controlled and confirmation evidence.",
