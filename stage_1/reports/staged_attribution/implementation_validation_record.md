@@ -815,3 +815,43 @@ Transformer nested-tensor 提示。新增测试覆盖完整 core 产生每城市
 安全 GPU 门禁；没有启动新队列、创建真实 corrected/selection/confirmation artifact，也没有修改正式
 worktree、watcher、锁、GPU 进程或任何既有 attempt。后续 source audit、corrected/final analysis 与
 confirmation 必须使用包含上述两个提交及本记录的同一 clean revision。
+
+## 19. 跨 seed 的 G 主归因与最终证据绑定
+
+源码提交 `a933136`（`feat(experiment): add stratified G attribution`）修复了 G 阶段仍停留在逐运行
+bootstrap 的最后一个统计边界。此前 `g_metric_attribution` 对每个 city×seed×cell 单独生成区间；这些行
+可以追溯单次运行，却不能证明跨 seed 的 SID、sampling 或 interaction 效应，也没有被 final selection
+逐字段审计。若直接浏览或平均这些区间，会把 seed 层级与轨迹层级混淆，并可能让最终报告继承完整
+E/Q 证据、却只携带不完整的 G 主证据。
+
+修复后 corrected analysis schema 升为 5，confirmation schema 升为 6，并新增正式 `g_attribution`：
+
+1. 对每个 city×cell×seed，G00/G10/G01/G11 contribution 与 penalty 必须共享逐项相同的固定轨迹 ID；
+2. 每个 seed 使用由 `SeedSequence([bootstrap_seed, training_seed])` 决定的一组 multinomial 轨迹权重，
+   四个 G 变体和十个指标共用该权重，随后按 seed 等权平均；
+3. 主组件固定为 SID Shapley、sampling Shapley、二阶 interaction 与 G11−G00 total，公式保持第 7 节
+   注册定义；
+4. 九个 failure-retaining population regret 指标与 `population_mean_penalized_error` 均生成每城市
+   estimate、95% CI、方向概率、seed strata/population 与 `inferential_role=primary`；
+5. corrected core 的完整主表为 2 cities×10 cells×10 metrics×4 components=800 rows，并另存
+   cell×component×metric 的城市方向表；原逐 run `g_metric_attribution` 仅保留作追溯；
+6. `select_candidates` 要求 schema 5、四个注册 G variant/component、完整 city×cell×metric×component
+   笛卡尔覆盖、正确群组/方向/方法和有限数值；缺行、重复、方法或身份篡改均 fail closed；
+7. final-selection source audit 同时重验完整 E/Q 与 G。confirmation 在 full population 上独立生成已选
+   cells 的跨 seed `g_attribution`，并从哈希锁定的 source 保存 800-row `controlled_g_attribution`；任一
+   controlled G 行缺失时拒绝生成最终报告。
+
+验证证据：旧报告/corrected/confirmation 联合回归在新增负向测试前为 `22 passed in 11.85s`；新增
+final-source G 缺行拒绝测试后 confirmation 聚焦为 `10 passed in 10.98s`。锁定环境完整回归在代码提交
+前为 `304 passed, 23 warnings in 22.77s`；新增单个负向测试后的最终完整回归为
+`305 passed, 23 warnings in 23.45s`。warnings 仍为既有 Transformer nested-tensor 提示。测试还验证：
+两 seed 中仅一 seed 退化时 SID 等权点估计为 0.25、sampling 为 0；partial E/Q core 仍 fail closed；
+完整 core 产生每城市 400 个 G rows；删除任一 G row 时 core selection 和 confirmation source audit
+都拒绝继续。controlled `--dry-run` 机器核对为 `60 60`（总行数/唯一 run key），candidate config
+SHA-256 仍为 `b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb`。
+
+本节没有修改 E/Q/G cell、训练数据、Option B 64,000×2 Stage2 population、seed、microbatch、
+gradient accumulation、loss、评估 population、GPU 门禁或正式配置；没有启动、重启、停止或修改任何
+正式/后续队列，也没有创建、移动、覆盖或删除任何 attempt/旧产物。正式 watcher 继续在冻结 revision
+`6ac87be094c9c1ce4783f10291a339f04623449b` 上独立运行；后续 corrected/final analysis、selection 与
+confirmation 必须使用包含 `a933136` 及本记录的同一 clean 候选 revision。

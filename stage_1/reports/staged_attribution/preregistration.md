@@ -212,6 +212,17 @@ primary estimands 为 Q1−Q0、Q2−Q1、Q3−Q2、Q3−Q0。每个 estimand �
 final selection 的哈希源分析必须保留这份完整 E/Q 证据；confirmation 通常只含 baseline 与已选候选，
 因此不得声称可独立重建 E/Q，它只从冻结源继承 controlled E/Q 证据并独立复验候选相对 baseline。
 
+同一 corrected analysis 还必须输出机器可审计的跨 seed `g_attribution`，逐 city×cell 覆盖 G00/G10/G01/G11
+四路完全相同的固定轨迹 ID。每个 seed 内四路 G 必须共用同一组 trajectory-bootstrap 权重，再对 seed
+等权平均；不得把逐 seed 的 `g_metric_attribution` 行直接合并或当作跨 seed 主证据。primary G estimands
+为第 7 节注册的 SID Shapley、sampling Shapley、二阶 interaction 与 G11−G00 total，并覆盖全部十个
+注册指标（含 validity regret 与失败保留的 population mean penalized error）。每个 city×cell×metric×component
+都保存 estimate、95% CI、bootstrap 方向概率、seed strata/population 与城市方向异质性。selection 只接受
+完整笛卡尔覆盖、注册方法/群组/方向/组件身份一致的 schema 5+ 证据，任一行缺失或篡改必须 fail closed。
+final selection 的哈希源分析必须同时保留 controlled G 主证据；confirmation 在 full population 上独立重算
+已选 cells 的跨 seed G，同时将哈希源的完整 controlled G 保存为 `controlled_g_attribution`。逐 run G 行仅
+作追溯，不能代替上述两套主证据。
+
 选择器分别冻结最佳 single（E0/E1/E2）、pair（E3/E4/E5）和 Q（E6/Q0..Q3）。若最佳 Q 不是 Q0，则生成 `best_single×best_Q` 与 `best_pair×best_Q` adaptive cell；不得人工替换。adaptive controlled 完成后用 `--phase final` 重新审计，confirmation 清单必须以 `e0_q0` 开头并只包含最终合格非支配候选。城市方向相反时保留 heterogeneity，不能用两城合并成六个独立重复来掩盖。
 
 城市方向规则按每个 candidate×metric 的两城 paired effect 点估计冻结：regret 差小于零为改善、大于
