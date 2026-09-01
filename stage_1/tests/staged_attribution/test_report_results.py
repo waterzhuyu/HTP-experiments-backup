@@ -14,6 +14,7 @@ from staged_attribution.report_results import (
     collect_core_runs,
     read_stage_artifact,
     summarize_stage4,
+    write_report,
 )
 from staged_attribution.config import ExperimentConfig
 from staged_attribution.run_experiment import build_jobs
@@ -284,6 +285,36 @@ def test_candidate_selection_is_immutable_and_idempotent(tmp_path: Path) -> None
     with pytest.raises(ImmutableArtifactError, match="refusing to replace"):
         write_selection(changed, output)
     assert output.read_bytes() == original
+
+
+def test_core_analysis_report_is_immutable_and_idempotent(tmp_path: Path) -> None:
+    summary = {
+        "revision": "a" * 40,
+        "coverage": {
+            "runs": 1,
+            "cities": ["porto"],
+            "seeds": [42],
+            "cells": ["e0_q0"],
+        },
+        "metric_rows": [],
+        "g_shapley": [],
+        "g_trajectory_bootstrap": [],
+        "e_q_contrasts": [],
+        "paired_e_q_penalized_error": [],
+        "city_heterogeneity": [],
+    }
+    output = tmp_path / "core_report"
+    json_path, markdown_path = write_report(summary, output)
+    original_json = json_path.read_bytes()
+    original_markdown = markdown_path.read_bytes()
+    assert write_report(summary, output) == (json_path, markdown_path)
+
+    changed = dict(summary)
+    changed["revision"] = "b" * 40
+    with pytest.raises(ImmutableArtifactError, match="refusing to replace"):
+        write_report(changed, output)
+    assert json_path.read_bytes() == original_json
+    assert markdown_path.read_bytes() == original_markdown
 
 
 def test_summary_rejects_inconsistent_g_population() -> None:

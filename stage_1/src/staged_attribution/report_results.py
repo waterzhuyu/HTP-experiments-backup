@@ -12,6 +12,7 @@ from typing import Mapping, Sequence
 from .analyze import city_heterogeneity, e_contrasts, q_incremental_contrasts
 from .config import ExperimentConfig
 from .evaluate_stage1 import validity_gate
+from .immutable_artifacts import canonical_json_bytes, write_immutable_artifact_set
 from .run_experiment import build_jobs, completed_attempt
 from .statistics import aggregate_seeds, g_shapley, paired_bootstrap
 
@@ -373,15 +374,15 @@ def render_markdown(summary: Mapping[str, object]) -> str:
 
 def write_report(summary: Mapping[str, object], output_dir: str | Path) -> tuple[Path, Path]:
     output = Path(output_dir)
-    output.mkdir(parents=True, exist_ok=True)
     json_path = output / "analysis.json"
     markdown_path = output / "analysis.md"
-    json_tmp = json_path.with_suffix(".json.tmp")
-    md_tmp = markdown_path.with_suffix(".md.tmp")
-    json_tmp.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    md_tmp.write_text(render_markdown(summary), encoding="utf-8")
-    json_tmp.replace(json_path)
-    md_tmp.replace(markdown_path)
+    write_immutable_artifact_set(
+        {
+            json_path: canonical_json_bytes(summary),
+            markdown_path: render_markdown(summary).encode("utf-8"),
+        },
+        label="core analysis",
+    )
     return json_path, markdown_path
 
 
