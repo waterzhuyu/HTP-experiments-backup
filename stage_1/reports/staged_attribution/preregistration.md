@@ -2,8 +2,10 @@
 
 - 实验 ID：`gps_road_grid_staged_attribution_v1_20260826`
 - 预注册日期：2026-08-26
-- 状态：frozen，尚无 controlled/confirmation 结果
-- 代码分支：`exp/staged-attribution-gps-road-grid`
+- 状态：frozen；Option B controlled 正在运行，尚无完整 controlled/confirmation 结果
+- 正式运行分支：`exp/staged-attribution-gps-road-grid-integrated`
+- 正式运行 revision：`6ac87be094c9c1ce4783f10291a339f04623449b`
+- 校正实现分支：`fix/staged-attribution-compact-adapter`
 - 设计依据：`docs/plans/2026-08-26-staged-attribution-gps-road-grid-design.md`
 - 实现计划：`docs/plans/2026-08-26-staged-attribution-gps-road-grid-implementation.md`
 - 上游 HTP revision：`1294275d2bed5f9de86269ab285ff5e23828b947`
@@ -70,8 +72,14 @@ Q 固定 E6，并逐项累加：
 | budget | Stage1 train/test | Stage1 | Stage2 | Stage3/4 |
 |---|---|---|---|---|
 | smoke | 32/16，ID hash 固定 | 1 epoch，batch 8 | 1 epoch，最多 2 step | 固定 8 test IDs；仅接口验证 |
-| controlled | full/full | 20 epochs，batch 512 | 2 epochs，full train | 固定 1,024 test IDs；两城×三 seed |
-| confirmation | full/full | 100 epochs，batch 512 | 2 epochs，full train | full test；baseline/非支配候选/最终候选 |
+| controlled | full/full | 20 epochs，batch 512 | Option B：2 epochs，每城固定 64,000 train IDs，8×2 | 固定 1,024 test IDs；两城×三 seed |
+| confirmation | full/full | 100 epochs，batch 512 | 与 controlled 相同的 Option B 64k/城、8×2 | full test；baseline/非支配候选/最终候选 |
+
+原冻结口径为 Stage2 full train、microbatch 16×1；正式结果出现前的同型 24 GiB OOM 触发资源
+协议审计。用户于 2026-08-30 正式选择 Option B；两城的固定 64,000-ID 清单、subset seed
+`20260826`、microbatch 8、gradient accumulation 2 对所有 controlled、adaptive 和 confirmation
+cell 保持一致。该变化必须作为 pre-result protocol correction 披露，最终结论限定在该 Stage2
+训练预算下；详见 `stage2_resource_recovery_protocol.md`。
 
 seeds：`42, 314159, 20260819`。smoke 只跑 Porto/42；不得形成科学结论。
 
@@ -201,3 +209,37 @@ Stage1 gate 在汇总时用同 city/seed G00 `population_mean_penalized_error` �
 confirmation 完成后必须由 `report_confirmation_results --selection <final_selection.json> --cells ...` 复核：final selection 的来源路径/SHA/revision、单一 clean 40-char run revision、Option B 每城固定 64,000 条 Stage2 train manifest 与 seed、full 且逐轨迹一致的 Stage3/Stage4 test population、四路 G contribution manifest 及其嵌套 artifact hash。最终 GPS/Road/Grid 优于 baseline 的声明沿用 seed-stratified trajectory paired bootstrap 门禁，且仅当 Stage1 gate 全通过、无任一 GPS/Road/Grid/validity 显著劣化并至少有一个 GPS/Road/Grid 显著改善时允许；否则必须报告为不支持或负结果。
 
 任何没有 Stage2 adapter、generation、四路 decode、Stage4 JSON 的 cell 都是 incomplete；不得用 Stage1 排名或现有独立 tokenizer pilot 补齐。最终优于 baseline 的声称只允许来自 confirmation。smoke、controlled 与 confirmation 结果分别提交，负结果与失败不得删除。
+
+## 12. Option B 正式状态与 corrected reevaluation 人口冻结
+
+正式 watcher 锁定：
+
+- worktree `/workspace/guozuyu/HTP-staged-attribution-integrated`；
+- revision `6ac87be094c9c1ce4783f10291a339f04623449b`；
+- config SHA-256 `39a33c9bef9cc06f1bc2cdbbf1c6010ea76dcb455a7855b330905868a1c7604a`；
+- Stage2 subset index SHA-256
+  `8673fd0992d5f41af0ba0d810db6770edc8e4f1624d6a76cb984480fa5524bbd`；
+- Porto/Chengdu manifest SHA-256 分别为
+  `026720480bfed13f9f98aa4f34611a3a0ce06b98af03e712ca60ef3f13153942` 与
+  `ba7d822c6ec0dbfe46f88d5653b127017f62918b92c81090993a2e8251acf8e4`。
+
+controlled corrected reevaluation 的每城市×seed 1,024-ID test population 已在任何完整
+controlled 结果出现前冻结。选择算法为 `lens3_hamilton_sha256_v1`：按三次 encoder
+downsampling 的长度奇偶形成八个 lens stratum，按总体比例使用 Hamilton quota，再以
+`SHA256("{seed}:{stratum}:{traj_id}")` 排名。选择只依赖 city、seed 和 frozen aligned test
+population，明确 `selection_depends_on_cell=false`。
+
+正式清单目录：
+
+`/home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/fixed_stratified_reevaluation_subsets_a2991e1`
+
+index SHA-256 为 `58a130de8f7672ad0de175050b976af5db5a8f7aa2b8e1432cae32c3e771e849`；
+生成 revision 为 clean `a2991e14d509a96830d21c5cfa8f2ae9d4fa1967`，config SHA-256 为
+`b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb`。六份清单幂等重放
+hash 不变，并全部通过正式 reevaluation loader。批处理互斥由 revision
+`5d7cbc7efeb2142472733356694b48c32ba8db18` 提供，锁由子进程继承，防止父进程异常退出后
+重复启动同一 reevaluation root。
+
+完整实现、方法差异、逐清单 ID/file hash、真实数据顺序兼容修正、测试命令与下一步记录在
+`implementation_validation_record.md`。上述均是 pre-result 证据，不构成 GPS/Road/Grid
+效果结论，也不授权热替换或干预当前正式 watcher。
