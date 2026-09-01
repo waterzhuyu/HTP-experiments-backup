@@ -179,6 +179,53 @@ def _event(event: str, **fields: object) -> None:
     print(json.dumps(payload, sort_keys=True), flush=True)
 
 
+def _attempt_directories(job_root: Path) -> list[Path]:
+    if not job_root.is_dir():
+        return []
+    numbered = []
+    for path in job_root.iterdir():
+        if not path.is_dir() or not path.name.startswith("attempt_"):
+            continue
+        suffix = path.name.removeprefix("attempt_")
+        if suffix.isdigit():
+            numbered.append((int(suffix), path))
+    return [path for _, path in sorted(numbered)]
+
+
+def _pending_attempt_snapshot(attempt: Path) -> tuple[str, dict[str, object]]:
+    manifest_path = attempt / "run_manifest.json"
+    terminal_marker = attempt / "stage4" / "complete.json"
+    snapshot: dict[str, object] = {"attempt": str(attempt)}
+    if not manifest_path.is_file():
+        snapshot["reason"] = "missing_run_manifest"
+        return "incomplete_attempts", snapshot
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        snapshot["reason"] = "unreadable_run_manifest"
+        return "incomplete_attempts", snapshot
+    if not isinstance(manifest, dict):
+        snapshot["reason"] = "non_object_run_manifest"
+        return "incomplete_attempts", snapshot
+
+    status = manifest.get("status")
+    snapshot["manifest_status"] = status
+    if terminal_marker.is_file():
+        snapshot["reason"] = "terminal_marker_without_completed_manifest"
+        return "incomplete_attempts", snapshot
+    if status == "running":
+        return "running_manifests", snapshot
+    if status == "failed":
+        if manifest.get("failure") is not None:
+            snapshot["failure"] = manifest["failure"]
+        return "failed_manifests", snapshot
+    if status == "completed":
+        snapshot["reason"] = "completed_manifest_without_terminal_marker"
+    else:
+        snapshot["reason"] = "unknown_manifest_status"
+    return "incomplete_attempts", snapshot
+
+
 def inspect_queue(
     config: ExperimentConfig,
     contract: LaunchContract,
@@ -187,13 +234,40 @@ def inspect_queue(
     jobs = build_jobs(config, contract.budget, cell_ids)
     completed = []
     pending = []
+    running_manifests = []
+    failed_manifests = []
+    incomplete_attempts = []
+    uncreated = []
+    attempt_count = 0
     for job in jobs:
-        attempt = completed_attempt(contract.artifact_root / job.run_key)
+        job_root = contract.artifact_root / job.run_key
+        attempts = _attempt_directories(job_root)
+        attempt_count += len(attempts)
+        attempt = completed_attempt(job_root)
         if attempt is None:
             pending.append(job.run_key)
+            if not attempts:
+                uncreated.append(job.run_key)
+                continue
+            category, snapshot = _pending_attempt_snapshot(attempts[-1])
+            snapshot["run_key"] = job.run_key
+            if category == "running_manifests":
+                running_manifests.append(snapshot)
+            elif category == "failed_manifests":
+                failed_manifests.append(snapshot)
+            else:
+                incomplete_attempts.append(snapshot)
         else:
             completed.append({"run_key": job.run_key, "attempt": str(attempt)})
-    return {"completed": completed, "pending": pending}
+    return {
+        "completed": completed,
+        "pending": pending,
+        "running_manifests": running_manifests,
+        "failed_manifests": failed_manifests,
+        "incomplete_attempts": incomplete_attempts,
+        "uncreated": uncreated,
+        "attempt_count": attempt_count,
+    }
 
 
 def watch_and_launch(
@@ -218,6 +292,11 @@ def watch_and_launch(
             "gpu_rows": rows,
             "completed_count": len(queue["completed"]),
             "pending_count": len(queue["pending"]),
+            "running_manifest_count": len(queue["running_manifests"]),
+            "failed_manifest_count": len(queue["failed_manifests"]),
+            "incomplete_attempt_count": len(queue["incomplete_attempts"]),
+            "uncreated_count": len(queue["uncreated"]),
+            "attempt_count": queue["attempt_count"],
         }
 
     lock_path = contract.artifact_root / "provenance" / "gpu_watch_and_launch.lock"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import replace
 import json
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from staged_attribution.watch_gpu_and_launch import (
     LaunchContract,
     _validate_resource_option,
     main,
+    inspect_queue,
     single_instance_lock,
     validate_launch_contract,
     watch_and_launch,
@@ -164,11 +166,77 @@ def test_single_instance_lock_rejects_duplicate_holder(tmp_path: Path) -> None:
                 pass
 
 
+def test_inspect_queue_classifies_manifest_evidence_without_process_claims(
+    tmp_path: Path,
+) -> None:
+    from staged_attribution.config import ExperimentConfig
+
+    config_path = _config_for_option(tmp_path, "A")
+    config = ExperimentConfig.load(config_path)
+    artifact_root = tmp_path / "artifacts"
+    contract = replace(
+        _contract(tmp_path, config_path, "A"),
+        artifact_root=artifact_root,
+        budget="smoke",
+    )
+    cells = ["e0_q0", "e1_q0", "e2_q0", "e3_q0", "e4_q0"]
+
+    completed_root = artifact_root / "smoke/porto/seed_42/e0_q0"
+    failed_old = completed_root / "attempt_001"
+    failed_old.mkdir(parents=True)
+    (failed_old / "run_manifest.json").write_text(
+        json.dumps({"status": "failed"}), encoding="utf-8"
+    )
+    completed = completed_root / "attempt_002"
+    (completed / "stage4").mkdir(parents=True)
+    (completed / "run_manifest.json").write_text(
+        json.dumps({"status": "completed"}), encoding="utf-8"
+    )
+    (completed / "stage4/complete.json").write_text("{}", encoding="utf-8")
+
+    running = artifact_root / "smoke/porto/seed_42/e1_q0/attempt_001"
+    running.mkdir(parents=True)
+    (running / "run_manifest.json").write_text(
+        json.dumps({"status": "running"}), encoding="utf-8"
+    )
+
+    failed = artifact_root / "smoke/porto/seed_42/e2_q0/attempt_001"
+    failed.mkdir(parents=True)
+    failure = {"type": "RuntimeError", "message": "fixture failure"}
+    (failed / "run_manifest.json").write_text(
+        json.dumps({"status": "failed", "failure": failure}), encoding="utf-8"
+    )
+
+    incomplete = artifact_root / "smoke/porto/seed_42/e3_q0/attempt_001"
+    incomplete.mkdir(parents=True)
+
+    result = inspect_queue(config, contract, cells)
+
+    assert len(result["completed"]) == 1
+    assert result["completed"][0]["attempt"].endswith("attempt_002")
+    assert result["pending"] == [
+        "smoke/porto/seed_42/e1_q0",
+        "smoke/porto/seed_42/e2_q0",
+        "smoke/porto/seed_42/e3_q0",
+        "smoke/porto/seed_42/e4_q0",
+    ]
+    assert [item["run_key"] for item in result["running_manifests"]] == [
+        "smoke/porto/seed_42/e1_q0"
+    ]
+    assert result["failed_manifests"][0]["failure"] == failure
+    assert result["incomplete_attempts"][0]["reason"] == "missing_run_manifest"
+    assert result["uncreated"] == ["smoke/porto/seed_42/e4_q0"]
+    assert result["attempt_count"] == 5
+
+
 def test_validate_only_never_calls_runner_or_creates_attempts(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     config_path = _config_for_option(tmp_path, "A")
-    contract = _contract(tmp_path, config_path, "A")
+    contract = replace(
+        _contract(tmp_path, config_path, "A"),
+        artifact_root=tmp_path / "artifacts",
+    )
     monkeypatch.setattr(
         "staged_attribution.watch_gpu_and_launch.validate_launch_contract",
         lambda _contract: __import__(
@@ -194,6 +262,11 @@ def test_validate_only_never_calls_runner_or_creates_attempts(
 
     assert result["safe_gpus"] == [0]
     assert result["pending_count"] == 60
+    assert result["running_manifest_count"] == 0
+    assert result["failed_manifest_count"] == 0
+    assert result["incomplete_attempt_count"] == 0
+    assert result["uncreated_count"] == 60
+    assert result["attempt_count"] == 0
 
 
 def test_watcher_revalidates_contract_on_every_gpu_poll_and_delegates(
