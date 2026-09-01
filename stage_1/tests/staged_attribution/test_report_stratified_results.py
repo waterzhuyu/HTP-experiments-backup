@@ -13,9 +13,11 @@ from staged_attribution.population_bootstrap import (
     save_metric_contributions,
 )
 from staged_attribution.report_stratified_results import (
+    ANALYSIS_SCHEMA_VERSION,
     CANDIDATE_EVIDENCE,
     CorrectedRunEvidence,
     collect_corrected_runs,
+    summarize_city_direction_heterogeneity,
     summarize_corrected_results,
     write_corrected_report,
 )
@@ -124,7 +126,7 @@ def test_corrected_summary_is_selection_ready_and_seed_stratified() -> None:
         runs, n_resamples=100, bootstrap_seed=20260826
     )
 
-    assert summary["analysis_schema_version"] == 2
+    assert summary["analysis_schema_version"] == ANALYSIS_SCHEMA_VERSION
     assert summary["candidate_evidence"] == CANDIDATE_EVIDENCE
     assert summary["coverage"] == {
         "runs": 4,
@@ -135,6 +137,11 @@ def test_corrected_summary_is_selection_ready_and_seed_stratified() -> None:
     assert len(summary["metric_rows"]) == 4 * 4 * 10
     assert len(summary["g_metric_attribution"]) == 4 * 10 * 4
     assert len(summary["paired_metric_effects"]) == 10
+    assert len(summary["city_direction_heterogeneity"]) == 10
+    assert not any(
+        row["opposed_direction"]
+        for row in summary["city_direction_heterogeneity"]
+    )
     validity = next(
         row for row in summary["paired_metric_effects"]
         if row["metric"] == "validity_rate"
@@ -151,6 +158,44 @@ def test_corrected_summary_is_selection_ready_and_seed_stratified() -> None:
     selection = select_candidates(summary, phase="core")
     assert selection["best_single"] == "e0_q0"
     assert selection["paired_effects"] == summary["paired_metric_effects"]
+
+
+def test_city_direction_heterogeneity_preserves_opposed_city_effects() -> None:
+    rows = summarize_city_direction_heterogeneity(
+        [
+            {
+                "cell_id": "e1_q0",
+                "city": "porto",
+                "metric": "gps_travel_jsd",
+                "group": "GPS",
+                "estimate": -0.2,
+            },
+            {
+                "cell_id": "e1_q0",
+                "city": "chengdu",
+                "metric": "gps_travel_jsd",
+                "group": "GPS",
+                "estimate": 0.02,
+            },
+        ]
+    )
+
+    assert rows == [
+        {
+            "cell_id": "e1_q0",
+            "metric": "gps_travel_jsd",
+            "group": "GPS",
+            "city_estimates": {"chengdu": 0.02, "porto": -0.2},
+            "city_directions": {
+                "chengdu": "degradation",
+                "porto": "improvement",
+            },
+            "opposed_direction": True,
+            "direction_consistent": False,
+            "estimate_range": pytest.approx(0.22),
+            "method": "descriptive_city_direction_v1",
+        }
+    ]
 
 
 def test_corrected_report_is_immutable_and_idempotent(tmp_path: Path) -> None:

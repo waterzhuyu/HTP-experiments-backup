@@ -22,7 +22,7 @@ from .report_stratified_results import summarize_corrected_results
 from .run_experiment import ExperimentJob, build_jobs, completed_attempt
 
 
-ANALYSIS_SCHEMA_VERSION = 3
+ANALYSIS_SCHEMA_VERSION = 4
 CONFIRMATION_EVIDENCE = "confirmation_population_aware"
 SELECTION_EVIDENCE = "stratified_population_aware"
 ALLOWED_CLAIM_GROUPS = frozenset({"GPS", "Road", "Grid"})
@@ -423,6 +423,11 @@ def _confirmation_gate(summary: Mapping[str, object]) -> dict[str, dict[str, obj
     result = {}
     for cell in sorted(set(effect_rows)):
         rows = effect_rows[cell]
+        by_metric: dict[str, list[Mapping[str, object]]] = defaultdict(list)
+        by_city: dict[str, list[Mapping[str, object]]] = defaultdict(list)
+        for row in rows:
+            by_metric[str(row["metric"])].append(row)
+            by_city[str(row["city"])].append(row)
         degradation = sorted(
             {
                 (str(row["city"]), str(row["metric"]))
@@ -442,6 +447,50 @@ def _confirmation_gate(summary: Mapping[str, object]) -> dict[str, dict[str, obj
         stage1_passed = bool(gate_rows[cell]) and all(
             bool(row["passed"]) for row in gate_rows[cell]
         )
+        direction_consistent_improvement = sorted(
+            metric
+            for metric, metric_rows in by_metric.items()
+            if metric_rows[0]["group"] in ALLOWED_CLAIM_GROUPS
+            and all(float(row["estimate"]) < 0 for row in metric_rows)
+            and any(float(row["ci_high"]) < 0 for row in metric_rows)
+        )
+        heterogeneity = [
+            row
+            for row in summary.get("city_direction_heterogeneity", [])
+            if str(row["cell_id"]) == cell
+            and row["group"] in ALLOWED_CLAIM_GROUPS | {"validity"}
+            and bool(row["opposed_direction"])
+        ]
+        city_specific = {}
+        for city, city_rows in sorted(by_city.items()):
+            city_degradation = sorted(
+                str(row["metric"])
+                for row in city_rows
+                if row["group"] in ALLOWED_CLAIM_GROUPS | {"validity"}
+                and float(row["ci_low"]) > 0
+            )
+            city_improvement = sorted(
+                str(row["metric"])
+                for row in city_rows
+                if row["group"] in ALLOWED_CLAIM_GROUPS
+                and float(row["ci_high"]) < 0
+            )
+            city_gate_rows = [
+                row for row in gate_rows[cell] if str(row["city"]) == city
+            ]
+            city_stage1_passed = bool(city_gate_rows) and all(
+                bool(row["passed"]) for row in city_gate_rows
+            )
+            city_specific[city] = {
+                "stage1_gate_passed": city_stage1_passed,
+                "significant_degradation": city_degradation,
+                "significant_improvement": city_improvement,
+                "claim_supported": (
+                    city_stage1_passed
+                    and not city_degradation
+                    and bool(city_improvement)
+                ),
+            }
         result[cell] = {
             "stage1_gate_passed": stage1_passed,
             "significant_degradation": [
@@ -450,7 +499,21 @@ def _confirmation_gate(summary: Mapping[str, object]) -> dict[str, dict[str, obj
             "significant_improvement": [
                 {"city": city, "metric": metric} for city, metric in improvement
             ],
-            "claim_supported": stage1_passed and not degradation and bool(improvement),
+            "direction_consistent_improvement": direction_consistent_improvement,
+            "opposed_city_directions": [
+                {
+                    "metric": str(row["metric"]),
+                    "city_estimates": dict(row["city_estimates"]),
+                }
+                for row in heterogeneity
+            ],
+            "city_specific_claims": city_specific,
+            "claim_supported": (
+                stage1_passed
+                and not degradation
+                and not heterogeneity
+                and bool(direction_consistent_improvement)
+            ),
         }
     return result
 
@@ -514,8 +577,9 @@ def summarize_confirmation_results(
     ]
     summary["confirmation_gate"] = _confirmation_gate(summary)
     summary["final_claim_boundary"] = (
-        "A superiority claim is permitted only for a candidate whose confirmation_gate."
-        "claim_supported is true; all other outcomes, including negative results, remain evidence."
+        "An unconditional cross-city superiority claim is permitted only for a candidate whose "
+        "confirmation_gate.claim_supported is true. Opposed city directions forbid that claim; "
+        "city-specific claims use city_specific_claims, and all negative outcomes remain evidence."
     )
     return summary
 
@@ -538,6 +602,7 @@ def write_confirmation_report(
         f"- Seeds: {', '.join(str(value) for value in coverage['seeds'])}",
         f"- Cells: {', '.join(coverage['cells'])}",
         f"- Paired metric effects: {len(summary['paired_metric_effects'])}",
+        f"- City-direction rows: {len(summary['city_direction_heterogeneity'])}",
         f"- G-attribution rows: {len(summary['g_metric_attribution'])}",
         "",
         "## Confirmation claim gate",
@@ -548,9 +613,17 @@ def write_confirmation_report(
             [
                 f"- `{cell}`: claim_supported={str(gate['claim_supported']).lower()}, "
                 f"improvements={len(gate['significant_improvement'])}, "
-                f"degradations={len(gate['significant_degradation'])}",
+                f"degradations={len(gate['significant_degradation'])}, "
+                f"opposed_city_directions={len(gate['opposed_city_directions'])}",
             ]
         )
+        for city, city_gate in gate["city_specific_claims"].items():
+            lines.append(
+                f"  - {city}: claim_supported="
+                f"{str(city_gate['claim_supported']).lower()}, "
+                f"improvements={len(city_gate['significant_improvement'])}, "
+                f"degradations={len(city_gate['significant_degradation'])}"
+            )
     lines.extend(
         [
             "",

@@ -18,6 +18,7 @@ from staged_attribution.population_bootstrap import (
 from staged_attribution.report_confirmation_results import (
     ANALYSIS_SCHEMA_VERSION,
     CONFIRMATION_EVIDENCE,
+    _confirmation_gate,
     audit_confirmation_selection,
     collect_confirmation_runs,
     summarize_confirmation_results,
@@ -342,6 +343,12 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
         "revision": REVISION,
     }
     assert summary["confirmation_gate"]["e1_q0"]["claim_supported"] is True
+    assert summary["confirmation_gate"]["e1_q0"]["direction_consistent_improvement"]
+    assert not summary["confirmation_gate"]["e1_q0"]["opposed_city_directions"]
+    assert all(
+        row["claim_supported"]
+        for row in summary["confirmation_gate"]["e1_q0"]["city_specific_claims"].values()
+    )
     assert not summary["confirmation_gate"]["e1_q0"]["significant_degradation"]
     assert len(summary["population_identity_by_city"]) == 2
 
@@ -363,6 +370,56 @@ def test_confirmation_collection_and_summary_are_full_population_audited(
         write_confirmation_report(changed, tmp_path / "report")
     assert json_path.read_bytes() == original_json
     assert markdown_path.read_bytes() == original_markdown
+
+
+def test_confirmation_gate_rejects_unconditional_claim_on_opposed_city_direction() -> None:
+    summary = {
+        "stage1_gates": [
+            {"cell_id": "e1_q0", "city": city, "seed": 42, "passed": True}
+            for city in ("porto", "chengdu")
+        ],
+        "paired_metric_effects": [
+            {
+                "cell_id": "e1_q0",
+                "city": "porto",
+                "metric": "gps_travel_jsd",
+                "group": "GPS",
+                "estimate": -0.2,
+                "ci_low": -0.3,
+                "ci_high": -0.1,
+            },
+            {
+                "cell_id": "e1_q0",
+                "city": "chengdu",
+                "metric": "gps_travel_jsd",
+                "group": "GPS",
+                "estimate": 0.02,
+                "ci_low": -0.05,
+                "ci_high": 0.08,
+            },
+        ],
+        "city_direction_heterogeneity": [
+            {
+                "cell_id": "e1_q0",
+                "metric": "gps_travel_jsd",
+                "group": "GPS",
+                "city_estimates": {"porto": -0.2, "chengdu": 0.02},
+                "opposed_direction": True,
+            }
+        ],
+    }
+
+    gate = _confirmation_gate(summary)["e1_q0"]
+
+    assert gate["claim_supported"] is False
+    assert gate["opposed_city_directions"] == [
+        {
+            "metric": "gps_travel_jsd",
+            "city_estimates": {"porto": -0.2, "chengdu": 0.02},
+        }
+    ]
+    assert gate["city_specific_claims"]["porto"]["claim_supported"] is True
+    assert gate["city_specific_claims"]["chengdu"]["claim_supported"] is False
 
 
 def test_confirmation_collection_rejects_nested_contribution_tamper(

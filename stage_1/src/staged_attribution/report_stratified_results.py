@@ -29,7 +29,7 @@ from .run_experiment import build_jobs
 from .run_stratified_reevaluation_batch import completed_reevaluation_attempt
 
 
-ANALYSIS_SCHEMA_VERSION = 2
+ANALYSIS_SCHEMA_VERSION = 3
 CANDIDATE_EVIDENCE = "stratified_population_aware"
 PENALTY_METHOD = "population_penalized_error_v1"
 CORE_CELLS = (
@@ -365,6 +365,57 @@ def _stage1_gates(runs: Sequence[CorrectedRunEvidence]) -> list[dict[str, object
     return rows
 
 
+def summarize_city_direction_heterogeneity(
+    effects: Sequence[Mapping[str, object]],
+) -> list[dict[str, object]]:
+    """Describe whether a candidate effect points in opposite directions by city."""
+    grouped: dict[tuple[str, str], dict[str, Mapping[str, object]]] = defaultdict(dict)
+    for row in effects:
+        cell = str(row["cell_id"])
+        metric = str(row["metric"])
+        city = str(row["city"])
+        key = (cell, metric)
+        if city in grouped[key]:
+            raise ResultAuditError(
+                f"duplicate city effect for heterogeneity: {cell}/{metric}/{city}"
+            )
+        grouped[key][city] = row
+    result = []
+    for (cell, metric), by_city in sorted(grouped.items()):
+        estimates = {
+            city: float(row["estimate"])
+            for city, row in sorted(by_city.items())
+        }
+        if not estimates or not all(math.isfinite(value) for value in estimates.values()):
+            raise ResultAuditError(f"invalid city effects for {cell}/{metric}")
+        groups = {str(row["group"]) for row in by_city.values()}
+        if len(groups) != 1:
+            raise ResultAuditError(f"metric group varies by city for {cell}/{metric}")
+        directions = {
+            city: (
+                "improvement" if value < 0
+                else "degradation" if value > 0
+                else "neutral"
+            )
+            for city, value in estimates.items()
+        }
+        opposed = "improvement" in directions.values() and "degradation" in directions.values()
+        result.append(
+            {
+                "cell_id": cell,
+                "metric": metric,
+                "group": next(iter(groups)),
+                "city_estimates": estimates,
+                "city_directions": directions,
+                "opposed_direction": opposed,
+                "direction_consistent": not opposed,
+                "estimate_range": max(estimates.values()) - min(estimates.values()),
+                "method": "descriptive_city_direction_v1",
+            }
+        )
+    return result
+
+
 def summarize_corrected_results(
     runs: Sequence[CorrectedRunEvidence],
     *,
@@ -507,6 +558,12 @@ def summarize_corrected_results(
         }
         for run in runs
     ]
+    paired = sorted(
+        paired,
+        key=lambda row: (
+            str(row["city"]), str(row["cell_id"]), str(row["metric"])
+        ),
+    )
     return {
         "schema_version": ANALYSIS_SCHEMA_VERSION,
         "analysis_schema_version": ANALYSIS_SCHEMA_VERSION,
@@ -528,12 +585,8 @@ def summarize_corrected_results(
         "stage1_gates": _stage1_gates(runs),
         "metric_rows": metric_rows,
         "g_metric_attribution": g_rows,
-        "paired_metric_effects": sorted(
-            paired,
-            key=lambda row: (
-                str(row["city"]), str(row["cell_id"]), str(row["metric"])
-            ),
-        ),
+        "paired_metric_effects": paired,
+        "city_direction_heterogeneity": summarize_city_direction_heterogeneity(paired),
         "evidence_rows": evidence_rows,
     }
 
@@ -553,6 +606,9 @@ def write_corrected_report(summary: Mapping[str, object], output_dir: str | Path
             f"- Seeds: {', '.join(str(value) for value in coverage['seeds'])}",
             f"- Cells: {', '.join(coverage['cells'])}",
             f"- Paired metric effects: {len(summary['paired_metric_effects'])}",
+            f"- City-direction rows: {len(summary['city_direction_heterogeneity'])}",
+            f"- Opposed city directions: "
+            f"{sum(bool(row['opposed_direction']) for row in summary['city_direction_heterogeneity'])}",
             f"- G-attribution rows: {len(summary['g_metric_attribution'])}",
             "",
             "All candidate effects resample trajectories within seed and average seed effects equally.",

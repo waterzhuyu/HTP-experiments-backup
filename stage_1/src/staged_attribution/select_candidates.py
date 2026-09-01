@@ -174,8 +174,8 @@ def _rank_family(
 def select_candidates(summary: Mapping[str, object], phase: str = "core") -> dict[str, object]:
     if phase not in {"core", "final"}:
         raise SelectionError("selection phase must be core or final")
-    if int(summary.get("analysis_schema_version", 0)) < 2:
-        raise SelectionError("candidate selection requires corrected analysis schema version 2")
+    if int(summary.get("analysis_schema_version", 0)) < 3:
+        raise SelectionError("candidate selection requires corrected analysis schema version 3")
     if summary.get("candidate_evidence") != "stratified_population_aware":
         raise SelectionError("candidate selection requires stratified population-aware evidence")
     effects = _paired_effects(summary)

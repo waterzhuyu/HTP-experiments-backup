@@ -191,7 +191,7 @@ def _run(cell_id: str, base: float) -> RunEvidence:
 
 def _corrected_selection_summary(summary: dict[str, object]) -> dict[str, object]:
     corrected = dict(summary)
-    corrected["analysis_schema_version"] = 2
+    corrected["analysis_schema_version"] = 3
     corrected["candidate_evidence"] = "stratified_population_aware"
     corrected["metric_rows"] = [
         {**row, "method": POPULATION_REGRET_METHOD}
@@ -258,7 +258,7 @@ def test_summary_freezes_g_e_q_and_paired_trajectory_attribution() -> None:
         "sid", "sampling", "interaction", "total"
     }
 
-    with pytest.raises(SelectionError, match="schema version 2"):
+    with pytest.raises(SelectionError, match="schema version 3"):
         select_candidates(summary, phase="core")
     corrected = _corrected_selection_summary(summary)
     selection = select_candidates(corrected, phase="core")
