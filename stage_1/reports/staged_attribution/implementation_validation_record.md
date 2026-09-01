@@ -672,3 +672,39 @@ uv run --frozen python -m staged_attribution.report_confirmation_results \
 本节没有启动 adaptive、confirmation、corrected queue，也没有接触正式 watcher、其四个 live
 `run_cell`、GPU 进程或任何既有 attempt。真实 phase 必须等正式 core 完成、按第 13 节生成完整 source
 audit/校正证据，并在当时 clean revision 上依次冻结和执行。
+
+## 15. final selection provenance 的统一重验
+
+源码提交 `d138a45`（`fix(experiment): revalidate final selection provenance`）修复了两处只影响证据
+身份、不改变科学方法的缺口。
+
+第一，selection/config 原门禁先调用 `Path.resolve()`，再检查 `is_symlink()`。由于 `resolve()` 已经跟随
+叶节点符号链接，预注册所要求的“普通非符号链接文件”没有被真实执行。现在 selection、selection 的
+source analysis、freeze 输入 analysis 与 phase config 都先在调用者给出的叶节点上检查
+`is_symlink()/is_file()`，通过后才 canonicalize 路径和计算 SHA-256。selection、analysis 或 config 的
+符号链接即使指向内容哈希完全正确的目标，也会在 GPU 查询、attempt 或报告写入前被拒绝。
+
+第二，final selection 的 prior core-selection 链此前只在 confirmation 训练启动的
+`selection_launch` 额外重验；通用 `audit_selection_derivation` 以及最终报告所调用的确定性派生审计只
+重算 final selection 的直接字段，没有再次验证 `prior_selection`、prior SHA、冻结 adaptive cells 和
+core+adaptive 精确 coverage。现在该链进入通用派生审计：
+
+1. prior selection 必须是哈希锁定、可确定性重算的 `phase=core` 普通文件；
+2. `prior_adaptive_cells` 必须逐项等于 prior selection 的 `adaptive_cells`；
+3. core 与 final selection 的 analysis revision 必须一致；
+4. final source analysis coverage 必须恰好是十个 core cells 与冻结 adaptive cells 的并集。
+
+因此 confirmation 启动和 `report_confirmation_results` 的生产 CLI（强制显式 expected selection
+SHA）共享同一完整链审计，不能依赖 manifest 中单独的 `verified=true` 或只校验 final 文件本身。
+`selection_launch` 保留额外的 defense-in-depth 检查。
+
+验证：selection/final-report 聚焦测试 `12 passed in 8.57s`；完整 `stage_1/tests` 为
+`299 passed, 23 warnings in 20.46s`，warnings 仍是既有 Transformer nested-tensor 提示。新增负向测试
+覆盖 selection leaf symlink、source-analysis leaf symlink、config leaf symlink、final selection 缺 prior
+身份及 prior adaptive-cell substitution；全部在派生审计或派发前失败。正式 controlled dry-run 仍精确
+枚举 60 个 run key，config SHA-256 保持
+`b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb`。
+
+本修复未启动任何新队列，未修改正式 worktree、watcher、锁、GPU 进程或现有 attempt。后续 full
+source audit、corrected analysis、core/final selection 与 adaptive/confirmation launch 必须使用修复后
+的 clean 候选 revision；不得使用在旧派生审计下生成的 selection 充当最终结论证据。
