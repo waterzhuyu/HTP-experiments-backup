@@ -269,6 +269,13 @@ Stage1。Porto seed314159 `e0_q0`、`e1_q0` 分别为 Stage2 5439/8000、4812/80
 2453/100%、8665/15%、1772/100%、1022 MiB/100%，没有 GPU 同时满足 free>=16000 MiB 且
 utilization<=20%，因此未启动任何新队列。
 
+同一时点对完整 60-job contract 执行 watcher 自带 `--validate-only`：
+`contract_valid=true`、`resource_option=B`、`completed_count=8`、`pending_count=52`、
+`safe_gpus=[]`。全 attempt 审计另确认 4 个旧 revision `730c2cc...` 的 seed42 E0–E3
+`attempt_001` 为历史 OOM failure；相同 run key 的正式 `6ac87be.../attempt_002` 已完成 Stage4，
+没有覆盖或删除旧失败。当前 16 个 attempt 对应 12 个唯一 run key：8 个正式完成、4 个正式
+运行、4 个历史失败。
+
 只有完整 60 个 core source attempt 通过 immutable marker/manifest 审计后，才能运行：
 
 ```bash
