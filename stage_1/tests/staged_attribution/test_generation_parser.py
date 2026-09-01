@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from staged_attribution.generate_stage3 import (
     GenerationError,
+    _GenerationProgressRecorder,
     format_generation_prompt,
     parse_generation,
     validate_generation_population,
@@ -56,6 +59,34 @@ def test_population_validation_rejects_drop_or_duplicate() -> None:
 
 def test_generation_prompt_uses_oracle_route_description_only() -> None:
     prompt = format_generation_prompt("description with <road_3>")
-
     assert prompt.endswith("<|im_start|>assistant\n<think>\n\n</think>\n\n")
     assert "description with <road_3>" in prompt
+
+
+def test_generation_progress_preserves_partial_failure_evidence(tmp_path) -> None:
+    path = tmp_path / "generation_progress.json"
+    recorder = _GenerationProgressRecorder(
+        path,
+        population_total=3,
+        batch_size=2,
+        progress_interval=1,
+    )
+    assert json.loads(path.read_text())["status"] == "loading_model"
+
+    recorder.running()
+    recorder.update([parse_generation(1, valid_answer()), parse_generation(2, "bad")])
+    with pytest.raises(GenerationError, match="before all batches"):
+        recorder.complete({"population": 3, "completed": 2, "failed": 1})
+    recorder.fail(RuntimeError("synthetic generation failure"))
+
+    payload = json.loads(path.read_text())
+    assert payload["status"] == "failed"
+    assert payload["batches_completed"] == 1
+    assert payload["population_completed"] == 2
+    assert payload["outputs_completed"] == 1
+    assert payload["outputs_failed"] == 1
+    assert payload["last_traj_id"] == 2
+    assert payload["error"] == {
+        "type": "RuntimeError",
+        "message": "synthetic generation failure",
+    }

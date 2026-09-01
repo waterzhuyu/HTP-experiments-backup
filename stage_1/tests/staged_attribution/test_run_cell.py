@@ -29,6 +29,7 @@ def test_dag_contains_every_stage_and_no_proxy_terminal() -> None:
     assert dag[-1].prerequisites == ("decode",)
     assert dag[-1].required_artifacts == ("stage4_metrics.json",)
     assert "stage2_plan.json" in dag[3].required_artifacts
+    assert "generation_progress.json" in dag[4].required_artifacts
     assert all(node.required_artifacts for node in dag)
 
 

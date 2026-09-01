@@ -574,13 +574,18 @@ class PipelineBackend:
             int(metadata["num_roads"]),
             self.seed,
             device=str(self.device),
+            progress_path=output / "generation_progress.json",
         )
         audit_path = output / "generation_audit.json"
         _atomic_json(audit_path, result["audit"])
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-        return {"generations.jsonl": output / "generations.jsonl", "generation_audit.json": audit_path}
+        return {
+            "generations.jsonl": output / "generations.jsonl",
+            "generation_audit.json": audit_path,
+            "generation_progress.json": output / "generation_progress.json",
+        }
 
     def _g_attribution(self, run_dir: Path) -> Mapping[str, Path]:
         output = run_dir / "g_attribution"

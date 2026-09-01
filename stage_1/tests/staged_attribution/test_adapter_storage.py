@@ -231,7 +231,16 @@ def test_generation_uses_generation_seed_before_and_after_model_loading(
         num_roads=2,
         seed=42,
         device="cpu",
+        progress_path=tmp_path / "generation_progress.json",
+        progress_interval=1,
     )
     assert load_seed == [42]
     assert seed_calls == [42, 42]
     assert result["audit"] == {"population": 1, "completed": 1, "failed": 0}
+    progress = json.loads((tmp_path / "generation_progress.json").read_text())
+    assert progress["status"] == "completed"
+    assert progress["population_completed"] == progress["population_total"] == 1
+    assert progress["batches_completed"] == progress["batches_total"] == 1
+    assert progress["outputs_completed"] == 1
+    assert progress["outputs_failed"] == 0
+    assert progress["audit"] == result["audit"]

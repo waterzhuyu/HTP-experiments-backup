@@ -21,7 +21,7 @@ def build_reevaluation_dag() -> tuple[StageNode, ...]:
         StageNode("source_reference", (), ("source_reference.json",)),
         StageNode(
             "stage3", ("source_reference",),
-            ("generations.jsonl", "generation_audit.json"),
+            ("generations.jsonl", "generation_audit.json", "generation_progress.json"),
         ),
         StageNode("g_attribution", ("stage3",), ("g_variants.json",)),
         StageNode(

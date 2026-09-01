@@ -93,7 +93,7 @@ def test_stage3_filters_exact_subset_and_records_provenance(tmp_path: Path, monk
     value = pipeline(tmp_path)
     (tmp_path / "metadata.json").write_text(json.dumps({"num_roads": 2}))
 
-    def fake_generation(frame, adapter, output, num_roads, seed, device):
+    def fake_generation(frame, adapter, output, num_roads, seed, device, progress_path):
         assert frame["traj_id"].tolist() == [1, 2]
         assert adapter == value._evidence.adapter_dir
         assert (num_roads, seed, device) == (2, 42, "cpu")
@@ -102,6 +102,7 @@ def test_stage3_filters_exact_subset_and_records_provenance(tmp_path: Path, monk
             for traj_id in (1, 2)
         ]
         _atomic_jsonl(Path(output), records)
+        Path(progress_path).write_text(json.dumps({"status": "completed"}))
         return {"audit": {"population": 2, "completed": 2, "failed": 0}, "records": records}
 
     monkeypatch.setattr(
@@ -112,6 +113,7 @@ def test_stage3_filters_exact_subset_and_records_provenance(tmp_path: Path, monk
     audit = json.loads(artifacts["generation_audit.json"].read_text())
     assert audit["selected_traj_id_sha256"] == "ids"
     assert audit["source_revision"] == "a" * 40
+    assert json.loads(artifacts["generation_progress.json"].read_text())["status"] == "completed"
 
 
 def test_stage4_writes_population_aware_metrics_and_contribution_manifests(tmp_path: Path) -> None:

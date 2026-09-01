@@ -54,7 +54,11 @@ def build_cell_dag(cell_id: str) -> tuple[StageNode, ...]:
                 "token_budget.json",
             ),
         ),
-        StageNode("stage3", ("stage2",), ("generations.jsonl", "generation_audit.json")),
+        StageNode(
+            "stage3",
+            ("stage2",),
+            ("generations.jsonl", "generation_audit.json", "generation_progress.json"),
+        ),
         StageNode("g_attribution", ("stage3",), ("g_variants.json",)),
         StageNode(
             "decode",
