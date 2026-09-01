@@ -527,3 +527,148 @@ watcher 或任何 attempt；第 13.5 节仅记录 fail-closed 的 8/60 partial a
 明确为 partial，batch 会因 `all_requested_sources_completed=false`、missing=52 和 completed count
 不等于 60 而拒绝，不能用于启动 corrected reevaluation。60/60 完成后必须在当时 clean HEAD 上
 生成新的不可变 full audit；不得修改、删除、移动或覆盖本 partial audit。
+
+## 14. adaptive/confirmation 冻结选择启动契约
+
+源码提交 `457823e`（`fix(experiment): bind phase launches to frozen selections`）修复了 phase 选择与
+训练派发之间的最后一个前置身份缺口。此前 `run_experiment` 对 confirmation 只要求显式 cell 且包含
+`e0_q0`，对 controlled 的非核心 E×Q cell 则接受任意 `--cells`；冻结选择直到结果报告阶段才被校验。
+因此，人工换 cell、漏掉 adaptive cell、使用错误 selection 或错误 revision/config 都可能先创建
+attempt 并消耗完整 Option B 训练，之后才在报告时暴露。
+
+### 14.1 fail-before-dispatch 门禁
+
+现在正式 core 的默认 `controlled`（不传 `--cells`）保持原有 60-job 行为；仅以下两类 phase 必须
+提供完整冻结身份：
+
+- controlled 且显式 cell 集包含任一非核心 cell：视为 adaptive launch，selection 必须为 `phase=core`，
+  请求顺序必须精确等于 `adaptive_cells`，且只能包含非核心 cell；
+- confirmation：selection 必须为 `phase=final`，请求顺序必须精确等于 `confirmation_cells`，并以
+  `e0_q0` 开头。
+
+两类 launch 都必须显式传 selection path/SHA-256、clean 40 位 launch revision 和 config SHA-256。
+`selection_launch.audit_frozen_launch` 在 GPU 查询、artifact root、attempt、日志或子进程创建前验证：
+
+1. 实际加载模块所在 worktree HEAD/clean 状态与 launch revision 一致；
+2. config 为普通非符号链接文件且实际 SHA 等于锁定值；
+3. selection 为普通非符号链接文件且实际 SHA 等于锁定值；
+4. selection 的 source analysis path/SHA/revision 与 audited
+   `stratified_population_aware` 证据一致；
+5. 用当前选择器从 source analysis 确定性重算的全部 selection 字段与冻结文件逐字段一致；
+6. analysis revision 与 launch implementation revision 相同；
+7. phase cell 集、顺序和 baseline 约束精确一致。
+
+batch 把同一身份作为参数传给每个 `run_cell`；单 cell 入口再次独立校验，并把
+`frozen_phase_launch_identity` 原样写进 `run_manifest.json`。Git 身份以实际加载模块为锚，不再依赖
+调用者当前目录。已有 completed attempt 只有在完整 launch identity 相同时才被 phase batch 复用；
+身份不同的旧 attempt 保留不动，后续使用下一编号。confirmation 汇总还会逐 run 检查 manifest 的
+selection path/SHA、cell population 和 launch revision，并要求调用者再次显式提供 expected selection
+SHA；报告入口从 source analysis 重算 selection，不能只信 manifest 中的 `verified=true`。
+
+### 14.2 final 选择链
+
+`select_candidates --phase final` 新增强制参数 `--prior-selection` 和
+`--expected-prior-selection-sha256`。它先验证 core selection 的文件 SHA、source analysis SHA 与确定性
+重算，再要求 final corrected analysis 的 coverage 恰好等于：
+
+`10 个 core cells ∪ core_selection.adaptive_cells`。
+
+少任何 adaptive cell 或多观察后追加 cell 都拒绝写 final selection。成功时 final selection 封存
+`prior_selection`、`prior_selection_sha256` 和 `prior_adaptive_cells`；confirmation launch 再重验这条
+链。该变更没有改变 GPS/Road/Grid 输入、E/Q 定义、Stage1/2/3/4、Option B 固定人口、seed、loss、
+bootstrap 或 claim gate，属于派发与 provenance 加固，不是科学变量。
+
+### 14.3 验证证据
+
+聚焦命令：
+
+```bash
+cd /workspace/guozuyu/HTP-staged-attribution-compact-adapter
+PYTHONPATH=stage_1/src uv run --frozen pytest -q \
+  stage_1/tests/staged_attribution/test_selection_launch.py \
+  stage_1/tests/staged_attribution/test_run_experiment.py \
+  stage_1/tests/staged_attribution/test_recording.py \
+  stage_1/tests/staged_attribution/test_run_cell.py \
+  stage_1/tests/staged_attribution/test_report_confirmation_results.py
+```
+
+结果：`36 passed in 8.87s`。覆盖 missing/wrong selection、selection SHA、config SHA、revision、dirty
+worktree、任意/换序 cell population、缺失 prior core selection、final coverage 漏 adaptive、命令参数
+传播、manifest 身份保存、身份不同 completed attempt 不复用，以及 confirmation 报告逐 run 绑定。
+
+完整 staged-attribution：`278 passed, 23 warnings in 20.47s`；最终完整 `stage_1/tests`：
+`297 passed, 23 warnings in 22.04s`。warnings 仍为既有 Transformer nested-tensor 提示。正式 core
+兼容 dry-run 仍精确输出 60 个 run key。另执行真实负向 CLI：对 controlled `e3_q2` 不传任何 selection
+身份，返回 `SelectionLaunchError`，显式目标
+`/tmp/staged-attribution-negative-preflight-9ab1037` 保持不存在，且没有 GPU query、attempt 或子进程。
+config SHA 仍为 `b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb`。
+
+### 14.4 后续 phase 命令模板（均尚未执行）
+
+core corrected analysis 完成后，先冻结 core selection，并记录实际 SHA：
+
+```bash
+uv run --frozen python -m staged_attribution.select_candidates \
+  --analysis <CORE_CORRECTED_ANALYSIS_JSON> \
+  --phase core \
+  --output <CORE_SELECTION_JSON>
+sha256sum <CORE_SELECTION_JSON>
+```
+
+只有 selection 中 `adaptive_cells` 非空时，才可逐字使用该列表启动 adaptive source；不能手改、增删
+或换序：
+
+```bash
+uv run --frozen python -m staged_attribution.run_experiment \
+  --config stage_1/configs/staged_attribution/experiment.json \
+  --budget controlled --parallel --wait-for-gpu \
+  --artifact-root <SOURCE_EXPERIMENT_ROOT> \
+  --cells <EXACT_ADAPTIVE_CELLS_IN_FROZEN_ORDER> \
+  --selection <CORE_SELECTION_JSON> \
+  --expected-selection-sha256 <CORE_SELECTION_SHA256> \
+  --expected-revision <CLEAN_PHASE_REVISION> \
+  --expected-config-sha256 b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb \
+  --maximum-parallel 4 --poll-seconds 60 \
+  --minimum-free-mib 16000 --maximum-utilization 20
+```
+
+adaptive source audit/corrected reevaluation 与第 13 节采用相同精确 `--cells`。合并 core+adaptive 的
+corrected analysis 后冻结 final selection：
+
+```bash
+uv run --frozen python -m staged_attribution.select_candidates \
+  --analysis <FINAL_CORE_PLUS_ADAPTIVE_ANALYSIS_JSON> \
+  --phase final \
+  --prior-selection <CORE_SELECTION_JSON> \
+  --expected-prior-selection-sha256 <CORE_SELECTION_SHA256> \
+  --output <FINAL_SELECTION_JSON>
+sha256sum <FINAL_SELECTION_JSON>
+```
+
+confirmation 只能使用 final selection 中原顺序的完整 cell 集：
+
+```bash
+uv run --frozen python -m staged_attribution.run_experiment \
+  --config stage_1/configs/staged_attribution/experiment.json \
+  --budget confirmation --parallel --wait-for-gpu \
+  --artifact-root <SOURCE_EXPERIMENT_ROOT> \
+  --cells <EXACT_CONFIRMATION_CELLS_IN_FROZEN_ORDER> \
+  --selection <FINAL_SELECTION_JSON> \
+  --expected-selection-sha256 <FINAL_SELECTION_SHA256> \
+  --expected-revision <CLEAN_PHASE_REVISION> \
+  --expected-config-sha256 b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb \
+  --maximum-parallel 4 --poll-seconds 60 \
+  --minimum-free-mib 16000 --maximum-utilization 20
+
+uv run --frozen python -m staged_attribution.report_confirmation_results \
+  --config stage_1/configs/staged_attribution/experiment.json \
+  --experiment-root <SOURCE_EXPERIMENT_ROOT> \
+  --selection <FINAL_SELECTION_JSON> \
+  --expected-selection-sha256 <FINAL_SELECTION_SHA256> \
+  --cells <EXACT_CONFIRMATION_CELLS_IN_FROZEN_ORDER> \
+  --output-dir <IMMUTABLE_CONFIRMATION_REPORT_DIR>
+```
+
+本节没有启动 adaptive、confirmation、corrected queue，也没有接触正式 watcher、其四个 live
+`run_cell`、GPU 进程或任何既有 attempt。真实 phase 必须等正式 core 完成、按第 13 节生成完整 source
+audit/校正证据，并在当时 clean revision 上依次冻结和执行。
