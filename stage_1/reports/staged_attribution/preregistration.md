@@ -233,6 +233,18 @@ GPS/Road/Grid 指标在所有注册城市点估计均小于零，且至少一城
 GPS/Road/Grid/validity 显著劣化、至少一个 GPS/Road/Grid 显著改善的同一规则。所有 opposed direction
 及两城点估计必须写入分析 JSON/Markdown；它们是异质性证据，不得被平均后删除。
 
+最终 confirmation analysis schema 7 必须从上述门禁确定性生成机器可读 `final_conclusion`，不得由
+报告撰写者浏览结果后改写分类。候选只有三个互斥结论状态：`cross_city_supported`（无条件门禁通过）、
+`city_specific_only`（无条件门禁未通过但至少一个注册城市门禁通过）和 `not_supported`；整体报告相应
+只能输出 `cross_city_support`、`city_specific_support_only` 或 `no_confirmed_superiority`。候选状态的
+唯一决策来源是 confirmation gate；controlled E/Q、controlled cross-seed G 与 confirmation G 只解释
+注册归因，不能把被 confirmation 拒绝的候选提升为 superiority。每个归因行按 minimize 方向将 95% CI
+分类为 improvement、degradation 或 inconclusive；primary 与 `descriptive_sensitivity` 必须分开保存，
+且后者固定 `used_for_headline=false`。结论 scope 必须写明 `modalities=[GPS,Road,Grid]` 与
+`poi_included=false`；metric group 只能来自本实验十个注册 metrics，POI 或其他未注册 group 必须
+fail closed。最终 JSON/Markdown 同时保存跨城市、城市特定、不支持候选、决定性 primary 归因及外推
+限制；负结果、显著退化、城市反向和 inconclusive 均不得删除。
+
 冻结选择同时是后续训练的启动契约，而不是仅供报告引用的备注。adaptive controlled 必须提供
 core selection 的普通非符号链接文件及其显式 SHA-256，且 `--cells` 必须按顺序精确等于其中
 `adaptive_cells`；confirmation 同理必须精确等于 final selection 的 `confirmation_cells`。启动前还要
