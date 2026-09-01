@@ -501,4 +501,29 @@ uv run --frozen python -m staged_attribution.run_stratified_reevaluation_batch \
 adaptive phase 使用相同两阶段协议，但 audit 与 batch 都必须传同一显式 `--cells <CELL_A>
 <CELL_B> ...`，`--expected-completed-count` 必须等于 `len(cells) × 2 cities × 3 seeds`。选定
 cell 与其 source revision 只能来自已冻结的 core selection/adaptive plan；不得在观察结果后另换
-cell 集。当前未生成 60-job audit、未启动 corrected/adaptive queue，也未修改正式 watcher 或产物。
+cell 集。当前未生成可启动的 60/60 full audit、未启动 corrected/adaptive queue，也未修改正式
+watcher 或任何 attempt；第 13.5 节仅记录 fail-closed 的 8/60 partial audit。
+
+### 13.5 新 schema 的真实 partial audit（不可用于启动）
+
+在正式 watcher `--validate-only` 返回 `contract_valid=true`、`completed_count=8`、
+`pending_count=52`、`safe_gpus=[]` 后，以 clean revision
+`bc15a72b5e3635a88b78886dec6cae7e4a4dfdea` 对真实正式产物执行新 schema 审计。输出为：
+
+`/home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/completed_source_audit_bc15a72_partial_8/index.json`
+
+文件 SHA-256：`f58422c678dc53e4b9da00ef3d49868ad6583d95c63086ef8ba03c4780539c70`。
+完全相同命令第二次执行后 SHA 不变，候选 worktree 仍 clean。审计记录：
+
+- `requested_cell_ids` 为完整 10 个 formal core cells；
+- `requested_job_count=60`；
+- `requested_run_key_sha256=196d96871d40c1c05835aa82a933e3c5d050d85ae0080d3bd97cff8cfb72ed68`；
+- `formal_core_contract=true`、`formal_core_job_count=60`；
+- `audited_completed_source_count=8`、`missing_completed_source_count=52`；
+- `all_requested_sources_completed=false`、`all_formal_core_sources_completed=false`；
+- generator revision 为 `bc15a72...`，8 行 source revision 均为正式 `6ac87be...`。
+
+该 artifact 的用途是验证真实源数据上的新 population/identity schema，并保留当前阶段证据。它
+明确为 partial，batch 会因 `all_requested_sources_completed=false`、missing=52 和 completed count
+不等于 60 而拒绝，不能用于启动 corrected reevaluation。60/60 完成后必须在当时 clean HEAD 上
+生成新的不可变 full audit；不得修改、删除、移动或覆盖本 partial audit。
