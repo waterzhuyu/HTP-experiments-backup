@@ -5,7 +5,7 @@ import hashlib
 import json
 import os
 import subprocess
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from .config import ExperimentConfig
@@ -120,6 +120,11 @@ def _adapter_tree_sha256(rows: tuple[dict[str, object], ...]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _run_key_sha256(run_keys: Sequence[str]) -> str:
+    content = "".join(f"{run_key}\n" for run_key in sorted(run_keys)).encode()
+    return hashlib.sha256(content).hexdigest()
+
+
 def _stage4_population_audit(
     payload: Mapping[str, object],
     selected_ids: list[int],
@@ -168,6 +173,7 @@ def audit_completed_sources(
     expected_generator_revision: str | None = None,
     expected_config_sha256: str | None = None,
     require_clean: bool = False,
+    cell_ids: Sequence[str] | None = None,
 ) -> dict[str, object]:
     if budget != REGISTERED_BUDGET:
         raise CompletedSourceAuditError(
@@ -202,7 +208,9 @@ def audit_completed_sources(
         raise CompletedSourceAuditError("fixed-subset index is missing")
     rows = []
     missing = []
-    jobs = build_jobs(config, budget)
+    jobs = build_jobs(config, budget, cell_ids)
+    requested_run_keys = [job.run_key for job in jobs]
+    requested_cell_ids = sorted({job.cell_id for job in jobs})
     for job in jobs:
         attempt = completed_attempt(experiment_root / job.run_key)
         if attempt is None:
@@ -277,10 +285,15 @@ def audit_completed_sources(
         "source_root": str(experiment_root),
         "expected_source_revision": expected_source_revision,
         "fixed_subset_index": _artifact(subset_index_path),
-        "formal_core_job_count": len(jobs),
+        "requested_cell_ids": requested_cell_ids,
+        "requested_job_count": len(jobs),
+        "requested_run_key_sha256": _run_key_sha256(requested_run_keys),
+        "all_requested_sources_completed": not missing,
+        "formal_core_contract": cell_ids is None,
+        "formal_core_job_count": len(jobs) if cell_ids is None else None,
         "audited_completed_source_count": len(rows),
         "missing_completed_source_count": len(missing),
-        "all_formal_core_sources_completed": not missing,
+        "all_formal_core_sources_completed": not missing if cell_ids is None else None,
         "audited_completed_sources": rows,
         "missing_completed_sources": missing,
     }
@@ -308,6 +321,7 @@ def main() -> None:
     parser.add_argument("--expected-generator-revision")
     parser.add_argument("--expected-config-sha256")
     parser.add_argument("--require-clean", action="store_true")
+    parser.add_argument("--cells", nargs="+")
     arguments = parser.parse_args()
     result = audit_completed_sources(
         arguments.config,
@@ -320,6 +334,7 @@ def main() -> None:
         expected_generator_revision=arguments.expected_generator_revision,
         expected_config_sha256=arguments.expected_config_sha256,
         require_clean=arguments.require_clean,
+        cell_ids=arguments.cells,
     )
     print(json.dumps(result, indent=2, sort_keys=True))
 

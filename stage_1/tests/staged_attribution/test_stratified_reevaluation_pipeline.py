@@ -89,6 +89,46 @@ def pipeline(tmp_path: Path) -> StratifiedReevaluationPipeline:
     return value
 
 
+def test_source_resolution_enforces_registered_source_revision(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    expected_revision = "c" * 40
+    value = object.__new__(StratifiedReevaluationPipeline)
+    value.config_path = tmp_path / "experiment.json"
+    value.source_attempt = tmp_path / "source" / "attempt_001"
+    value.cell_id = "e0_q0"
+    value.city = "porto"
+    value.seed = 42
+    value.budget_name = "controlled"
+    value.identity = {"expected_source_revision": expected_revision}
+    value._evidence = None
+    sentinel = object()
+    observed = {}
+
+    def fake_resolve(config_path, source_attempt, **kwargs):
+        observed.update(
+            {
+                "config_path": config_path,
+                "source_attempt": source_attempt,
+                **kwargs,
+            }
+        )
+        return sentinel
+
+    monkeypatch.setattr(
+        "staged_attribution.stratified_reevaluation_pipeline.resolve_source_evidence",
+        fake_resolve,
+    )
+
+    assert value._source() is sentinel
+    assert observed["expected_revision"] == expected_revision
+    assert observed["cell_id"] == "e0_q0"
+    assert observed["city"] == "porto"
+    assert observed["seed"] == 42
+    assert observed["budget"] == "controlled"
+
+
 def test_stage3_filters_exact_subset_and_records_provenance(tmp_path: Path, monkeypatch) -> None:
     value = pipeline(tmp_path)
     (tmp_path / "metadata.json").write_text(json.dumps({"num_roads": 2}))

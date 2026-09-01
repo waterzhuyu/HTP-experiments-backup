@@ -69,6 +69,7 @@ class StratifiedReevaluationPipeline:
                 city=self.city,
                 seed=self.seed,
                 budget=self.budget_name,
+                expected_revision=str(self.identity["expected_source_revision"]),
             )
         return self._evidence
 

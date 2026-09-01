@@ -169,7 +169,14 @@ def test_completed_source_audit_is_exact_and_immutable(
     assert first == second
     assert first["audited_completed_source_count"] == 1
     assert first["missing_completed_source_count"] == 59
+    assert first["requested_job_count"] == 60
+    assert first["requested_cell_ids"] == [
+        "e0_q0", "e1_q0", "e2_q0", "e3_q0", "e4_q0",
+        "e5_q0", "e6_q0", "e6_q1", "e6_q2", "e6_q3",
+    ]
+    assert first["formal_core_contract"] is True
     assert first["all_formal_core_sources_completed"] is False
+    assert first["all_requested_sources_completed"] is False
     row = first["audited_completed_sources"][0]
     assert row["source_artifact_markers_verified"] is True
     assert row["stage4_population_audit"][
@@ -217,6 +224,41 @@ def test_completed_source_audit_records_stage4_population_drift(
     audit = result["audited_completed_sources"][0]["stage4_population_audit"]
     assert audit["original_stage4_matches_fixed_subset"] is False
     assert audit["corrected_stage3_stage4_reevaluation_required"] is True
+
+
+def test_completed_source_audit_binds_explicit_adaptive_cell_population(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, root, subsets = _fixture(tmp_path)
+    _clean_git(monkeypatch)
+
+    result = audit_completed_sources(
+        config,
+        root,
+        subsets,
+        expected_source_revision=REVISION,
+        expected_completed_count=1,
+        cell_ids=["e0_q0"],
+    )
+
+    expected_run_keys = [
+        f"controlled/{city}/seed_{seed}/e0_q0"
+        for city in ("porto", "chengdu")
+        for seed in (42, 314159, 20260819)
+    ]
+    expected_hash = hashlib.sha256(
+        "".join(f"{run_key}\n" for run_key in sorted(expected_run_keys)).encode()
+    ).hexdigest()
+    assert result["requested_cell_ids"] == ["e0_q0"]
+    assert result["requested_job_count"] == 6
+    assert result["requested_run_key_sha256"] == expected_hash
+    assert result["audited_completed_source_count"] == 1
+    assert result["missing_completed_source_count"] == 5
+    assert result["all_requested_sources_completed"] is False
+    assert result["formal_core_contract"] is False
+    assert result["formal_core_job_count"] is None
+    assert result["all_formal_core_sources_completed"] is None
 
 
 def test_completed_source_audit_rejects_stage4_population_size_drift(
