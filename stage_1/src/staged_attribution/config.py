@@ -262,6 +262,27 @@ class ExperimentConfig:
                     f"{sorted(cities)}"
                 )
 
+        controlled = budgets["controlled"]
+        confirmation = budgets["confirmation"]
+        stage2_invariants = (
+            "stage2_epochs",
+            "stage2_max_steps",
+            "stage2_train_trajectories",
+            "stage2_subset_seed",
+            "stage2_batch_size",
+            "stage2_gradient_accumulation",
+            "stage2_subset_manifests",
+        )
+        drift = {
+            field: (getattr(confirmation, field), getattr(controlled, field))
+            for field in stage2_invariants
+            if getattr(confirmation, field) != getattr(controlled, field)
+        }
+        if drift:
+            raise ConfigError(
+                f"confirmation Stage2 method/resource controls must match controlled: {drift}"
+            )
+
         paths_raw = _mapping(raw.get("paths"), "paths")
         for required in ("model_root", "data_root", "artifact_root"):
             if required not in paths_raw or not isinstance(paths_raw[required], str):

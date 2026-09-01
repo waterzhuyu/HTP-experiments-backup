@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
@@ -133,8 +134,32 @@ def test_adaptive_cross_product_cells_reuse_frozen_e_and_q_specs() -> None:
 
 def test_stage2_resource_controls_are_explicit_and_preserve_effective_batch() -> None:
     mapping = valid_mapping()
-    controlled = mapping["budgets"]["controlled"]
-    controlled.update(
+    option_b = {
+        "stage2_train_trajectories": 64_000,
+        "stage2_subset_seed": 20260826,
+        "stage2_batch_size": 8,
+        "stage2_gradient_accumulation": 2,
+        "stage2_subset_manifests": {
+            "porto": "/artifacts/porto_stage2_train_64000.json",
+            "chengdu": "/artifacts/chengdu_stage2_train_64000.json",
+        },
+    }
+    mapping["budgets"]["controlled"].update(deepcopy(option_b))
+    mapping["budgets"]["confirmation"].update(deepcopy(option_b))
+
+    budget = ExperimentConfig.from_dict(mapping).budgets["controlled"]
+
+    assert budget.stage2_train_trajectories == 64_000
+    assert budget.stage2_subset_seed == 20260826
+    assert budget.stage2_batch_size == 8
+    assert budget.stage2_gradient_accumulation == 2
+    assert budget.stage2_effective_batch_size == 16
+    assert budget.stage2_subset_manifests["porto"].endswith("64000.json")
+
+
+def test_rejects_confirmation_stage2_method_or_resource_drift() -> None:
+    mapping = valid_mapping()
+    mapping["budgets"]["controlled"].update(
         {
             "stage2_train_trajectories": 64_000,
             "stage2_subset_seed": 20260826,
@@ -147,14 +172,38 @@ def test_stage2_resource_controls_are_explicit_and_preserve_effective_batch() ->
         }
     )
 
-    budget = ExperimentConfig.from_dict(mapping).budgets["controlled"]
+    with pytest.raises(ConfigError, match="confirmation Stage2"):
+        ExperimentConfig.from_dict(mapping)
 
-    assert budget.stage2_train_trajectories == 64_000
-    assert budget.stage2_subset_seed == 20260826
-    assert budget.stage2_batch_size == 8
-    assert budget.stage2_gradient_accumulation == 2
-    assert budget.stage2_effective_batch_size == 16
-    assert budget.stage2_subset_manifests["porto"].endswith("64000.json")
+
+def test_registered_confirmation_budget_reuses_option_b_exactly() -> None:
+    config = ExperimentConfig.load(
+        Path("stage_1/configs/staged_attribution/experiment.json")
+    )
+    controlled = config.budgets["controlled"]
+    confirmation = config.budgets["confirmation"]
+
+    assert confirmation.stage2_train_trajectories == 64_000
+    assert confirmation.stage2_subset_seed == 20260826
+    assert confirmation.stage2_batch_size == 8
+    assert confirmation.stage2_gradient_accumulation == 2
+    assert confirmation.stage2_effective_batch_size == 16
+    assert confirmation.stage2_subset_manifests == controlled.stage2_subset_manifests
+    assert (
+        confirmation.stage2_epochs,
+        confirmation.stage2_max_steps,
+        confirmation.stage2_train_trajectories,
+        confirmation.stage2_subset_seed,
+        confirmation.stage2_batch_size,
+        confirmation.stage2_gradient_accumulation,
+    ) == (
+        controlled.stage2_epochs,
+        controlled.stage2_max_steps,
+        controlled.stage2_train_trajectories,
+        controlled.stage2_subset_seed,
+        controlled.stage2_batch_size,
+        controlled.stage2_gradient_accumulation,
+    )
 
 
 @pytest.mark.parametrize("bad_view", ["poi", "category", "text"])

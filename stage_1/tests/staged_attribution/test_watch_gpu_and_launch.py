@@ -53,6 +53,21 @@ def _config_for_option(tmp_path: Path, option: str) -> Path:
         )
     else:
         raise AssertionError(option)
+    confirmation = raw["budgets"]["confirmation"]
+    synchronized = (
+        "stage2_epochs",
+        "stage2_max_steps",
+        "stage2_train_trajectories",
+        "stage2_subset_seed",
+        "stage2_batch_size",
+        "stage2_gradient_accumulation",
+        "stage2_subset_manifests",
+    )
+    for field in synchronized:
+        if field in budget:
+            confirmation[field] = budget[field]
+        else:
+            confirmation.pop(field, None)
     config_path = tmp_path / "experiment.json"
     config_path.write_text(json.dumps(raw), encoding="utf-8")
     return config_path
@@ -93,15 +108,16 @@ def test_resource_option_contract_rejects_candidate_and_old_default(tmp_path: Pa
     raw = json.loads(SOURCE_CONFIG.read_text(encoding="utf-8"))
     raw["provenance"].pop("stage2_resource_option", None)
     raw["provenance"].pop("stage2_resource_decision", None)
-    old_budget = raw["budgets"]["controlled"]
-    for field in (
-        "stage2_train_trajectories",
-        "stage2_subset_seed",
-        "stage2_batch_size",
-        "stage2_gradient_accumulation",
-        "stage2_subset_manifests",
-    ):
-        old_budget.pop(field, None)
+    for budget_name in ("controlled", "confirmation"):
+        old_budget = raw["budgets"][budget_name]
+        for field in (
+            "stage2_train_trajectories",
+            "stage2_subset_seed",
+            "stage2_batch_size",
+            "stage2_gradient_accumulation",
+            "stage2_subset_manifests",
+        ):
+            old_budget.pop(field, None)
     old_path = tmp_path / "old.json"
     old_path.write_text(json.dumps(raw), encoding="utf-8")
     with pytest.raises(RuntimeError, match="stage2_resource_option"):

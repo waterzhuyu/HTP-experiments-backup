@@ -76,6 +76,14 @@
       "stage1_batch_size": 512,
       "stage2_epochs": 2,
       "stage2_max_steps": -1,
+      "stage2_train_trajectories": 64000,
+      "stage2_subset_seed": 20260826,
+      "stage2_batch_size": 8,
+      "stage2_gradient_accumulation": 2,
+      "stage2_subset_manifests": {
+        "porto": "/home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/candidate_option_b_stage2_subsets/porto_stage2_train_64000_seed20260826.json",
+        "chengdu": "/home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/candidate_option_b_stage2_subsets/chengdu_stage2_train_64000_seed20260826.json"
+      },
       "stage3_trajectories": "full"
     }
   },
