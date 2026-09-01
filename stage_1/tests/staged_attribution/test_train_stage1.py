@@ -3,10 +3,18 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 import torch
 
+from staged_attribution import train_stage1
 from staged_attribution.model import AttributionRQVAE
-from staged_attribution.train_stage1 import save_stage1_artifacts, train_epochs, train_step
+from staged_attribution.run_cell import build_cell_dag
+from staged_attribution.train_stage1 import (
+    _Stage1TrainingProgressRecorder,
+    save_stage1_artifacts,
+    train_epochs,
+    train_step,
+)
 
 
 def config() -> dict[str, object]:
@@ -177,6 +185,95 @@ def test_train_epochs_steps_scheduler_and_records_learning_rate() -> None:
     assert scheduler.last_epoch == 2
     assert [row["learning_rate"] for row in history] == [5e-4, 5e-4]
     assert [row["global_step"] for row in history] == [1, 2]
+
+
+def test_stage1_progress_is_a_hashed_stage_artifact() -> None:
+    stage1 = next(node for node in build_cell_dag("e0_q0") if node.name == "stage1")
+
+    assert "training_progress.json" in stage1.required_artifacts
+
+
+def test_train_epochs_writes_completed_progress(tmp_path: Path) -> None:
+    model = make_model()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+    progress = tmp_path / "training_progress.json"
+
+    history = train_epochs(
+        model,
+        [full_batch()],
+        optimizer,
+        device=torch.device("cpu"),
+        epochs=2,
+        seed=7,
+        speed_edges=torch.tensor([0.01, 0.03, 0.1]),
+        turn_edges=torch.tensor([0.1, 0.5]),
+        meters_per_coordinate=(1.0, 1.0),
+        progress_path=progress,
+        progress_interval=1,
+    )
+
+    payload = json.loads(progress.read_text())
+    assert payload["status"] == "completed"
+    assert payload["epochs_total"] == 2
+    assert payload["epochs_completed"] == 2
+    assert payload["epoch_current"] == 2
+    assert payload["steps_per_epoch"] == 1
+    assert payload["steps_total"] == 2
+    assert payload["steps_completed"] == 2
+    assert payload["step_in_epoch"] == 1
+    assert payload["last_metrics"]["loss"] == history[-1]["loss"]
+    assert payload["eta_seconds"] == 0.0
+    assert payload["error"] is None
+
+
+def test_stage1_progress_rejects_inconsistent_or_early_completion(tmp_path: Path) -> None:
+    recorder = _Stage1TrainingProgressRecorder(
+        tmp_path / "training_progress.json",
+        epochs_total=2,
+        steps_per_epoch=2,
+        progress_interval=1,
+    )
+
+    with pytest.raises(ValueError, match="does not match epoch progress"):
+        recorder.update(epoch=1, step_in_epoch=1, steps_completed=2)
+    recorder.update(epoch=1, step_in_epoch=1, steps_completed=1)
+    with pytest.raises(ValueError, match="cannot move backwards"):
+        recorder.update(epoch=1, step_in_epoch=1, steps_completed=0)
+    with pytest.raises(ValueError, match="planned step count"):
+        recorder.complete([])
+
+
+def test_train_epochs_preserves_failed_progress(tmp_path: Path, monkeypatch) -> None:
+    model = make_model()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+    progress = tmp_path / "training_progress.json"
+
+    def fail_step(**_kwargs):
+        raise RuntimeError("synthetic Stage1 failure")
+
+    monkeypatch.setattr(train_stage1, "train_step", fail_step)
+    with pytest.raises(RuntimeError, match="synthetic Stage1 failure"):
+        train_epochs(
+            model,
+            [full_batch()],
+            optimizer,
+            device=torch.device("cpu"),
+            epochs=2,
+            seed=7,
+            speed_edges=torch.tensor([0.01, 0.03, 0.1]),
+            turn_edges=torch.tensor([0.1, 0.5]),
+            meters_per_coordinate=(1.0, 1.0),
+            progress_path=progress,
+            progress_interval=1,
+        )
+
+    payload = json.loads(progress.read_text())
+    assert payload["status"] == "failed"
+    assert payload["steps_completed"] == 0
+    assert payload["error"] == {
+        "type": "RuntimeError",
+        "message": "synthetic Stage1 failure",
+    }
 
 
 def test_save_stage1_artifacts_is_complete_and_reloadable(tmp_path: Path) -> None:

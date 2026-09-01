@@ -30,7 +30,16 @@ def build_cell_dag(cell_id: str) -> tuple[StageNode, ...]:
     if not cell_id:
         raise CellRunError("cell_id must be non-empty")
     return (
-        StageNode("stage1", (), ("resolved_config.json", "stage1_model.pt", "stage1_metrics.json")),
+        StageNode(
+            "stage1",
+            (),
+            (
+                "resolved_config.json",
+                "stage1_model.pt",
+                "stage1_metrics.json",
+                "training_progress.json",
+            ),
+        ),
         StageNode("tokens", ("stage1",), ("train_tokens.jsonl", "test_tokens.jsonl", "token_audit.json")),
         StageNode("stage2_data", ("tokens",), ("llm_train.parquet", "llm_test.parquet", "subset_manifest.json")),
         StageNode(

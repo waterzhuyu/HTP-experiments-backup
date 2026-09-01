@@ -397,6 +397,7 @@ class PipelineBackend:
             turn_edges,
             meters,
             scheduler=scheduler,
+            progress_path=output / "training_progress.json",
         )
         metrics = self._evaluate_stage1_model(
             model, self._loader("test"), speed_edges, turn_edges, meters
@@ -434,6 +435,7 @@ class PipelineBackend:
             "resolved_config.json": saved["resolved_config"],
             "stage1_model.pt": saved["checkpoint"],
             "stage1_metrics.json": saved["stage1_metrics"],
+            "training_progress.json": output / "training_progress.json",
         }
 
     def _tokens(self, run_dir: Path) -> Mapping[str, Path]:
