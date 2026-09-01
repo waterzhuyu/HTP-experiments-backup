@@ -239,11 +239,18 @@ def inspect_queue(
     incomplete_attempts = []
     uncreated = []
     attempt_count = 0
+    stage_marker_counts = {stage: 0 for stage in ("stage1", "stage2", "stage4")}
     for job in jobs:
         job_root = contract.artifact_root / job.run_key
         attempts = _attempt_directories(job_root)
         attempt_count += len(attempts)
         attempt = completed_attempt(job_root)
+        selected_attempt = attempt or (attempts[-1] if attempts else None)
+        if selected_attempt is not None:
+            for stage in stage_marker_counts:
+                marker = selected_attempt / stage / "complete.json"
+                if marker.is_file():
+                    stage_marker_counts[stage] += 1
         if attempt is None:
             pending.append(job.run_key)
             if not attempts:
@@ -267,6 +274,7 @@ def inspect_queue(
         "incomplete_attempts": incomplete_attempts,
         "uncreated": uncreated,
         "attempt_count": attempt_count,
+        "stage_marker_counts": stage_marker_counts,
     }
 
 
@@ -297,6 +305,9 @@ def watch_and_launch(
             "incomplete_attempt_count": len(queue["incomplete_attempts"]),
             "uncreated_count": len(queue["uncreated"]),
             "attempt_count": queue["attempt_count"],
+            "stage1_complete_count": queue["stage_marker_counts"]["stage1"],
+            "stage2_complete_count": queue["stage_marker_counts"]["stage2"],
+            "stage4_complete_count": queue["stage_marker_counts"]["stage4"],
         }
 
     lock_path = contract.artifact_root / "provenance" / "gpu_watch_and_launch.lock"

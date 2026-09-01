@@ -183,29 +183,33 @@ def test_inspect_queue_classifies_manifest_evidence_without_process_claims(
 
     completed_root = artifact_root / "smoke/porto/seed_42/e0_q0"
     failed_old = completed_root / "attempt_001"
-    failed_old.mkdir(parents=True)
+    (failed_old / "stage1").mkdir(parents=True)
     (failed_old / "run_manifest.json").write_text(
         json.dumps({"status": "failed"}), encoding="utf-8"
     )
+    (failed_old / "stage1/complete.json").write_text("{}", encoding="utf-8")
     completed = completed_root / "attempt_002"
-    (completed / "stage4").mkdir(parents=True)
+    for stage in ("stage1", "stage2", "stage4"):
+        (completed / stage).mkdir(parents=True)
+        (completed / stage / "complete.json").write_text("{}", encoding="utf-8")
     (completed / "run_manifest.json").write_text(
         json.dumps({"status": "completed"}), encoding="utf-8"
     )
-    (completed / "stage4/complete.json").write_text("{}", encoding="utf-8")
 
     running = artifact_root / "smoke/porto/seed_42/e1_q0/attempt_001"
-    running.mkdir(parents=True)
+    (running / "stage1").mkdir(parents=True)
     (running / "run_manifest.json").write_text(
         json.dumps({"status": "running"}), encoding="utf-8"
     )
+    (running / "stage1/complete.json").write_text("{}", encoding="utf-8")
 
     failed = artifact_root / "smoke/porto/seed_42/e2_q0/attempt_001"
-    failed.mkdir(parents=True)
+    (failed / "stage1").mkdir(parents=True)
     failure = {"type": "RuntimeError", "message": "fixture failure"}
     (failed / "run_manifest.json").write_text(
         json.dumps({"status": "failed", "failure": failure}), encoding="utf-8"
     )
+    (failed / "stage1/complete.json").write_text("{}", encoding="utf-8")
 
     incomplete = artifact_root / "smoke/porto/seed_42/e3_q0/attempt_001"
     incomplete.mkdir(parents=True)
@@ -227,6 +231,7 @@ def test_inspect_queue_classifies_manifest_evidence_without_process_claims(
     assert result["incomplete_attempts"][0]["reason"] == "missing_run_manifest"
     assert result["uncreated"] == ["smoke/porto/seed_42/e4_q0"]
     assert result["attempt_count"] == 5
+    assert result["stage_marker_counts"] == {"stage1": 3, "stage2": 1, "stage4": 1}
 
 
 def test_validate_only_never_calls_runner_or_creates_attempts(
@@ -267,6 +272,9 @@ def test_validate_only_never_calls_runner_or_creates_attempts(
     assert result["incomplete_attempt_count"] == 0
     assert result["uncreated_count"] == 60
     assert result["attempt_count"] == 0
+    assert result["stage1_complete_count"] == 0
+    assert result["stage2_complete_count"] == 0
+    assert result["stage4_complete_count"] == 0
 
 
 def test_watcher_revalidates_contract_on_every_gpu_poll_and_delegates(
