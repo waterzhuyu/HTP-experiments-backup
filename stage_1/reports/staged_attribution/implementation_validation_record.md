@@ -15,6 +15,7 @@
 - 校正实现分支：`fix/staged-attribution-compact-adapter`
 - 固定子集生成 revision：`a2991e14d509a96830d21c5cfa8f2ae9d4fa1967`
 - 校正重评队列互斥 revision：`5d7cbc7efeb2142472733356694b48c32ba8db18`
+- 校正重评来源/启动身份门禁实现 revision：`081b97bcdc8d8953c0e4d32587688a879945597d`
 - 校正 config SHA-256：`b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb`
 
 研究问题分为两个层次：
@@ -238,8 +239,8 @@ cd /workspace/guozuyu/HTP-staged-attribution-compact-adapter
 uv run --frozen pytest -q
 ```
 
-不可变下游分析证据加固后的最新结果：`281 passed, 23 warnings in 18.80s`。warnings 为既有 PyTorch Transformer
-nested-tensor 提示。
+校正重评来源/启动身份门禁加固后的最新结果：`287 passed, 23 warnings in 19.60s`。warnings
+为既有 PyTorch Transformer nested-tensor 提示。
 
 正式冻结命令：
 
@@ -276,23 +277,12 @@ utilization<=20%，因此未启动任何新队列。
 没有覆盖或删除旧失败。当前 16 个 attempt 对应 12 个唯一 run key：8 个正式完成、4 个正式
 运行、4 个历史失败。
 
-只有完整 60 个 core source attempt 通过 immutable marker/manifest 审计后，才能运行：
+只有完整 60 个 core source attempt 通过 immutable marker/manifest 审计后，才能执行校正重评。
+早期仅检查 source/subset 存在性的命令模板自 `081b97b...` 起已经失效；新入口强制要求完整
+evaluator revision、config SHA、completed-source audit 路径与 audit SHA，不能省略或回退。
+第 13 节给出新的两阶段审计/启动协议。
 
-```bash
-cd /workspace/guozuyu/HTP-staged-attribution-compact-adapter
-uv run --frozen python -m staged_attribution.run_stratified_reevaluation_batch \
-  --config stage_1/configs/staged_attribution/experiment.json \
-  --source-root /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826 \
-  --reevaluation-root /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826_corrected_stratified_5d7cbc7 \
-  --subset-dir /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/fixed_stratified_reevaluation_subsets_a2991e1 \
-  --maximum-parallel 4 \
-  --wait-for-gpu \
-  --poll-seconds 60 \
-  --minimum-free-mib 16000 \
-  --maximum-utilization 20
-```
-
-批处理 preflight 会在缺任一 source attempt 或任一 city×seed 清单时拒绝执行；持久 flock
+批处理 preflight 会在缺任一 source attempt、任一 city×seed 清单或任一身份/哈希证据时拒绝执行；持久 flock
 保证同一 reevaluation root 只有一条队列。锁描述符通过 `pass_fds` 由所有运行子进程继承，
 因此父进程异常结束后，第二条队列仍会在最后一个子进程退出前被拒绝。GPU 不安全时只等待，
 不抢占其他用户进程。之后才依次执行 core 汇总、
@@ -406,3 +396,109 @@ uv run --frozen pytest -q \
 产物，因为正式 core source 仍未齐备；也没有修改正式 watcher、`run_cell`、attempt 或 GPU
 派发。该加固只保证未来结论一旦写入命名目录就不能被同路径不同内容静默替换，不能替代尚待
 执行的固定人口复评与 full confirmation。
+
+## 13. core/adaptive 来源审计与校正重评启动身份门禁
+
+提交 `081b97bcdc8d8953c0e4d32587688a879945597d`（`fix(eval): bind corrected launch
+evidence`）封闭了 completed source audit 与 corrected reevaluation 之间的身份空隙。该变更不修改
+GPS/Road/Grid 输入、模型、loss、训练人口、固定 test population、bootstrap 或选择规则，属于
+provenance 与启动语义加固，不是科学变量。
+
+### 13.1 completed-source audit 的 phase population 契约
+
+`audit_completed_sources` 新增 `--cells`。不传时仍严格生成 10-cell、2-city、3-seed 的 60-job
+core contract；传入显式 cell 集时，生成对应 adaptive phase 的精确 Cartesian contract。审计新增：
+
+- `requested_cell_ids`：规范化后的精确 cell 集；
+- `requested_job_count`：该 phase 的精确 job 数；
+- `requested_run_key_sha256`：排序 run-key 集合的换行规范 SHA-256；
+- `all_requested_sources_completed`：该 phase 是否全部完成；
+- `formal_core_contract`：是否为默认 60-job core；adaptive audit 不再冒充 formal core。
+
+每一行继续封存 source attempt/revision、immutable marker 与 adapter tree、fixed subset
+path/SHA、aligned/token/LLM population audit 和原始 Stage4 population audit。core 与 adaptive 必须
+分别生成新的不可变 audit artifact；不得用 partial audit、另一 cell 集或另一 phase 的 audit 启动。
+
+### 13.2 batch 与单次 runner 的 fail-closed 身份链
+
+batch 在创建 reevaluation root、锁或 attempt 前同时验证：
+
+1. 实际加载模块所在 worktree clean，且 HEAD 等于显式 40 位 evaluator revision；
+2. config 实际 SHA 等于显式 SHA，audit 内 config path/SHA 同时匹配；
+3. audit 是普通非符号链接文件，实际 SHA 等于显式 audit SHA；
+4. audit schema/kind/experiment/budget/source root、生成器 clean revision、fixed subset index
+   path/SHA 全部匹配；
+5. requested cell、job count、run-key hash、missing=0、completed count 与当前 queue 完全一致；
+6. audit 行无重复、无缺失，并逐 job 匹配 cell/city/seed/budget、source attempt、source revision、
+   fixed subset path/SHA。
+
+batch 将 evaluator revision、config SHA、逐 job source revision、audit path/SHA 全部传给单次 runner。
+单次 runner 在创建 `run_dir` 前独立重验 config、audit 文件及 audit 中该 run-key 的唯一行，并把
+完整身份写入 `reevaluation_manifest.json`；pipeline 再把 expected source revision 传入 immutable
+source evidence resolver。即使绕过 batch 直接调用，也不能替换 source attempt 或 subset。
+
+已有 completed reevaluation 仅在 manifest 的 experiment/cell/city/seed/budget、config SHA、source
+attempt/revision、subset、audit path/SHA 和 evaluator Git identity 全部匹配时复用。身份不匹配的旧
+attempt 保持不可变并跳过；新运行使用下一编号，例如 `attempt_002`，不覆盖旧证据。
+
+### 13.3 验证证据
+
+聚焦命令覆盖四个入口：
+
+```bash
+cd /workspace/guozuyu/HTP-staged-attribution-compact-adapter
+PYTHONPATH=stage_1/src uv run --frozen pytest -q \
+  stage_1/tests/staged_attribution/test_audit_completed_sources.py \
+  stage_1/tests/staged_attribution/test_run_stratified_reevaluation_batch.py \
+  stage_1/tests/staged_attribution/test_run_stratified_reevaluation.py \
+  stage_1/tests/staged_attribution/test_stratified_reevaluation_pipeline.py
+```
+
+结果：`19 passed in 4.01s`。负向测试证明错误 evaluator revision、config SHA、audit SHA、cell
+population、source attempt substitution 都在创建目标 attempt 前失败且零子进程；另验证来源
+revision 确实传到 resolver，以及身份不同的旧 completed attempt 产生新的 `attempt_002`。
+
+完整 staged-attribution 集：`268 passed, 23 warnings in 18.27s`；完整 `stage_1/tests`：
+`287 passed, 23 warnings in 19.60s`。config SHA 仍为
+`b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb`。
+
+### 13.4 正式 core 启动模板（尚未执行）
+
+以下模板只能在 60/60 source 完成后使用。`<EVALUATION_REVISION>` 必须替换为当时 clean 候选
+worktree 的完整 HEAD；`<SOURCE_AUDIT_PATH>` 是由同一 revision 生成的新不可变 60-job audit；
+`<SOURCE_AUDIT_SHA256>` 是该文件的实际 SHA。任何占位符、旧 partial audit 或当前 8-source audit
+都会被拒绝。
+
+```bash
+cd /workspace/guozuyu/HTP-staged-attribution-compact-adapter
+uv run --frozen python -m staged_attribution.audit_completed_sources \
+  --config stage_1/configs/staged_attribution/experiment.json \
+  --source-root /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826 \
+  --subset-root /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/fixed_stratified_reevaluation_subsets_a2991e1 \
+  --output <SOURCE_AUDIT_PATH> \
+  --expected-source-revision 6ac87be094c9c1ce4783f10291a339f04623449b \
+  --expected-completed-count 60 \
+  --expected-generator-revision <EVALUATION_REVISION> \
+  --expected-config-sha256 b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb \
+  --require-clean
+
+uv run --frozen python -m staged_attribution.run_stratified_reevaluation_batch \
+  --config stage_1/configs/staged_attribution/experiment.json \
+  --source-root /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826 \
+  --reevaluation-root /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826_corrected_stratified_<REVISION_SHORT> \
+  --subset-dir /home/guozuyu/HTP-staged-attribution-artifacts/staged_attribution/gps_road_grid_staged_attribution_v1_20260826/provenance/fixed_stratified_reevaluation_subsets_a2991e1 \
+  --source-audit <SOURCE_AUDIT_PATH> \
+  --expected-revision <EVALUATION_REVISION> \
+  --expected-config-sha256 b5d82f55040f47a627d2793cf8af0f9dde651c19ad04a8dda016245ffcc946bb \
+  --expected-source-audit-sha256 <SOURCE_AUDIT_SHA256> \
+  --maximum-parallel 4 \
+  --wait-for-gpu \
+  --poll-seconds 60 \
+  --minimum-free-mib 16000 \
+  --maximum-utilization 20
+```
+
+adaptive phase 使用相同两阶段协议，但 audit 与 batch 都必须传同一显式 `--cells <CELL_A>
+<CELL_B> ...`，`--expected-completed-count` 必须等于 `len(cells) × 2 cities × 3 seeds`。选定
+cell 与其 source revision 只能来自已冻结的 core selection/adaptive plan；不得在观察结果后另换
+cell 集。当前未生成 60-job audit、未启动 corrected/adaptive queue，也未修改正式 watcher 或产物。
