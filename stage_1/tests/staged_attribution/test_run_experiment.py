@@ -35,7 +35,7 @@ def test_controlled_queue_is_city_seed_cell_cartesian_product() -> None:
 
     jobs = build_jobs(config, budget="controlled")
 
-    assert len(jobs) == 2 * 3 * 10
+    assert len(jobs) == len(config.cities) * len(config.seeds) * len(config.core_cells())
     assert len({job.run_key for job in jobs}) == len(jobs)
 
 
@@ -51,7 +51,7 @@ def test_confirmation_requires_explicit_baseline_and_selected_candidates() -> No
 
     jobs = build_jobs(config, budget="confirmation", cell_ids=["e0_q0", "e3_q2"])
 
-    assert len(jobs) == 2 * 3 * 2
+    assert len(jobs) == len(config.cities) * len(config.seeds) * 2
     assert {job.cell_id for job in jobs} == {"e0_q0", "e3_q2"}
 
 

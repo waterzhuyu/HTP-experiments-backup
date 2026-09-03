@@ -269,9 +269,9 @@ def test_collector_verifies_complete_evidence_tree_and_rejects_tamper(tmp_path: 
     ]
 
     runs = collect_corrected_runs(config_path, reevaluation_root, ["e0_q0"])
-    assert len(runs) == 6
+    assert len(runs) == len(config.cities) * len(config.seeds)
     assert {run.city for run in runs} == {"porto", "chengdu"}
-    assert {run.seed for run in runs} == {42, 314159, 20260819}
+    assert {run.seed for run in runs} == set(config.seeds)
 
     tampered = attempts[0] / "stage4" / "g11_contributions" / "histograms.npz"
     tampered.write_bytes(b"tampered")

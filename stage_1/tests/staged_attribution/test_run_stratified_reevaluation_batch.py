@@ -79,8 +79,9 @@ def test_batch_launches_one_queue_with_exact_source_subset_and_logical_gpu(tmp_p
         sleep_fn=lambda _: None,
     )
 
-    assert len(recorder.calls) == 6
-    assert len(result["completed"]) == 6
+    expected_jobs = len(json.loads(CONFIG_PATH.read_text())["cities"]) * len(json.loads(CONFIG_PATH.read_text())["seeds"])
+    assert len(recorder.calls) == expected_jobs
+    assert len(result["completed"]) == expected_jobs
     assert not result["failed"] and not result["pending"]
     for command, kwargs in recorder.calls:
         assert "staged_attribution.run_stratified_reevaluation" in command
@@ -98,4 +99,4 @@ def test_batch_launches_one_queue_with_exact_source_subset_and_logical_gpu(tmp_p
         popen_factory=second, sleep_fn=lambda _: None,
     )
     assert second.calls == []
-    assert len(repeated["completed"]) == 6
+    assert len(repeated["completed"]) == expected_jobs

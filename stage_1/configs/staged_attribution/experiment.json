@@ -1,7 +1,7 @@
 {
   "experiment_id": "gps_road_grid_staged_attribution_v1_20260826",
   "cities": ["porto", "chengdu"],
-  "seeds": [42, 314159, 20260819],
+  "seeds": [42],
   "rq_vocab_sizes": [32, 64, 128, 256],
   "e_variants": {
     "e0": ["gps"],

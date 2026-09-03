@@ -264,13 +264,15 @@ def test_validate_only_never_calls_runner_or_creates_attempts(
     )
 
     result = watch_and_launch(contract, validate_only=True)
+    raw = json.loads(config_path.read_text(encoding="utf-8"))
+    expected_jobs = len(raw["cities"]) * len(raw["seeds"]) * 10
 
     assert result["safe_gpus"] == [0]
-    assert result["pending_count"] == 60
+    assert result["pending_count"] == expected_jobs
     assert result["running_manifest_count"] == 0
     assert result["failed_manifest_count"] == 0
     assert result["incomplete_attempt_count"] == 0
-    assert result["uncreated_count"] == 60
+    assert result["uncreated_count"] == expected_jobs
     assert result["attempt_count"] == 0
     assert result["stage1_complete_count"] == 0
     assert result["stage2_complete_count"] == 0

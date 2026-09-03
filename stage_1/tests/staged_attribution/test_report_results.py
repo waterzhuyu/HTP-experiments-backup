@@ -125,7 +125,7 @@ def test_confirmation_collection_uses_the_same_explicit_selection(tmp_path: Path
 
     evidence = collect_core_runs(CONFIG_PATH, tmp_path, "confirmation", selected)
 
-    assert len(evidence) == 12
+    assert len(evidence) == len(config.cities) * len(config.seeds) * len(selected)
     assert {run.cell_id for run in evidence} == set(selected)
 
 

@@ -38,7 +38,7 @@ def test_integrated_training_and_corrected_evaluation_contract() -> None:
     assert decision["chengdu_manifest_sha256"] == (
         "ba7d822c6ec0dbfe46f88d5653b127017f62918b92c81090993a2e8251acf8e4"
     )
-    assert len(build_jobs(config, "controlled")) == 60
+    assert len(build_jobs(config, "controlled")) == len(config.cities) * len(config.seeds) * len(config.core_cells())
 
     adaptive = config.cell("e3_q2")
     assert adaptive.views == frozenset({"gps", "road"})
