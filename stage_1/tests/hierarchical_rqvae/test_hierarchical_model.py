@@ -87,3 +87,12 @@ def test_padding_is_ignored_by_head_targets():
 def test_invalid_depth_rejected(depths):
     with pytest.raises(ValueError, match='prefix depth'):
         model(depths=depths)
+
+
+def test_full_prefix_diagnostic_decoder_equals_production():
+    m=model().eval();batch=fixtures.complete_batch()
+    out=m.encode_views(batch)
+    a=m.decode(out['codes'][out['latent_mask']],out['latent_lengths'],out['lens_type'],batch)
+    b=m.decode_quantized(out['prefix_vectors'][:,-1],out['latent_lengths'],out['lens_type'],batch)
+    for x,y in zip(a,b):
+        assert torch.allclose(x,y,atol=1e-6)

@@ -24,6 +24,7 @@ from staged_attribution.losses import LOSS_NAMES
 from staged_attribution.train_stage1 import train_step, build_cosine_warmup_scheduler, save_stage1_artifacts
 from staged_attribution.stage4_metrics import evaluate_population
 from staged_attribution.generate_stage3 import run_hf_generation
+from staged_attribution.train_stage2 import run_hf_stage2
 
 
 class BudgetExhausted(RuntimeError):
@@ -68,6 +69,8 @@ class Backend(PipelineBackend):
         self.aligned_root = Path(self.manifest['cohort'])
         self._datasets, self._road_context = {}, None
         self.deadline = deadline
+        self._last_size_check = 0.0
+        self.artifact_scope = self.config.paths["artifact_root"] / self.plan["experiment_id"] / phase
         self.resolved = {'experiment_id':self.plan['experiment_id'], 'cell_id':cell_id, 'city':self.city,
             'seed':seed, 'budget':phase, 'evaluation_split':'validation_from_official_train',
             'revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
@@ -83,6 +86,19 @@ class Backend(PipelineBackend):
                 raise ValueError('insufficient frozen cohort')
             self._datasets[split] = base
         return self._datasets[split]
+
+    def _loader(self, split, shuffle=False):
+        from torch.nn.utils.rnn import pad_sequence
+        dataset=self._dataset(split)
+        base_collate=make_collator(self._context())
+        def precise_collate(items):
+            batch=base_collate(items)
+            batch['time']=pad_sequence([torch.as_tensor(
+                np.asarray(dataset.records_by_id[int(item['traj_id'])]['time_seq'],dtype=np.float64))
+                for item in items],batch_first=True,padding_value=0.)
+            return batch
+        return DataLoader(dataset,batch_size=self.budget.stage1_batch_size,shuffle=shuffle,
+            generator=torch.Generator().manual_seed(self.seed),num_workers=0,collate_fn=precise_collate)
 
     def _context(self):
         if self._road_context is None:
@@ -112,6 +128,11 @@ class Backend(PipelineBackend):
     def check_budget(self):
         if time.monotonic() >= self.deadline:
             raise BudgetExhausted('phase GPU-hours cap reached')
+        if time.monotonic() - self._last_size_check > 30:
+            self._last_size_check = time.monotonic()
+            size = sum(p.stat().st_size for p in self.artifact_scope.rglob('*') if p.is_file())
+            if size >= self.plan['budgets']['pilot']['artifact_gib_cap'] * 1024**3:
+                raise BudgetExhausted('artifact byte cap reached')
 
     def _stage1(self, run_dir):
         output = run_dir/'stage1'; output.mkdir(parents=True,exist_ok=True)
@@ -164,6 +185,35 @@ class Backend(PipelineBackend):
         atomic_json(run_dir/'stage2_data'/'length_audit.json',audit)
         return paths
 
+    def _stage2(self, run_dir):
+        from transformers import TrainerCallback
+        backend = self
+        class BudgetCallback(TrainerCallback):
+            def on_step_end(self, args, state, control, **kwargs):
+                try:
+                    backend.check_budget()
+                except BudgetExhausted:
+                    # Save only trainable state plus optimizer, never another base-model copy.
+                    model = kwargs['model']
+                    torch.save({'trainable_parameters':{k:p.detach().cpu() for k,p in model.named_parameters() if p.requires_grad},
+                        'optimizer':kwargs['optimizer'].state_dict(), 'step':state.global_step,
+                        'resolved_config':backend.resolved}, run_dir/'stage2/interrupted_trainable_state.pt')
+                    raise
+                return control
+        output = run_dir/'stage2'
+        frame = pd.read_parquet(run_dir/'stage2_data/llm_train.parquet')
+        eval_frame = pd.read_parquet(run_dir/'stage2_data/llm_test.parquet')
+        metadata = json.loads((self.aligned_root/'metadata.json').read_text())
+        result = run_hf_stage2(frame, self.config.paths['model_root'], output, metadata['num_roads'],
+            self.seed, self.budget.stage2_epochs, self.budget.stage2_max_steps,
+            batch_size=self.budget.stage2_batch_size, gradient_accumulation=self.budget.stage2_gradient_accumulation,
+            eval_frame=eval_frame, runtime_guard=self.check_budget, extra_callbacks=[BudgetCallback()])
+        atomic_json(output/'adapter_manifest.json', {'adapter':result['adapter'],
+            'base_model':str(self.config.paths['model_root']), 'cell_id':self.cell_id,
+            'tokenizer_sha256':sha256(run_dir/'stage1/stage1_model.pt'),
+            'adapter_storage':result['adapter_storage'], 'seed':self.seed})
+        return {str(p.relative_to(output)):p for p in output.rglob('*') if p.is_file()}
+
     def _stage3(self,run_dir):
         output=run_dir/'stage3'; output.mkdir(parents=True,exist_ok=True)
         frame=pd.read_parquet(run_dir/'stage2_data/llm_test.parquet')
@@ -171,7 +221,8 @@ class Backend(PipelineBackend):
         frame=frame[frame.traj_id.isin(manifest['generation']['traj_ids'])]
         metadata=json.loads((self.aligned_root/'metadata.json').read_text())
         result=run_hf_generation(frame,run_dir/'stage2/adapter',output/'generations.jsonl',metadata['num_roads'],
-            self.seed,device=str(self.device),batch_size=1,max_new_tokens=256,progress_path=output/'generation_progress.json')
+            self.seed,device=str(self.device),batch_size=1,max_new_tokens=256,progress_path=output/'generation_progress.json',
+            progress_interval=1, runtime_guard=self.check_budget)
         atomic_json(output/'generation_audit.json',result['audit'])
         return {'generations':output/'generations.jsonl'}
 
@@ -196,6 +247,28 @@ class Backend(PipelineBackend):
         return {'metrics':output/'stage4_metrics.json'}
 
 
+    def _diagnostics(self,run_dir):
+        from hierarchical_rqvae.diagnostics import collect_codes, frozen_probes, decode_level_interventions, progress_gps_errors
+        output=run_dir/'diagnostics';output.mkdir(parents=True,exist_ok=True)
+        model=self._load_model(run_dir)
+        train,_=collect_codes(model,self._loader('train'),self.device,self.check_budget)
+        val,sampling=collect_codes(model,self._loader('test'),self.device,self.check_budget,sampling=True)
+        torch.save({'train':train,'validation':val},output/'frozen_features.pt')
+        atomic_json(output/'sampling.json',sampling)
+        metadata=json.loads((self.aligned_root/'metadata.json').read_text())
+        probes=frozen_probes(train,val,metadata['num_grids'],metadata['num_roads'],output/'probes',
+            self.device,self.check_budget,epochs=1 if self.phase=='smoke' else 10)
+        decode_level_interventions(self,model,val,output/'interventions')
+        dataset=self._dataset('test')
+        errors={}
+        for variant in ('g00','g10','g01','g11'):
+            rows=[json.loads(line) for line in (run_dir/'decode'/f'{variant}_reconstructed.jsonl').read_text().splitlines()]
+            errors[variant]=[{'traj_id':r['traj_id'],**progress_gps_errors(dataset.records_by_id[int(r['traj_id'])]['gps_seq'],r['gps_traj'])}
+                if r['status']=='reconstructed' else {'traj_id':r['traj_id'],'status':'failed','gps_errors':None} for r in rows]
+        atomic_json(output/'gps_errors.json',errors)
+        return {str(p.relative_to(output)):p for p in output.rglob('*') if p.is_file()}
+
+
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--config',required=True); parser.add_argument('--preflight',required=True)
@@ -217,6 +290,9 @@ def main():
         print(json.dumps({'valid':True,'phase':args.phase,'cells':args.cells})); return
     if not torch.cuda.is_available():
         raise RuntimeError('CUDA required')
+    free, total = torch.cuda.mem_get_info()
+    if free < 23 * 1024**3:
+        raise RuntimeError('GPU has less than 23 GiB free; wait without launching')
     torch.set_num_threads(4)
     cap=plan['budgets'][args.phase]['gpu_hours_cap']*3600
     root=Path(plan['paths']['artifact_root'])/plan['experiment_id']/args.phase/'porto'/str(args.seed)
@@ -232,14 +308,23 @@ def main():
         manifest={**backend.resolved,'status':'running','command':sys.argv,'pid':os.getpid(),'started_at':time.time(),'elapsed_seconds':0,'stages':{}}
         started=time.monotonic()
         try:
-            for stage in ('stage1','tokens','stage2_data','stage2','stage3','g_attribution','decode','stage4'):
+            for stage in ('stage1','tokens','stage2_data','stage2','stage3','g_attribution','decode','stage4','diagnostics'):
                 backend.check_budget()
+                for completed_stage in manifest['stages'].values():
+                    for relative, evidence in completed_stage['artifacts'].items():
+                        if sha256(run_dir/relative) != evidence['sha256']:
+                            raise ValueError(f'artifact changed before consuming: {relative}')
+                torch.cuda.reset_peak_memory_stats()
+                stage_started=time.monotonic()
                 manifest['current_stage']=stage
                 atomic_json(run_dir/'run_manifest.json',manifest)
                 print(f'{cell}: {stage}',flush=True)
                 paths=getattr(backend,'_'+stage)(run_dir)
                 evidence={str(p.relative_to(run_dir)):{'sha256':sha256(p),'bytes':p.stat().st_size} for p in paths.values()}
-                manifest['stages'][stage]={'status':'completed','artifacts':evidence}
+                manifest['stages'][stage]={'status':'completed','artifacts':evidence,
+                    'elapsed_seconds':time.monotonic()-stage_started,
+                    'peak_allocated_bytes':torch.cuda.max_memory_allocated(),
+                    'peak_reserved_bytes':torch.cuda.max_memory_reserved()}
                 manifest['elapsed_seconds']=time.monotonic()-started
                 atomic_json(run_dir/'run_manifest.json',manifest)
                 gc.collect(); torch.cuda.empty_cache()

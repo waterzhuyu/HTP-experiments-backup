@@ -235,6 +235,7 @@ def run_hf_generation(
     device: str = "cuda",
     progress_path: str | Path | None = None,
     progress_interval: int = 10,
+    runtime_guard=None,
 ) -> dict[str, object]:
     """Generate every requested ID and preserve malformed outputs as explicit failures."""
     if frame["traj_id"].duplicated().any():
@@ -273,6 +274,8 @@ def run_hf_generation(
         if progress is not None:
             progress.running()
         for start in range(0, len(ordered), batch_size):
+            if runtime_guard is not None:
+                runtime_guard()
             rows = ordered.iloc[start : start + batch_size]
             prompts = [format_generation_prompt(str(value)) for value in rows["desc"]]
             encoded = tokenizer(prompts, return_tensors="pt", padding=True, truncation=False)
@@ -303,6 +306,7 @@ def run_hf_generation(
         if progress is not None:
             progress.complete(audit)
     except Exception as error:
+        _atomic_jsonl(Path(output_path).with_suffix(".partial.jsonl"), results)
         if progress is not None:
             progress.fail(error)
         raise

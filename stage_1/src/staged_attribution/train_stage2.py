@@ -391,6 +391,7 @@ def evaluate_teacher_forced_model(
     batch_size: int = 4,
     progress_path: str | Path | None = None,
     progress_interval: int = 100,
+    runtime_guard=None,
 ) -> dict[str, object]:
     if batch_size <= 0:
         raise Stage2DataError("teacher-forced evaluation batch_size must be positive")
@@ -409,6 +410,7 @@ def evaluate_teacher_forced_model(
     total_tokens = 0
     correct = {name: 0 for name in token_groups}
     denominators = {name: 0 for name in token_groups}
+    group_loss_sums = {name: 0.0 for name in token_groups}
     first_errors: Counter[str] = Counter()
     exact = 0
     population = 0
@@ -429,19 +431,21 @@ def evaluate_teacher_forced_model(
         )
     try:
         for batch in loader:
+            if runtime_guard is not None:
+                runtime_guard()
             batch = {name: value.to(device) for name, value in batch.items()}
             output = model(**batch)
             shifted_logits = output.logits[:, :-1]
             shifted_labels = batch["labels"][:, 1:]
             tokens = int((shifted_labels != -100).sum())
-            total_loss += float(
-                F.cross_entropy(
-                    shifted_logits.reshape(-1, shifted_logits.shape[-1]),
-                    shifted_labels.reshape(-1),
-                    ignore_index=-100,
-                    reduction="sum",
-                )
-            )
+            token_losses = F.cross_entropy(
+                shifted_logits.float().reshape(-1, shifted_logits.shape[-1]),
+                shifted_labels.reshape(-1), ignore_index=-100, reduction="none",
+            ).reshape_as(shifted_labels)
+            total_loss += float(token_losses.sum())
+            for group_name, ids in token_groups.items():
+                selected = torch.isin(shifted_labels, torch.tensor(sorted(ids), device=device))
+                group_loss_sums[group_name] += float(token_losses[selected].sum())
             total_tokens += tokens
             grouped = grouped_teacher_forced_accuracy(
                 shifted_logits.argmax(dim=-1).cpu(), shifted_labels.cpu(), token_groups
@@ -489,6 +493,10 @@ def evaluate_teacher_forced_model(
                 for name in token_groups
             },
             "denominators": denominators,
+            "group_nll": {name: group_loss_sums[name] / denominators[name]
+                          if denominators[name] else None for name in token_groups},
+            "sid_nll": (sum(v for name, v in group_loss_sums.items() if name.startswith("layer_"))
+                        / max(1, sum(v for name, v in denominators.items() if name.startswith("layer_")))),
             "sequence_exact_accuracy": exact / population,
             "first_error_histogram": dict(first_errors),
         }
@@ -543,6 +551,8 @@ def run_hf_stage2(
     lora_alpha: int = 32,
     lora_dropout: float = 0.05,
     eval_frame: pd.DataFrame | None = None,
+    runtime_guard=None,
+    extra_callbacks=None,
 ) -> dict[str, object]:
     """Train the frozen Stage2 recipe; heavyweight libraries are imported only here."""
     from peft import LoraConfig, TaskType, get_peft_model
@@ -603,7 +613,7 @@ def run_hf_stage2(
             args=arguments,
             train_dataset=_TokenizedDataset(tokenized),
             data_collator=collator,
-            callbacks=[_training_progress_callback(training_progress)],
+            callbacks=[_training_progress_callback(training_progress)] + list(extra_callbacks or []),
         )
         train_result = trainer.train()
         training_progress.complete(
@@ -642,6 +652,7 @@ def run_hf_stage2(
             token_groups,
             next(model.parameters()).device,
             progress_path=output / "evaluation_progress.json",
+            runtime_guard=runtime_guard,
         )
     metrics = {"train": train_metrics, "teacher_forced": teacher_forced}
     token_budget = {

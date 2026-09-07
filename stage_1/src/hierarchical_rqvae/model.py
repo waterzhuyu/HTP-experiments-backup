@@ -7,6 +7,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from torch.utils.checkpoint import checkpoint
+from torch.nn.utils.rnn import pad_sequence
 
 from staged_attribution.model import AttributionRQVAE
 from staged_attribution.quantizer import AttributionRQBottleneck
@@ -105,3 +106,19 @@ class HierarchicalRQVAE(AttributionRQVAE):
             losses = {k: output["loss"] * 0 for k in self.view_weights}
         output["view_losses"] = losses
         return output
+
+    @torch.no_grad()
+    def decode_quantized(self, values, code_lengths, lens_type, batch):
+        """Diagnostic decoder for real cumulative prefixes; omitted residuals are zero."""
+        if values.ndim != 2 or len(values) != int(code_lengths.sum()):
+            raise ValueError('quantized values and code_lengths disagree')
+        projected = self.rq_post_quant_linear(values)
+        sequences = torch.split(projected, code_lengths.tolist())
+        decoder_latent = pad_sequence(sequences, batch_first=True, padding_value=0.)
+        route_embedding, route_mask = self._route_context(batch)
+        decoded, mask = self.decoder(decoder_latent,code_lengths,lens_type.bool().T,route_embedding,route_mask)
+        percent = torch.zeros(mask.shape,device=values.device)
+        dxy = torch.zeros(*mask.shape,2,device=values.device)
+        percent[mask] = self.percent_head(decoded[mask]).squeeze(-1)
+        dxy[mask] = self.dxy_head(decoded[mask])
+        return percent,dxy,mask.sum(-1)
