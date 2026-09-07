@@ -71,7 +71,8 @@ class Backend(PipelineBackend):
         self.deadline = deadline
         self._last_size_check = 0.0
         self.artifact_scope = self.config.paths["artifact_root"] / self.plan["experiment_id"] / phase
-        self.resolved = {'experiment_id':self.plan['experiment_id'], 'cell_id':cell_id, 'city':self.city,
+        model_manifest=Path(preflight_path)/'model_manifest.json'
+        self.resolved = {'base_model_manifest_sha256':sha256(model_manifest) if model_manifest.exists() else None, 'experiment_id':self.plan['experiment_id'], 'cell_id':cell_id, 'city':self.city,
             'seed':seed, 'budget':phase, 'evaluation_split':'validation_from_official_train',
             'revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
             'config_sha256':sha256(self.config_path),'preflight_sha256':sha256(Path(preflight_path)/'manifest.json'),
@@ -283,7 +284,22 @@ def main():
         raise RuntimeError('execution disabled')
     if subprocess.check_output(['git','status','--porcelain'],text=True).strip():
         raise RuntimeError('dirty worktree: commit before execution')
-    verify_preflight(args.preflight)
+    preflight_manifest=verify_preflight(args.preflight)
+    if args.phase=='pilot':
+        audit_path=Path(args.preflight)/'alignment_audit.json'
+        if not json.loads(audit_path.read_text())['passed']:
+            raise ValueError('pointwise data audit has not passed')
+        model_manifest=json.loads((Path(args.preflight)/'model_manifest.json').read_text())
+        for path,digest in model_manifest['hashes'].items():
+            if sha256(path)!=digest: raise ValueError('base model artifact changed')
+        for path,digest in preflight_manifest['source_hashes'].items():
+            if sha256(path)!=digest: raise ValueError('source data artifact changed')
+        original=Path(args.config).with_name('plan.json')
+        if sha256(original)!=preflight_manifest['config_sha256']:
+            raise ValueError('original scientific plan changed after preflight')
+        frozen=json.loads(original.read_text())
+        for key in ('data','model','cells','tokenizer_training','llm_training','generation','gates','evaluation'):
+            if plan[key]!=frozen[key]: raise ValueError(f'scientific configuration drift: {key}')
     if any(c not in plan['cells'] for c in args.cells):
         raise ValueError('unknown cell')
     if args.validate_only:
