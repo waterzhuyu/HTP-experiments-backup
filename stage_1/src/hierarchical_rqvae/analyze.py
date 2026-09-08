@@ -87,7 +87,7 @@ def verify_attempt(path, reference=None):
     return m,count
 
 
-def analyze(root, cells, n_resamples=2000, seed=271828):
+def analyze(root, cells, n_resamples=2000, seed=271828, interventions_root=None):
     attempts={c:root/'pilot'/'porto'/'42'/c/'attempt_001' for c in cells}
     manifests={}; verified={}; metrics={}; output={}
     for c,p in attempts.items():
@@ -118,7 +118,19 @@ def analyze(root, cells, n_resamples=2000, seed=271828):
             'g':{g:{k:v for k,v in metrics[c][g].items() if k!='per_trajectory'} for g in GROUPS},
             'gps':gps_summary, 'shapley':{k:{'mean':float(v.mean()),'ci95':interval(weights@v/len(ids))} for k,v in sv.items()},
             'probes':read(p/'diagnostics/probes/metrics.json'), 'sampling':read(p/'diagnostics/sampling.json')}
-        iv=read(p/'diagnostics/interventions/metrics.json')
+        if interventions_root is None:
+            iv=read(p/'diagnostics/interventions/metrics.json')
+            output[c]['intervention_status']='superseded_batch_dependent_do_not_interpret'
+        else:
+            corrected=interventions_root/c
+            audit=read(corrected/'audit_manifest.json')
+            if audit['status']!='completed' or audit['source_manifest_sha256']!=digest(p/'run_manifest.json'):
+                raise ValueError('uncertified corrected interventions')
+            for name,sha in audit['artifacts'].items():
+                if digest(corrected/name)!=sha: raise ValueError('corrected artifact hash mismatch')
+            iv=read(corrected/'metrics.json')
+            output[c]['intervention_status']='corrected_production_singleton'
+            output[c]['intervention_audit']=audit
         # Strip only per-trajectory rows and donor IDs; retain aggregate intervention evidence.
         def compact(x):
             if isinstance(x,dict):
@@ -186,9 +198,10 @@ def analyze(root, cells, n_resamples=2000, seed=271828):
 def main():
     p=argparse.ArgumentParser(); p.add_argument('--root',type=Path,required=True)
     p.add_argument('--cells',nargs='+',default=['B0','B1','B2','H1','H2','H3']); p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--interventions-root',type=Path)
     args=p.parse_args()
     if args.output.exists(): raise ValueError('refusing overwrite of analysis record')
-    result=analyze(args.root,args.cells); args.output.parent.mkdir(parents=True,exist_ok=True)
+    result=analyze(args.root,args.cells,interventions_root=args.interventions_root); args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
     print(json.dumps({'status':result['status'],'primary':result['contrasts']['H1-B2']['primary'],
                       'repeat_gate':result['repeat_gate'],'gates':result['gates']},indent=2))
