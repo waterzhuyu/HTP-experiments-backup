@@ -127,6 +127,7 @@ def build_metric_contributions(
     city: str,
     *,
     top_k: int = 100,
+    histogram_edges: Mapping[str, Sequence[float]] | None = None,
     mbr: Mapping[str, float] | None = None,
     grid: Mapping[str, float | int] | None = None,
 ) -> PopulationMetricContributions:
@@ -208,7 +209,17 @@ def build_metric_contributions(
     histograms: dict[str, tuple[np.ndarray, np.ndarray]] = {}
     supports: dict[str, Sequence[float] | str] = {}
     for metric, (first_rows, second_rows) in histogram_values.items():
-        if not valid.any():
+        if histogram_edges is not None:
+            edges = np.asarray(histogram_edges[metric], dtype=np.float64)
+            if edges.ndim != 1 or len(edges) < 2 or not np.isfinite(edges).all() or not (np.diff(edges) > 0).all():
+                raise ValueError(f"invalid common histogram edges: {metric}")
+            first_matrix = _histogram_rows(first_rows, edges)
+            second_matrix = _histogram_rows(second_rows, edges)
+            if (first_matrix.sum() != sum(map(len, first_rows)) or
+                    second_matrix.sum() != sum(map(len, second_rows))):
+                raise ValueError(f"common support drops observations: {metric}")
+            supports[metric] = edges.tolist()
+        elif not valid.any():
             first_matrix = second_matrix = np.zeros((len(ids), 1), dtype=np.float64)
             supports[metric] = "no_success"
         else:
