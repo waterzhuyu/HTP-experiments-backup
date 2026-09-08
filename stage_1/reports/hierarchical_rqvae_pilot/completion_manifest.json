@@ -1,0 +1,37 @@
+{
+  "status": "completed",
+  "decision": "stop_after_pilot_no_repeat_no_test_no_confirmation",
+  "training_revision": "280f83b3e4fda51db95911203368788255fceda3",
+  "main_analysis_revision": "75d53ed2992670fe3b4895c9ce97099ca5033367",
+  "tuple_analysis_revision": "5fe357a66d1c34652bfca50ecffc6699e20c6ef6",
+  "files": {
+    "pilot_analysis.md": {
+      "sha256": "0a4110d66976a889b776b1992f24a9572c77adae9927de9bb3eed5e1b2e1d7bd",
+      "bytes": 15168
+    },
+    "final_statistics.json": {
+      "sha256": "4d85dee686502371a228a91cc4c2a7bf4d1b3b45f9812df9502e06f8cf22aee8",
+      "bytes": 275193
+    },
+    "domains_final.json": {
+      "sha256": "7d86b965859b40ee40c329657edf823cbee2a29bd30c34c4c36527e43c6dfc46",
+      "bytes": 16935
+    },
+    "information.json": {
+      "sha256": "cd5f9029b77bde80cc938a9441ffa9aa8b81f8ec4c4b3ee5d6cc6005e4a0d44d",
+      "bytes": 114369
+    },
+    "source_run_ledger.json": {
+      "sha256": "496404d4bd714ea6c2b0444a9e038b5c02a6c196d6aa069b620c009a5f7eb6e9",
+      "bytes": 20720
+    },
+    "queue_manifest.json": {
+      "sha256": "45679cf5c31014c9e5337bfafd0ca157034dc615228fbae8867ea1c0898fe991",
+      "bytes": 4256
+    },
+    "tuple_accuracy_summary.json": {
+      "sha256": "bd368eb5f5448b68e3093241ca4002cbfbc44d60969a4e3c99729a488ca0edb1",
+      "bytes": 38784
+    }
+  }
+}

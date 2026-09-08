@@ -1,0 +1,1330 @@
+{
+  "status": "completed",
+  "artifact_root": "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907",
+  "launcher": {
+    "pid": 3923230,
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "-m",
+      "hierarchical_rqvae.audit_tuple_accuracy",
+      "--root",
+      "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907",
+      "--output",
+      "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/analysis/tuple_accuracy_001"
+    ],
+    "revision": "5fe357a66d1c34652bfca50ecffc6699e20c6ef6",
+    "started_at": 1788850939.240882,
+    "log": "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/analysis/tuple_accuracy_launcher_001.log"
+  },
+  "cells": {
+    "B0": {
+      "status": "completed",
+      "analysis_revision": "5fe357a66d1c34652bfca50ecffc6699e20c6ef6",
+      "source_manifest_sha256": "b15c0b19c3dad57b8d874c891796fb5955a63299083bb172a473fcdb32e05120",
+      "training_revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "source_artifact_count": 93,
+      "population": 1024,
+      "elapsed_seconds": 87.24342689849436,
+      "teacher_forced": {
+        "events": 5996,
+        "tuple_correct": 1164,
+        "tuple_accuracy": 0.1941294196130754,
+        "layer_correct": [
+          3842,
+          4074,
+          3845,
+          3700
+        ],
+        "layer_accuracy": [
+          0.6407605070046698,
+          0.6794529686457639,
+          0.6412608405603736,
+          0.6170780520346898
+        ],
+        "first_wrong_layer_counts": {
+          "1": 2154,
+          "2": 1203,
+          "3": 895,
+          "4": 580,
+          "all_correct": 1164
+        },
+        "correctness_pattern_counts": {
+          "14": 547,
+          "7": 580,
+          "13": 446,
+          "5": 332,
+          "6": 369,
+          "15": 1164,
+          "10": 313,
+          "1": 176,
+          "11": 561,
+          "12": 240,
+          "0": 132,
+          "3": 334,
+          "9": 249,
+          "8": 180,
+          "4": 167,
+          "2": 206
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 3842,
+              "correct": 2639,
+              "accuracy": 0.6868818323789693
+            },
+            "earlier_any_wrong": {
+              "events": 2154,
+              "correct": 1435,
+              "accuracy": 0.6662024141132776
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 2639,
+              "correct": 1744,
+              "accuracy": 0.660856384994316
+            },
+            "earlier_any_wrong": {
+              "events": 3357,
+              "correct": 2101,
+              "accuracy": 0.625856419422103
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 1744,
+              "correct": 1164,
+              "accuracy": 0.6674311926605505
+            },
+            "earlier_any_wrong": {
+              "events": 4252,
+              "correct": 2536,
+              "accuracy": 0.5964252116650988
+            }
+          }
+        }
+      },
+      "free_running": {
+        "events": 5996,
+        "tuple_correct": 506,
+        "tuple_accuracy": 0.08438959306204136,
+        "layer_correct": [
+          2625,
+          2525,
+          2322,
+          2169
+        ],
+        "layer_accuracy": [
+          0.4377918612408272,
+          0.42111407605070045,
+          0.38725817211474317,
+          0.3617411607738492
+        ],
+        "first_wrong_layer_counts": {
+          "1": 3371,
+          "2": 1155,
+          "3": 629,
+          "4": 335,
+          "all_correct": 506
+        },
+        "correctness_pattern_counts": {
+          "0": 1542,
+          "8": 319,
+          "1": 449,
+          "3": 315,
+          "2": 372,
+          "9": 184,
+          "15": 506,
+          "6": 227,
+          "7": 335,
+          "4": 286,
+          "13": 221,
+          "12": 169,
+          "14": 277,
+          "5": 301,
+          "11": 314,
+          "10": 179
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 2625,
+              "correct": 1470,
+              "accuracy": 0.56
+            },
+            "earlier_any_wrong": {
+              "events": 3371,
+              "correct": 1055,
+              "accuracy": 0.312963512310887
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 1470,
+              "correct": 841,
+              "accuracy": 0.572108843537415
+            },
+            "earlier_any_wrong": {
+              "events": 4526,
+              "correct": 1481,
+              "accuracy": 0.32722050375607603
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 841,
+              "correct": 506,
+              "accuracy": 0.6016646848989299
+            },
+            "earlier_any_wrong": {
+              "events": 5155,
+              "correct": 1663,
+              "accuracy": 0.32259941804073716
+            }
+          }
+        }
+      },
+      "free_running_failed_trajectories": 0,
+      "free_running_extra_events": 44,
+      "reevaluated_metrics": {
+        "population": 1024,
+        "tokens": 52064,
+        "nll": 0.45889672180883856,
+        "perplexity": 1.582327274444657,
+        "accuracy": {
+          "layer_0": 0.6407605070046698,
+          "layer_1": 0.6794529686457639,
+          "layer_2": 0.6412608405603736,
+          "layer_3": 0.6170780520346898,
+          "sampling": 0.7197265625
+        },
+        "denominators": {
+          "layer_0": 5996,
+          "layer_1": 5996,
+          "layer_2": 5996,
+          "layer_3": 5996,
+          "sampling": 1024
+        },
+        "group_nll": {
+          "layer_0": 0.9431589225517105,
+          "layer_1": 0.8274361307100903,
+          "layer_2": 0.9780764497066037,
+          "layer_3": 1.0933551096454948,
+          "sampling": 0.8288287476461846
+        },
+        "sid_nll": 0.9605066531534748,
+        "sequence_exact_accuracy": 0.0009765625,
+        "first_error_histogram": {
+          "layer_0": 329,
+          "layer_3": 89,
+          "layer_2": 137,
+          "sampling": 287,
+          "layer_1": 181,
+          "none": 1
+        }
+      },
+      "original_sid_nll": 0.960582597403625,
+      "sid_nll_absolute_difference": 7.59442501501173e-05,
+      "interpretation": [
+        "teacher-forced later-layer conditional accuracy is error association, not causal propagation",
+        "free-running uses ordinal target event alignment; missing events and failed trajectories count wrong",
+        "free-running extra events reported separately; tuple accuracy denominator is all target events",
+        "same 1024 validation trajectories; frozen saved adapter; no retraining; supplementary diagnostic"
+      ]
+    },
+    "B1": {
+      "status": "completed",
+      "analysis_revision": "5fe357a66d1c34652bfca50ecffc6699e20c6ef6",
+      "source_manifest_sha256": "1af15ca0bf147d76de8032692183109cc99cb4cf9fa4419d63d0b11dc0efe1f2",
+      "training_revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "source_artifact_count": 93,
+      "population": 1024,
+      "elapsed_seconds": 86.2941923532635,
+      "teacher_forced": {
+        "events": 5996,
+        "tuple_correct": 788,
+        "tuple_accuracy": 0.1314209472981988,
+        "layer_correct": [
+          3290,
+          3646,
+          3503,
+          3502
+        ],
+        "layer_accuracy": [
+          0.5486991327551701,
+          0.6080720480320213,
+          0.5842228152101401,
+          0.5840560373582389
+        ],
+        "first_wrong_layer_counts": {
+          "1": 2706,
+          "2": 1218,
+          "3": 816,
+          "4": 468,
+          "all_correct": 788
+        },
+        "correctness_pattern_counts": {
+          "8": 221,
+          "9": 279,
+          "0": 287,
+          "13": 466,
+          "1": 177,
+          "2": 314,
+          "4": 296,
+          "11": 509,
+          "10": 399,
+          "5": 296,
+          "3": 307,
+          "14": 512,
+          "6": 349,
+          "12": 328,
+          "15": 788,
+          "7": 468
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 3290,
+              "correct": 2072,
+              "accuracy": 0.6297872340425532
+            },
+            "earlier_any_wrong": {
+              "events": 2706,
+              "correct": 1574,
+              "accuracy": 0.581670362158167
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 2072,
+              "correct": 1256,
+              "accuracy": 0.6061776061776062
+            },
+            "earlier_any_wrong": {
+              "events": 3924,
+              "correct": 2247,
+              "accuracy": 0.5726299694189603
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 1256,
+              "correct": 788,
+              "accuracy": 0.6273885350318471
+            },
+            "earlier_any_wrong": {
+              "events": 4740,
+              "correct": 2714,
+              "accuracy": 0.5725738396624472
+            }
+          }
+        }
+      },
+      "free_running": {
+        "events": 5996,
+        "tuple_correct": 440,
+        "tuple_accuracy": 0.0733822548365577,
+        "layer_correct": [
+          2419,
+          2334,
+          1901,
+          1825
+        ],
+        "layer_accuracy": [
+          0.4034356237491661,
+          0.38925950633755835,
+          0.31704469646430955,
+          0.3043695797198132
+        ],
+        "first_wrong_layer_counts": {
+          "1": 3577,
+          "2": 1110,
+          "3": 576,
+          "4": 293,
+          "all_correct": 440
+        },
+        "correctness_pattern_counts": {
+          "2": 503,
+          "0": 1930,
+          "9": 196,
+          "1": 437,
+          "4": 242,
+          "11": 230,
+          "3": 346,
+          "12": 115,
+          "7": 293,
+          "5": 262,
+          "10": 188,
+          "15": 440,
+          "13": 215,
+          "8": 265,
+          "6": 158,
+          "14": 176
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 2419,
+              "correct": 1309,
+              "accuracy": 0.5411326994625878
+            },
+            "earlier_any_wrong": {
+              "events": 3577,
+              "correct": 1025,
+              "accuracy": 0.2865529773553257
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 1309,
+              "correct": 733,
+              "accuracy": 0.5599694423223835
+            },
+            "earlier_any_wrong": {
+              "events": 4687,
+              "correct": 1168,
+              "accuracy": 0.24919991465756347
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 733,
+              "correct": 440,
+              "accuracy": 0.6002728512960437
+            },
+            "earlier_any_wrong": {
+              "events": 5263,
+              "correct": 1385,
+              "accuracy": 0.2631578947368421
+            }
+          }
+        }
+      },
+      "free_running_failed_trajectories": 0,
+      "free_running_extra_events": 44,
+      "reevaluated_metrics": {
+        "population": 1024,
+        "tokens": 52064,
+        "nll": 0.5279422646002603,
+        "perplexity": 1.6954399498727553,
+        "accuracy": {
+          "layer_0": 0.5486991327551701,
+          "layer_1": 0.6080720480320213,
+          "layer_2": 0.5842228152101401,
+          "layer_3": 0.5840560373582389,
+          "sampling": 0.7216796875
+        },
+        "denominators": {
+          "layer_0": 5996,
+          "layer_1": 5996,
+          "layer_2": 5996,
+          "layer_3": 5996,
+          "sampling": 1024
+        },
+        "group_nll": {
+          "layer_0": 1.1728358935164642,
+          "layer_1": 1.0061408713151805,
+          "layer_2": 1.1231289967606273,
+          "layer_3": 1.1449802690064455,
+          "sampling": 0.788326590845827
+        },
+        "sid_nll": 1.1117715076496792,
+        "sequence_exact_accuracy": 0.0,
+        "first_error_histogram": {
+          "layer_0": 418,
+          "layer_1": 164,
+          "layer_3": 63,
+          "layer_2": 94,
+          "sampling": 285
+        }
+      },
+      "original_sid_nll": 1.111680406900626,
+      "sid_nll_absolute_difference": 9.110074905316345e-05,
+      "interpretation": [
+        "teacher-forced later-layer conditional accuracy is error association, not causal propagation",
+        "free-running uses ordinal target event alignment; missing events and failed trajectories count wrong",
+        "free-running extra events reported separately; tuple accuracy denominator is all target events",
+        "same 1024 validation trajectories; frozen saved adapter; no retraining; supplementary diagnostic"
+      ]
+    },
+    "B2": {
+      "status": "completed",
+      "analysis_revision": "5fe357a66d1c34652bfca50ecffc6699e20c6ef6",
+      "source_manifest_sha256": "ed7e86e8aa034c87d04ce2e1f8b365efde336b54becf2312c8e37e27bd11fe8b",
+      "training_revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "source_artifact_count": 93,
+      "population": 1024,
+      "elapsed_seconds": 86.37163963261992,
+      "teacher_forced": {
+        "events": 5996,
+        "tuple_correct": 1001,
+        "tuple_accuracy": 0.1669446297531688,
+        "layer_correct": [
+          3508,
+          3704,
+          4127,
+          4196
+        ],
+        "layer_accuracy": [
+          0.5850567044696464,
+          0.6177451634422949,
+          0.688292194796531,
+          0.6997998665777185
+        ],
+        "first_wrong_layer_counts": {
+          "1": 2488,
+          "2": 1381,
+          "3": 770,
+          "4": 356,
+          "all_correct": 1001
+        },
+        "correctness_pattern_counts": {
+          "2": 150,
+          "11": 531,
+          "8": 165,
+          "12": 473,
+          "5": 267,
+          "6": 375,
+          "10": 319,
+          "15": 1001,
+          "9": 249,
+          "14": 733,
+          "7": 356,
+          "0": 76,
+          "3": 239,
+          "13": 725,
+          "4": 197,
+          "1": 140
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 3508,
+              "correct": 2127,
+              "accuracy": 0.6063283922462942
+            },
+            "earlier_any_wrong": {
+              "events": 2488,
+              "correct": 1577,
+              "accuracy": 0.6338424437299035
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 2127,
+              "correct": 1357,
+              "accuracy": 0.6379877762106253
+            },
+            "earlier_any_wrong": {
+              "events": 3869,
+              "correct": 2770,
+              "accuracy": 0.7159472731972086
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 1357,
+              "correct": 1001,
+              "accuracy": 0.737656595431098
+            },
+            "earlier_any_wrong": {
+              "events": 4639,
+              "correct": 3195,
+              "accuracy": 0.6887260185384781
+            }
+          }
+        }
+      },
+      "free_running": {
+        "events": 5996,
+        "tuple_correct": 693,
+        "tuple_accuracy": 0.11557705136757838,
+        "layer_correct": [
+          2785,
+          2336,
+          2470,
+          2213
+        ],
+        "layer_accuracy": [
+          0.46447631754503,
+          0.3895930620413609,
+          0.41194129419613074,
+          0.369079386257505
+        ],
+        "first_wrong_layer_counts": {
+          "1": 3211,
+          "2": 1149,
+          "3": 649,
+          "4": 294,
+          "all_correct": 693
+        },
+        "correctness_pattern_counts": {
+          "2": 217,
+          "1": 550,
+          "0": 1654,
+          "5": 227,
+          "4": 353,
+          "13": 231,
+          "15": 693,
+          "11": 313,
+          "10": 92,
+          "7": 294,
+          "3": 336,
+          "6": 152,
+          "9": 141,
+          "12": 281,
+          "14": 239,
+          "8": 223
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 2785,
+              "correct": 1636,
+              "accuracy": 0.5874326750448833
+            },
+            "earlier_any_wrong": {
+              "events": 3211,
+              "correct": 700,
+              "accuracy": 0.21800062285892247
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 1636,
+              "correct": 987,
+              "accuracy": 0.6033007334963325
+            },
+            "earlier_any_wrong": {
+              "events": 4360,
+              "correct": 1483,
+              "accuracy": 0.3401376146788991
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 987,
+              "correct": 693,
+              "accuracy": 0.7021276595744681
+            },
+            "earlier_any_wrong": {
+              "events": 5009,
+              "correct": 1520,
+              "accuracy": 0.3034537831902575
+            }
+          }
+        }
+      },
+      "free_running_failed_trajectories": 0,
+      "free_running_extra_events": 45,
+      "reevaluated_metrics": {
+        "population": 1024,
+        "tokens": 52064,
+        "nll": 0.4147976326957098,
+        "perplexity": 1.5140643125741202,
+        "accuracy": {
+          "layer_0": 0.5850567044696464,
+          "layer_1": 0.6177451634422949,
+          "layer_2": 0.688292194796531,
+          "layer_3": 0.6997998665777185,
+          "sampling": 0.720703125
+        },
+        "denominators": {
+          "layer_0": 5996,
+          "layer_1": 5996,
+          "layer_2": 5996,
+          "layer_3": 5996,
+          "sampling": 1024
+        },
+        "group_nll": {
+          "layer_0": 1.0449939952682383,
+          "layer_1": 0.9072091676458826,
+          "layer_2": 0.7044432524286007,
+          "layer_3": 0.8085092783292347,
+          "sampling": 0.7898003087611869
+        },
+        "sid_nll": 0.866288923417989,
+        "sequence_exact_accuracy": 0.0,
+        "first_error_histogram": {
+          "layer_0": 366,
+          "layer_2": 122,
+          "layer_3": 69,
+          "sampling": 286,
+          "layer_1": 181
+        }
+      },
+      "original_sid_nll": 0.8665009495653734,
+      "sid_nll_absolute_difference": 0.00021202614738435877,
+      "interpretation": [
+        "teacher-forced later-layer conditional accuracy is error association, not causal propagation",
+        "free-running uses ordinal target event alignment; missing events and failed trajectories count wrong",
+        "free-running extra events reported separately; tuple accuracy denominator is all target events",
+        "same 1024 validation trajectories; frozen saved adapter; no retraining; supplementary diagnostic"
+      ]
+    },
+    "H1": {
+      "status": "completed",
+      "analysis_revision": "5fe357a66d1c34652bfca50ecffc6699e20c6ef6",
+      "source_manifest_sha256": "222feae90eac803e3115d8071b12ee1940851991e6573c4f54d901f14fd42666",
+      "training_revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "source_artifact_count": 93,
+      "population": 1024,
+      "elapsed_seconds": 86.33664796408266,
+      "teacher_forced": {
+        "events": 5996,
+        "tuple_correct": 1039,
+        "tuple_accuracy": 0.17328218812541696,
+        "layer_correct": [
+          3353,
+          3998,
+          4495,
+          4483
+        ],
+        "layer_accuracy": [
+          0.55920613742495,
+          0.6667778519012675,
+          0.7496664442961974,
+          0.7476651100733822
+        ],
+        "first_wrong_layer_counts": {
+          "1": 2643,
+          "2": 1280,
+          "3": 517,
+          "4": 517,
+          "all_correct": 1039
+        },
+        "correctness_pattern_counts": {
+          "11": 443,
+          "13": 785,
+          "12": 398,
+          "2": 75,
+          "15": 1039,
+          "6": 388,
+          "10": 475,
+          "4": 141,
+          "8": 135,
+          "9": 221,
+          "5": 240,
+          "3": 74,
+          "14": 987,
+          "7": 517,
+          "1": 34,
+          "0": 44
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 3353,
+              "correct": 2073,
+              "accuracy": 0.6182523113629586
+            },
+            "earlier_any_wrong": {
+              "events": 2643,
+              "correct": 1925,
+              "accuracy": 0.7283390087022323
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 2073,
+              "correct": 1556,
+              "accuracy": 0.7506029908345393
+            },
+            "earlier_any_wrong": {
+              "events": 3923,
+              "correct": 2939,
+              "accuracy": 0.7491715523833801
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 1556,
+              "correct": 1039,
+              "accuracy": 0.6677377892030848
+            },
+            "earlier_any_wrong": {
+              "events": 4440,
+              "correct": 3444,
+              "accuracy": 0.7756756756756756
+            }
+          }
+        }
+      },
+      "free_running": {
+        "events": 5996,
+        "tuple_correct": 790,
+        "tuple_accuracy": 0.13175450300200134,
+        "layer_correct": [
+          2777,
+          3189,
+          2789,
+          2981
+        ],
+        "layer_accuracy": [
+          0.4631420947298199,
+          0.531854569713142,
+          0.4651434289526351,
+          0.49716477651767843
+        ],
+        "first_wrong_layer_counts": {
+          "1": 3219,
+          "2": 1093,
+          "3": 435,
+          "4": 459,
+          "all_correct": 790
+        },
+        "correctness_pattern_counts": {
+          "3": 172,
+          "0": 973,
+          "13": 388,
+          "2": 545,
+          "14": 322,
+          "1": 233,
+          "12": 197,
+          "15": 790,
+          "9": 261,
+          "6": 249,
+          "11": 263,
+          "8": 371,
+          "10": 389,
+          "4": 173,
+          "7": 459,
+          "5": 211
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 2777,
+              "correct": 1684,
+              "accuracy": 0.6064097947425279
+            },
+            "earlier_any_wrong": {
+              "events": 3219,
+              "correct": 1505,
+              "accuracy": 0.4675365020192606
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 1684,
+              "correct": 1249,
+              "accuracy": 0.7416864608076009
+            },
+            "earlier_any_wrong": {
+              "events": 4312,
+              "correct": 1540,
+              "accuracy": 0.35714285714285715
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 1249,
+              "correct": 790,
+              "accuracy": 0.6325060048038431
+            },
+            "earlier_any_wrong": {
+              "events": 4747,
+              "correct": 2191,
+              "accuracy": 0.46155466610490836
+            }
+          }
+        }
+      },
+      "free_running_failed_trajectories": 0,
+      "free_running_extra_events": 46,
+      "reevaluated_metrics": {
+        "population": 1024,
+        "tokens": 52064,
+        "nll": 0.3723688050875579,
+        "perplexity": 1.4511680807844811,
+        "accuracy": {
+          "layer_0": 0.55920613742495,
+          "layer_1": 0.6667778519012675,
+          "layer_2": 0.7496664442961974,
+          "layer_3": 0.7476651100733822,
+          "sampling": 0.7216796875
+        },
+        "denominators": {
+          "layer_0": 5996,
+          "layer_1": 5996,
+          "layer_2": 5996,
+          "layer_3": 5996,
+          "sampling": 1024
+        },
+        "group_nll": {
+          "layer_0": 1.0889289520675933,
+          "layer_1": 0.7950320178624231,
+          "layer_2": 0.6258097122795507,
+          "layer_3": 0.5859888889854793,
+          "sampling": 0.7884477253537625
+        },
+        "sid_nll": 0.7739398927987616,
+        "sequence_exact_accuracy": 0.0009765625,
+        "first_error_histogram": {
+          "layer_2": 85,
+          "layer_0": 378,
+          "layer_1": 164,
+          "layer_3": 111,
+          "sampling": 285,
+          "none": 1
+        }
+      },
+      "original_sid_nll": 0.7738232752177777,
+      "sid_nll_absolute_difference": 0.00011661758098391317,
+      "interpretation": [
+        "teacher-forced later-layer conditional accuracy is error association, not causal propagation",
+        "free-running uses ordinal target event alignment; missing events and failed trajectories count wrong",
+        "free-running extra events reported separately; tuple accuracy denominator is all target events",
+        "same 1024 validation trajectories; frozen saved adapter; no retraining; supplementary diagnostic"
+      ]
+    },
+    "H2": {
+      "status": "completed",
+      "analysis_revision": "5fe357a66d1c34652bfca50ecffc6699e20c6ef6",
+      "source_manifest_sha256": "29a990200fcbda647575ce56131a509f342a08dbf7e6e8e78f1651b4cf3a12e9",
+      "training_revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "source_artifact_count": 93,
+      "population": 1024,
+      "elapsed_seconds": 86.32586633227766,
+      "teacher_forced": {
+        "events": 5996,
+        "tuple_correct": 1007,
+        "tuple_accuracy": 0.16794529686457638,
+        "layer_correct": [
+          3758,
+          3730,
+          4085,
+          4299
+        ],
+        "layer_accuracy": [
+          0.6267511674449633,
+          0.6220813875917278,
+          0.6812875250166778,
+          0.7169779853235491
+        ],
+        "first_wrong_layer_counts": {
+          "1": 2238,
+          "2": 1545,
+          "3": 786,
+          "4": 420,
+          "all_correct": 1007
+        },
+        "correctness_pattern_counts": {
+          "6": 387,
+          "9": 357,
+          "8": 117,
+          "12": 402,
+          "13": 832,
+          "2": 114,
+          "15": 1007,
+          "14": 678,
+          "3": 218,
+          "11": 568,
+          "7": 420,
+          "1": 132,
+          "10": 338,
+          "5": 224,
+          "0": 67,
+          "4": 135
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 3758,
+              "correct": 2213,
+              "accuracy": 0.5888770622671634
+            },
+            "earlier_any_wrong": {
+              "events": 2238,
+              "correct": 1517,
+              "accuracy": 0.6778373547810546
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 2213,
+              "correct": 1427,
+              "accuracy": 0.6448260280162675
+            },
+            "earlier_any_wrong": {
+              "events": 3783,
+              "correct": 2658,
+              "accuracy": 0.7026169706582077
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 1427,
+              "correct": 1007,
+              "accuracy": 0.7056762438682551
+            },
+            "earlier_any_wrong": {
+              "events": 4569,
+              "correct": 3292,
+              "accuracy": 0.7205077697526812
+            }
+          }
+        }
+      },
+      "free_running": {
+        "events": 5996,
+        "tuple_correct": 723,
+        "tuple_accuracy": 0.12058038692461641,
+        "layer_correct": [
+          3120,
+          2635,
+          2883,
+          2330
+        ],
+        "layer_accuracy": [
+          0.5203468979319547,
+          0.43945963975983987,
+          0.48082054703135424,
+          0.3885923949299533
+        ],
+        "first_wrong_layer_counts": {
+          "1": 2876,
+          "2": 1387,
+          "3": 650,
+          "4": 360,
+          "all_correct": 723
+        },
+        "correctness_pattern_counts": {
+          "8": 127,
+          "0": 1156,
+          "1": 603,
+          "2": 236,
+          "9": 231,
+          "4": 442,
+          "15": 723,
+          "13": 302,
+          "12": 249,
+          "5": 251,
+          "7": 360,
+          "14": 263,
+          "11": 325,
+          "3": 325,
+          "6": 293,
+          "10": 110
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 3120,
+              "correct": 1733,
+              "accuracy": 0.555448717948718
+            },
+            "earlier_any_wrong": {
+              "events": 2876,
+              "correct": 902,
+              "accuracy": 0.3136300417246175
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 1733,
+              "correct": 1083,
+              "accuracy": 0.624927870744374
+            },
+            "earlier_any_wrong": {
+              "events": 4263,
+              "correct": 1800,
+              "accuracy": 0.422237860661506
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 1083,
+              "correct": 723,
+              "accuracy": 0.667590027700831
+            },
+            "earlier_any_wrong": {
+              "events": 4913,
+              "correct": 1607,
+              "accuracy": 0.32709139018929373
+            }
+          }
+        }
+      },
+      "free_running_failed_trajectories": 0,
+      "free_running_extra_events": 49,
+      "reevaluated_metrics": {
+        "population": 1024,
+        "tokens": 52064,
+        "nll": 0.38085225277615237,
+        "perplexity": 1.4635313567400794,
+        "accuracy": {
+          "layer_0": 0.6267511674449633,
+          "layer_1": 0.6220813875917278,
+          "layer_2": 0.6812875250166778,
+          "layer_3": 0.7169779853235491,
+          "sampling": 0.720703125
+        },
+        "denominators": {
+          "layer_0": 5996,
+          "layer_1": 5996,
+          "layer_2": 5996,
+          "layer_3": 5996,
+          "sampling": 1024
+        },
+        "group_nll": {
+          "layer_0": 0.9274563864122,
+          "layer_1": 0.8846827945047573,
+          "layer_2": 0.6875391280834002,
+          "layer_3": 0.6705292205638771,
+          "sampling": 0.7877605544636026
+        },
+        "sid_nll": 0.7925518823910587,
+        "sequence_exact_accuracy": 0.0009765625,
+        "first_error_histogram": {
+          "layer_0": 343,
+          "layer_1": 201,
+          "layer_3": 83,
+          "layer_2": 110,
+          "sampling": 286,
+          "none": 1
+        }
+      },
+      "original_sid_nll": 0.7926353082766606,
+      "sid_nll_absolute_difference": 8.342588560195097e-05,
+      "interpretation": [
+        "teacher-forced later-layer conditional accuracy is error association, not causal propagation",
+        "free-running uses ordinal target event alignment; missing events and failed trajectories count wrong",
+        "free-running extra events reported separately; tuple accuracy denominator is all target events",
+        "same 1024 validation trajectories; frozen saved adapter; no retraining; supplementary diagnostic"
+      ]
+    },
+    "H3": {
+      "status": "completed",
+      "analysis_revision": "5fe357a66d1c34652bfca50ecffc6699e20c6ef6",
+      "source_manifest_sha256": "5442c2ac4b739a08f447f1921d96fe386fd647643d06a9a059327e496f6bb267",
+      "training_revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "source_artifact_count": 93,
+      "population": 1024,
+      "elapsed_seconds": 86.20241467282176,
+      "teacher_forced": {
+        "events": 5996,
+        "tuple_correct": 966,
+        "tuple_accuracy": 0.16110740493662443,
+        "layer_correct": [
+          3536,
+          3848,
+          4188,
+          4255
+        ],
+        "layer_accuracy": [
+          0.5897264843228819,
+          0.6417611741160774,
+          0.6984656437625083,
+          0.7096397598398932
+        ],
+        "first_wrong_layer_counts": {
+          "1": 2460,
+          "2": 1374,
+          "3": 747,
+          "4": 449,
+          "all_correct": 966
+        },
+        "correctness_pattern_counts": {
+          "2": 145,
+          "9": 268,
+          "12": 407,
+          "14": 834,
+          "13": 755,
+          "15": 966,
+          "8": 116,
+          "10": 380,
+          "4": 176,
+          "6": 327,
+          "11": 529,
+          "0": 75,
+          "3": 218,
+          "5": 274,
+          "7": 449,
+          "1": 77
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 3536,
+              "correct": 2162,
+              "accuracy": 0.6114253393665159
+            },
+            "earlier_any_wrong": {
+              "events": 2460,
+              "correct": 1686,
+              "accuracy": 0.6853658536585366
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 2162,
+              "correct": 1415,
+              "accuracy": 0.654486586493987
+            },
+            "earlier_any_wrong": {
+              "events": 3834,
+              "correct": 2773,
+              "accuracy": 0.7232655190401669
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 1415,
+              "correct": 966,
+              "accuracy": 0.6826855123674912
+            },
+            "earlier_any_wrong": {
+              "events": 4581,
+              "correct": 3289,
+              "accuracy": 0.7179655097140363
+            }
+          }
+        }
+      },
+      "free_running": {
+        "events": 5996,
+        "tuple_correct": 722,
+        "tuple_accuracy": 0.12041360907271514,
+        "layer_correct": [
+          2925,
+          2916,
+          2799,
+          2517
+        ],
+        "layer_accuracy": [
+          0.4878252168112075,
+          0.48632421614409604,
+          0.4668112074716478,
+          0.41977985323549033
+        ],
+        "first_wrong_layer_counts": {
+          "1": 3071,
+          "2": 1234,
+          "3": 619,
+          "4": 350,
+          "all_correct": 722
+        },
+        "correctness_pattern_counts": {
+          "2": 363,
+          "5": 394,
+          "0": 1185,
+          "14": 385,
+          "10": 342,
+          "1": 409,
+          "15": 722,
+          "4": 300,
+          "11": 276,
+          "3": 343,
+          "13": 284,
+          "12": 229,
+          "9": 147,
+          "8": 132,
+          "7": 350,
+          "6": 135
+        },
+        "later_layer_conditional_accuracy": {
+          "2": {
+            "earlier_all_correct": {
+              "events": 2925,
+              "correct": 1691,
+              "accuracy": 0.5781196581196582
+            },
+            "earlier_any_wrong": {
+              "events": 3071,
+              "correct": 1225,
+              "accuracy": 0.39889286877238683
+            }
+          },
+          "3": {
+            "earlier_all_correct": {
+              "events": 1691,
+              "correct": 1072,
+              "accuracy": 0.6339444115907746
+            },
+            "earlier_any_wrong": {
+              "events": 4305,
+              "correct": 1727,
+              "accuracy": 0.40116144018583044
+            }
+          },
+          "4": {
+            "earlier_all_correct": {
+              "events": 1072,
+              "correct": 722,
+              "accuracy": 0.6735074626865671
+            },
+            "earlier_any_wrong": {
+              "events": 4924,
+              "correct": 1795,
+              "accuracy": 0.3645410235580829
+            }
+          }
+        }
+      },
+      "free_running_failed_trajectories": 0,
+      "free_running_extra_events": 44,
+      "reevaluated_metrics": {
+        "population": 1024,
+        "tokens": 52064,
+        "nll": 0.39405113440316075,
+        "perplexity": 1.4829763778479796,
+        "accuracy": {
+          "layer_0": 0.5897264843228819,
+          "layer_1": 0.6417611741160774,
+          "layer_2": 0.6984656437625083,
+          "layer_3": 0.7096397598398932,
+          "sampling": 0.7216796875
+        },
+        "denominators": {
+          "layer_0": 5996,
+          "layer_1": 5996,
+          "layer_2": 5996,
+          "layer_3": 5996,
+          "sampling": 1024
+        },
+        "group_nll": {
+          "layer_0": 0.9856897602882919,
+          "layer_1": 0.8364484693464873,
+          "layer_2": 0.685899844560884,
+          "layer_3": 0.769372307673703,
+          "sampling": 0.8249088116572239
+        },
+        "sid_nll": 0.8193525954673416,
+        "sequence_exact_accuracy": 0.001953125,
+        "first_error_histogram": {
+          "layer_0": 339,
+          "layer_1": 181,
+          "layer_2": 130,
+          "layer_3": 87,
+          "sampling": 285,
+          "none": 2
+        }
+      },
+      "original_sid_nll": 0.8195205971230818,
+      "sid_nll_absolute_difference": 0.00016800165574015757,
+      "interpretation": [
+        "teacher-forced later-layer conditional accuracy is error association, not causal propagation",
+        "free-running uses ordinal target event alignment; missing events and failed trajectories count wrong",
+        "free-running extra events reported separately; tuple accuracy denominator is all target events",
+        "same 1024 validation trajectories; frozen saved adapter; no retraining; supplementary diagnostic"
+      ]
+    }
+  },
+  "source_sha256": {
+    "analysis/tuple_accuracy_001/B0/metrics.json": "e4ddb167aa771ac24a8d9f15b24bca7b2fe8cd4c902219424337392ea987ecfb",
+    "analysis/tuple_accuracy_001/B1/metrics.json": "06e34e4297a44b8203fde23e6a6e762d5ceaff5696218e48799500b102fecbc5",
+    "analysis/tuple_accuracy_001/B2/metrics.json": "c51cd3c2292099536f0a4d85f0c32bc86e93621d67f8f30789c000be906ee4f3",
+    "analysis/tuple_accuracy_001/H1/metrics.json": "e1bedc584ed6879dd9004a48a4eb858a1c5f4111e48bf160192b6894857e5fe2",
+    "analysis/tuple_accuracy_001/H2/metrics.json": "ddeef44524fa8a2507a163b9b4263f996dd539eec337d6465b2a3f7b7ac3838a",
+    "analysis/tuple_accuracy_001/H3/metrics.json": "6151c1d13d29ee15581e3f18a707a1409ef03b1bef8c0a83cb47a6381b981005"
+  },
+  "tuple_elapsed_seconds": 518.7741878535599,
+  "pilot_and_postprocessing_gpu_hours": 13.546043986974594,
+  "artifact_bytes_at_review": 8818113406,
+  "completed_at_review": 1788851491.2600152,
+  "total_pipeline_postprocessing_tuple_hours": 13.690147928045027
+}

@@ -1,0 +1,641 @@
+{
+  "artifact_root": "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907",
+  "cells": {
+    "B0": {
+      "status": "completed",
+      "revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "seed": 42,
+      "cell": {
+        "views": [
+          "gps"
+        ],
+        "prefix_depths": {
+          "grid": 4,
+          "road": 4,
+          "gps": 4
+        },
+        "aux_weights": {
+          "grid": 0,
+          "road": 0,
+          "gps": 0
+        }
+      },
+      "command": [
+        "/workspace/guozuyu/HTP-hierarchical-rqvae/stage_1/src/hierarchical_rqvae/run.py",
+        "--config",
+        "stage_1/configs/hierarchical_rqvae/pilot.json",
+        "--preflight",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+        "--phase",
+        "pilot",
+        "--cells",
+        "B2",
+        "H1",
+        "B0",
+        "B1",
+        "H2",
+        "H3",
+        "--seed",
+        "42"
+      ],
+      "config_sha256": "b5c270b8d5e18782e711397da8ccc38126c7ed851ce3b8efff278a0596020856",
+      "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+      "base_model_manifest_sha256": "98bd92603d8227541d7351e8b15160ee186cd0eaf6038cafd787e49f89a32670",
+      "elapsed_seconds": 7595.252118635923,
+      "source_manifest_sha256": "b15c0b19c3dad57b8d874c891796fb5955a63299083bb172a473fcdb32e05120",
+      "stage1_last_recorded_step": 1280,
+      "stage1_last_recorded_epoch": null,
+      "stage2_saved_global_step": 1024,
+      "stage2_saved_epoch": 2.0,
+      "stages": {
+        "stage1": {
+          "status": "completed",
+          "elapsed_seconds": 219.87509103585035,
+          "peak_allocated_bytes": 2812022784,
+          "peak_reserved_bytes": 3785359360
+        },
+        "tokens": {
+          "status": "completed",
+          "elapsed_seconds": 4.212583378888667,
+          "peak_allocated_bytes": 170888192,
+          "peak_reserved_bytes": 276824064
+        },
+        "stage2_data": {
+          "status": "completed",
+          "elapsed_seconds": 30.583956754766405,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "stage2": {
+          "status": "completed",
+          "elapsed_seconds": 3328.68957943283,
+          "peak_allocated_bytes": 9747850752,
+          "peak_reserved_bytes": 24494735360
+        },
+        "stage3": {
+          "status": "completed",
+          "elapsed_seconds": 3503.9466109909117,
+          "peak_allocated_bytes": 4544983040,
+          "peak_reserved_bytes": 5238685696
+        },
+        "g_attribution": {
+          "status": "completed",
+          "elapsed_seconds": 0.3835383579134941,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "decode": {
+          "status": "completed",
+          "elapsed_seconds": 93.7376069938764,
+          "peak_allocated_bytes": 75028480,
+          "peak_reserved_bytes": 94371840
+        },
+        "stage4": {
+          "status": "completed",
+          "elapsed_seconds": 38.55237151309848,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "diagnostics": {
+          "status": "completed",
+          "elapsed_seconds": 370.59533440042287,
+          "peak_allocated_bytes": 434077184,
+          "peak_reserved_bytes": 2392850432
+        }
+      },
+      "recorded_artifacts": 93
+    },
+    "B1": {
+      "status": "completed",
+      "revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "seed": 42,
+      "cell": {
+        "views": [
+          "gps",
+          "grid",
+          "road"
+        ],
+        "prefix_depths": {
+          "grid": 4,
+          "road": 4,
+          "gps": 4
+        },
+        "aux_weights": {
+          "grid": 0,
+          "road": 0,
+          "gps": 0
+        }
+      },
+      "command": [
+        "/workspace/guozuyu/HTP-hierarchical-rqvae/stage_1/src/hierarchical_rqvae/run.py",
+        "--config",
+        "stage_1/configs/hierarchical_rqvae/pilot.json",
+        "--preflight",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+        "--phase",
+        "pilot",
+        "--cells",
+        "B2",
+        "H1",
+        "B0",
+        "B1",
+        "H2",
+        "H3",
+        "--seed",
+        "42"
+      ],
+      "config_sha256": "b5c270b8d5e18782e711397da8ccc38126c7ed851ce3b8efff278a0596020856",
+      "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+      "base_model_manifest_sha256": "98bd92603d8227541d7351e8b15160ee186cd0eaf6038cafd787e49f89a32670",
+      "elapsed_seconds": 7666.183544185013,
+      "source_manifest_sha256": "1af15ca0bf147d76de8032692183109cc99cb4cf9fa4419d63d0b11dc0efe1f2",
+      "stage1_last_recorded_step": 1280,
+      "stage1_last_recorded_epoch": null,
+      "stage2_saved_global_step": 1024,
+      "stage2_saved_epoch": 2.0,
+      "stages": {
+        "stage1": {
+          "status": "completed",
+          "elapsed_seconds": 224.09268379956484,
+          "peak_allocated_bytes": 2847970304,
+          "peak_reserved_bytes": 3812622336
+        },
+        "tokens": {
+          "status": "completed",
+          "elapsed_seconds": 4.180772443301976,
+          "peak_allocated_bytes": 170888192,
+          "peak_reserved_bytes": 276824064
+        },
+        "stage2_data": {
+          "status": "completed",
+          "elapsed_seconds": 31.394573795609176,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "stage2": {
+          "status": "completed",
+          "elapsed_seconds": 3326.3500346159562,
+          "peak_allocated_bytes": 9747850752,
+          "peak_reserved_bytes": 24494735360
+        },
+        "stage3": {
+          "status": "completed",
+          "elapsed_seconds": 3580.0075301844627,
+          "peak_allocated_bytes": 4544983040,
+          "peak_reserved_bytes": 5238685696
+        },
+        "g_attribution": {
+          "status": "completed",
+          "elapsed_seconds": 0.4074302241206169,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "decode": {
+          "status": "completed",
+          "elapsed_seconds": 95.68061100132763,
+          "peak_allocated_bytes": 75028480,
+          "peak_reserved_bytes": 94371840
+        },
+        "stage4": {
+          "status": "completed",
+          "elapsed_seconds": 38.61357544455677,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "diagnostics": {
+          "status": "completed",
+          "elapsed_seconds": 360.54113807249814,
+          "peak_allocated_bytes": 434077184,
+          "peak_reserved_bytes": 2392850432
+        }
+      },
+      "recorded_artifacts": 93
+    },
+    "B2": {
+      "status": "completed",
+      "revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "seed": 42,
+      "cell": {
+        "views": [
+          "gps",
+          "grid",
+          "road"
+        ],
+        "prefix_depths": {
+          "grid": 4,
+          "road": 4,
+          "gps": 4
+        },
+        "aux_weights": {
+          "grid": 0.1,
+          "road": 0.1,
+          "gps": 0.1
+        }
+      },
+      "command": [
+        "/workspace/guozuyu/HTP-hierarchical-rqvae/stage_1/src/hierarchical_rqvae/run.py",
+        "--config",
+        "stage_1/configs/hierarchical_rqvae/pilot.json",
+        "--preflight",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+        "--phase",
+        "pilot",
+        "--cells",
+        "B2",
+        "H1",
+        "B0",
+        "B1",
+        "H2",
+        "H3",
+        "--seed",
+        "42"
+      ],
+      "config_sha256": "b5c270b8d5e18782e711397da8ccc38126c7ed851ce3b8efff278a0596020856",
+      "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+      "base_model_manifest_sha256": "98bd92603d8227541d7351e8b15160ee186cd0eaf6038cafd787e49f89a32670",
+      "elapsed_seconds": 7769.6961036594585,
+      "source_manifest_sha256": "ed7e86e8aa034c87d04ce2e1f8b365efde336b54becf2312c8e37e27bd11fe8b",
+      "stage1_last_recorded_step": 1280,
+      "stage1_last_recorded_epoch": null,
+      "stage2_saved_global_step": 1024,
+      "stage2_saved_epoch": 2.0,
+      "stages": {
+        "stage1": {
+          "status": "completed",
+          "elapsed_seconds": 364.42121432814747,
+          "peak_allocated_bytes": 2869825536,
+          "peak_reserved_bytes": 3854565376
+        },
+        "tokens": {
+          "status": "completed",
+          "elapsed_seconds": 4.493672584183514,
+          "peak_allocated_bytes": 170888192,
+          "peak_reserved_bytes": 276824064
+        },
+        "stage2_data": {
+          "status": "completed",
+          "elapsed_seconds": 32.15077190846205,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "stage2": {
+          "status": "completed",
+          "elapsed_seconds": 3334.90891103819,
+          "peak_allocated_bytes": 9747850752,
+          "peak_reserved_bytes": 24494735360
+        },
+        "stage3": {
+          "status": "completed",
+          "elapsed_seconds": 3521.9163061901927,
+          "peak_allocated_bytes": 4544983040,
+          "peak_reserved_bytes": 5238685696
+        },
+        "g_attribution": {
+          "status": "completed",
+          "elapsed_seconds": 0.3707389999181032,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "decode": {
+          "status": "completed",
+          "elapsed_seconds": 96.12349786609411,
+          "peak_allocated_bytes": 75028480,
+          "peak_reserved_bytes": 94371840
+        },
+        "stage4": {
+          "status": "completed",
+          "elapsed_seconds": 38.23852925095707,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "diagnostics": {
+          "status": "completed",
+          "elapsed_seconds": 372.44699407275766,
+          "peak_allocated_bytes": 434077184,
+          "peak_reserved_bytes": 2392850432
+        }
+      },
+      "recorded_artifacts": 93
+    },
+    "H1": {
+      "status": "completed",
+      "revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "seed": 42,
+      "cell": {
+        "views": [
+          "gps",
+          "grid",
+          "road"
+        ],
+        "prefix_depths": {
+          "grid": 1,
+          "road": 2,
+          "gps": 4
+        },
+        "aux_weights": {
+          "grid": 0.1,
+          "road": 0.1,
+          "gps": 0.1
+        }
+      },
+      "command": [
+        "/workspace/guozuyu/HTP-hierarchical-rqvae/stage_1/src/hierarchical_rqvae/run.py",
+        "--config",
+        "stage_1/configs/hierarchical_rqvae/pilot.json",
+        "--preflight",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+        "--phase",
+        "pilot",
+        "--cells",
+        "B2",
+        "H1",
+        "B0",
+        "B1",
+        "H2",
+        "H3",
+        "--seed",
+        "42"
+      ],
+      "config_sha256": "b5c270b8d5e18782e711397da8ccc38126c7ed851ce3b8efff278a0596020856",
+      "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+      "base_model_manifest_sha256": "98bd92603d8227541d7351e8b15160ee186cd0eaf6038cafd787e49f89a32670",
+      "elapsed_seconds": 7773.024913432077,
+      "source_manifest_sha256": "222feae90eac803e3115d8071b12ee1940851991e6573c4f54d901f14fd42666",
+      "stage1_last_recorded_step": 1280,
+      "stage1_last_recorded_epoch": null,
+      "stage2_saved_global_step": 1024,
+      "stage2_saved_epoch": 2.0,
+      "stages": {
+        "stage1": {
+          "status": "completed",
+          "elapsed_seconds": 359.5739423055202,
+          "peak_allocated_bytes": 2860381184,
+          "peak_reserved_bytes": 3848273920
+        },
+        "tokens": {
+          "status": "completed",
+          "elapsed_seconds": 4.196105618961155,
+          "peak_allocated_bytes": 170888192,
+          "peak_reserved_bytes": 276824064
+        },
+        "stage2_data": {
+          "status": "completed",
+          "elapsed_seconds": 33.2199893752113,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "stage2": {
+          "status": "completed",
+          "elapsed_seconds": 3329.6946450555697,
+          "peak_allocated_bytes": 9747850752,
+          "peak_reserved_bytes": 24494735360
+        },
+        "stage3": {
+          "status": "completed",
+          "elapsed_seconds": 3536.7638574345037,
+          "peak_allocated_bytes": 4544983040,
+          "peak_reserved_bytes": 5238685696
+        },
+        "g_attribution": {
+          "status": "completed",
+          "elapsed_seconds": 0.3764220764860511,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "decode": {
+          "status": "completed",
+          "elapsed_seconds": 95.08658979088068,
+          "peak_allocated_bytes": 75028480,
+          "peak_reserved_bytes": 94371840
+        },
+        "stage4": {
+          "status": "completed",
+          "elapsed_seconds": 38.21660814806819,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "diagnostics": {
+          "status": "completed",
+          "elapsed_seconds": 371.27869591489434,
+          "peak_allocated_bytes": 434077184,
+          "peak_reserved_bytes": 2392850432
+        }
+      },
+      "recorded_artifacts": 93
+    },
+    "H2": {
+      "status": "completed",
+      "revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "seed": 42,
+      "cell": {
+        "views": [
+          "gps",
+          "grid",
+          "road"
+        ],
+        "prefix_depths": {
+          "grid": 2,
+          "road": 1,
+          "gps": 4
+        },
+        "aux_weights": {
+          "grid": 0.1,
+          "road": 0.1,
+          "gps": 0.1
+        }
+      },
+      "command": [
+        "/workspace/guozuyu/HTP-hierarchical-rqvae/stage_1/src/hierarchical_rqvae/run.py",
+        "--config",
+        "stage_1/configs/hierarchical_rqvae/pilot.json",
+        "--preflight",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+        "--phase",
+        "pilot",
+        "--cells",
+        "B2",
+        "H1",
+        "B0",
+        "B1",
+        "H2",
+        "H3",
+        "--seed",
+        "42"
+      ],
+      "config_sha256": "b5c270b8d5e18782e711397da8ccc38126c7ed851ce3b8efff278a0596020856",
+      "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+      "base_model_manifest_sha256": "98bd92603d8227541d7351e8b15160ee186cd0eaf6038cafd787e49f89a32670",
+      "elapsed_seconds": 7753.302227449603,
+      "source_manifest_sha256": "29a990200fcbda647575ce56131a509f342a08dbf7e6e8e78f1651b4cf3a12e9",
+      "stage1_last_recorded_step": 1280,
+      "stage1_last_recorded_epoch": null,
+      "stage2_saved_global_step": 1024,
+      "stage2_saved_epoch": 2.0,
+      "stages": {
+        "stage1": {
+          "status": "completed",
+          "elapsed_seconds": 359.53462719824165,
+          "peak_allocated_bytes": 2860381184,
+          "peak_reserved_bytes": 3848273920
+        },
+        "tokens": {
+          "status": "completed",
+          "elapsed_seconds": 4.211436155252159,
+          "peak_allocated_bytes": 170888192,
+          "peak_reserved_bytes": 276824064
+        },
+        "stage2_data": {
+          "status": "completed",
+          "elapsed_seconds": 31.435555417090654,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "stage2": {
+          "status": "completed",
+          "elapsed_seconds": 3316.6755947954953,
+          "peak_allocated_bytes": 9747850752,
+          "peak_reserved_bytes": 24494735360
+        },
+        "stage3": {
+          "status": "completed",
+          "elapsed_seconds": 3531.5436318377033,
+          "peak_allocated_bytes": 4546542080,
+          "peak_reserved_bytes": 5238685696
+        },
+        "g_attribution": {
+          "status": "completed",
+          "elapsed_seconds": 0.3840706469491124,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "decode": {
+          "status": "completed",
+          "elapsed_seconds": 93.79308812692761,
+          "peak_allocated_bytes": 75028480,
+          "peak_reserved_bytes": 94371840
+        },
+        "stage4": {
+          "status": "completed",
+          "elapsed_seconds": 38.24654244631529,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "diagnostics": {
+          "status": "completed",
+          "elapsed_seconds": 372.8070869622752,
+          "peak_allocated_bytes": 434077184,
+          "peak_reserved_bytes": 2392850432
+        }
+      },
+      "recorded_artifacts": 93
+    },
+    "H3": {
+      "status": "completed",
+      "revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "seed": 42,
+      "cell": {
+        "views": [
+          "gps",
+          "grid",
+          "road"
+        ],
+        "prefix_depths": {
+          "grid": 2,
+          "road": 3,
+          "gps": 4
+        },
+        "aux_weights": {
+          "grid": 0.1,
+          "road": 0.1,
+          "gps": 0.1
+        }
+      },
+      "command": [
+        "/workspace/guozuyu/HTP-hierarchical-rqvae/stage_1/src/hierarchical_rqvae/run.py",
+        "--config",
+        "stage_1/configs/hierarchical_rqvae/pilot.json",
+        "--preflight",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+        "--phase",
+        "pilot",
+        "--cells",
+        "B2",
+        "H1",
+        "B0",
+        "B1",
+        "H2",
+        "H3",
+        "--seed",
+        "42"
+      ],
+      "config_sha256": "b5c270b8d5e18782e711397da8ccc38126c7ed851ce3b8efff278a0596020856",
+      "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+      "base_model_manifest_sha256": "98bd92603d8227541d7351e8b15160ee186cd0eaf6038cafd787e49f89a32670",
+      "elapsed_seconds": 7771.092147232965,
+      "source_manifest_sha256": "5442c2ac4b739a08f447f1921d96fe386fd647643d06a9a059327e496f6bb267",
+      "stage1_last_recorded_step": 1280,
+      "stage1_last_recorded_epoch": null,
+      "stage2_saved_global_step": 1024,
+      "stage2_saved_epoch": 2.0,
+      "stages": {
+        "stage1": {
+          "status": "completed",
+          "elapsed_seconds": 361.9328314103186,
+          "peak_allocated_bytes": 2860381184,
+          "peak_reserved_bytes": 3848273920
+        },
+        "tokens": {
+          "status": "completed",
+          "elapsed_seconds": 4.259304352104664,
+          "peak_allocated_bytes": 170888192,
+          "peak_reserved_bytes": 276824064
+        },
+        "stage2_data": {
+          "status": "completed",
+          "elapsed_seconds": 32.45150941517204,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "stage2": {
+          "status": "completed",
+          "elapsed_seconds": 3334.419043980539,
+          "peak_allocated_bytes": 9747850752,
+          "peak_reserved_bytes": 24496832512
+        },
+        "stage3": {
+          "status": "completed",
+          "elapsed_seconds": 3544.771570519544,
+          "peak_allocated_bytes": 4544983040,
+          "peak_reserved_bytes": 5238685696
+        },
+        "g_attribution": {
+          "status": "completed",
+          "elapsed_seconds": 0.38435052894055843,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "decode": {
+          "status": "completed",
+          "elapsed_seconds": 93.47936880402267,
+          "peak_allocated_bytes": 75028480,
+          "peak_reserved_bytes": 94371840
+        },
+        "stage4": {
+          "status": "completed",
+          "elapsed_seconds": 38.769353836774826,
+          "peak_allocated_bytes": 17039360,
+          "peak_reserved_bytes": 33554432
+        },
+        "diagnostics": {
+          "status": "completed",
+          "elapsed_seconds": 355.89368939585984,
+          "peak_allocated_bytes": 434077184,
+          "peak_reserved_bytes": 2392850432
+        }
+      },
+      "recorded_artifacts": 93
+    }
+  },
+  "pilot_conservative_gpu_hours": 12.869041959609733,
+  "hardware_snapshot": "NVIDIA GeForce RTX 3090, GPU-bc8f0f6a-456d-1bf7-5ca8-95cb7fe9b225, 580.95.05, 24576 MiB"
+}

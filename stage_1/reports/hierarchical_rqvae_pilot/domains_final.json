@@ -1,0 +1,548 @@
+{
+  "status": "complete",
+  "command": [
+    "/workspace/guozuyu/HTP-hierarchical-rqvae-analysis/stage_1/src/hierarchical_rqvae/analyze_domains.py",
+    "--root",
+    "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907",
+    "--config",
+    "stage_1/configs/hierarchical_rqvae/pilot.json",
+    "--output",
+    "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/analysis/completion_001/domains"
+  ],
+  "analysis_revision": "75d53ed2992670fe3b4895c9ce97099ca5033367",
+  "training_revision": "280f83b3e4fda51db95911203368788255fceda3",
+  "support_sha256": "5206784ff3c10a40baf00c8c1e788e8d93ea8c470cdda55155d1d8317fe725ad",
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 271828,
+  "population": 1024,
+  "family_size": 40,
+  "comparisons": [
+    {
+      "contrast": "H1-B2",
+      "metric": "travel_distance_jsd",
+      "baseline_regret": 0.005195809299878399,
+      "candidate_regret": 0.003522270641643873,
+      "difference_regret": -0.001673538658234526,
+      "ci95": [
+        -0.0061233284039839435,
+        0.002844210073306064
+      ],
+      "p_two_sided_centered_bootstrap": 0.4447776111944028,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H1-B2",
+      "metric": "segment_distance_jsd",
+      "baseline_regret": 0.07547510639017403,
+      "candidate_regret": 0.08983101787956695,
+      "difference_regret": 0.014355911489392914,
+      "ci95": [
+        0.011514817156741323,
+        0.01719961120487006
+      ],
+      "p_two_sided_centered_bootstrap": 0.0004997501249375312,
+      "holm_adjusted_p": 0.019990004997501247
+    },
+    {
+      "contrast": "H1-B2",
+      "metric": "radius_jsd",
+      "baseline_regret": 0.00410024764136341,
+      "candidate_regret": 0.003368190042677559,
+      "difference_regret": -0.0007320575986858508,
+      "ci95": [
+        -0.007227353946503081,
+        0.005882049811406511
+      ],
+      "p_two_sided_centered_bootstrap": 0.8325837081459271,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H1-B2",
+      "metric": "point_to_road_jsd",
+      "baseline_regret": 0.40585655676989957,
+      "candidate_regret": 0.4046141881937996,
+      "difference_regret": -0.0012423685760999947,
+      "ci95": [
+        -0.0077891967517354525,
+        0.005104481866690225
+      ],
+      "p_two_sided_centered_bootstrap": 0.6861569215392304,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H1-B2",
+      "metric": "grid_density_cosine",
+      "baseline_regret": 0.031948348618927036,
+      "candidate_regret": 0.031734129538294575,
+      "difference_regret": -0.00021421908063246065,
+      "ci95": [
+        -0.003151602273337192,
+        0.001977368907584381
+      ],
+      "p_two_sided_centered_bootstrap": 0.8760619690154923,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H1-B2",
+      "metric": "grid_pattern_f1",
+      "baseline_regret": 0.30000000000000004,
+      "candidate_regret": 0.30000000000000004,
+      "difference_regret": 0.0,
+      "ci95": [
+        -0.05999999999999994,
+        0.04999999999999993
+      ],
+      "p_two_sided_centered_bootstrap": 1.0,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H1-B2",
+      "metric": "road_density_cosine",
+      "baseline_regret": 0.02890332816264951,
+      "candidate_regret": 0.029589816948422554,
+      "difference_regret": 0.0006864887857730428,
+      "ci95": [
+        -0.0020701786678198443,
+        0.00266405488161444
+      ],
+      "p_two_sided_centered_bootstrap": 0.5877061469265368,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H1-B2",
+      "metric": "road_pattern_f1",
+      "baseline_regret": 0.13,
+      "candidate_regret": 0.15000000000000002,
+      "difference_regret": 0.020000000000000018,
+      "ci95": [
+        -0.04999999999999993,
+        0.040000000000000036
+      ],
+      "p_two_sided_centered_bootstrap": 0.6546726636681659,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B1-B0",
+      "metric": "travel_distance_jsd",
+      "baseline_regret": 0.0028399150445198775,
+      "candidate_regret": 0.002987889632116044,
+      "difference_regret": 0.00014797458759616654,
+      "ci95": [
+        -0.004426882385766658,
+        0.0043030990233616576
+      ],
+      "p_two_sided_centered_bootstrap": 0.9380309845077461,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B1-B0",
+      "metric": "segment_distance_jsd",
+      "baseline_regret": 0.0969429656304111,
+      "candidate_regret": 0.07139566075775193,
+      "difference_regret": -0.025547304872659174,
+      "ci95": [
+        -0.02928351131597982,
+        -0.021750986078103975
+      ],
+      "p_two_sided_centered_bootstrap": 0.0004997501249375312,
+      "holm_adjusted_p": 0.019990004997501247
+    },
+    {
+      "contrast": "B1-B0",
+      "metric": "radius_jsd",
+      "baseline_regret": 0.0014634640573288487,
+      "candidate_regret": 0.0030833197608305493,
+      "difference_regret": 0.0016198557035017006,
+      "ci95": [
+        -0.0036838555472232903,
+        0.007417648613754794
+      ],
+      "p_two_sided_centered_bootstrap": 0.5662168915542228,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B1-B0",
+      "metric": "point_to_road_jsd",
+      "baseline_regret": 0.3861462853836368,
+      "candidate_regret": 0.3835866165811121,
+      "difference_regret": -0.0025596688025247283,
+      "ci95": [
+        -0.01060869986203912,
+        0.006446405928040378
+      ],
+      "p_two_sided_centered_bootstrap": 0.5442278860569715,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B1-B0",
+      "metric": "grid_density_cosine",
+      "baseline_regret": 0.03265975069040328,
+      "candidate_regret": 0.03246681341723501,
+      "difference_regret": -0.00019293727316826992,
+      "ci95": [
+        -0.0030099169946671473,
+        0.0030397974116250577
+      ],
+      "p_two_sided_centered_bootstrap": 0.8970514742628686,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B1-B0",
+      "metric": "grid_pattern_f1",
+      "baseline_regret": 0.30000000000000004,
+      "candidate_regret": 0.30000000000000004,
+      "difference_regret": 0.0,
+      "ci95": [
+        -0.06000000000000005,
+        0.05999999999999994
+      ],
+      "p_two_sided_centered_bootstrap": 1.0,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B1-B0",
+      "metric": "road_density_cosine",
+      "baseline_regret": 0.029572597372550802,
+      "candidate_regret": 0.02902900282907106,
+      "difference_regret": -0.0005435945434797418,
+      "ci95": [
+        -0.003401804415436349,
+        0.0019881344301966317
+      ],
+      "p_two_sided_centered_bootstrap": 0.6731634182908546,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B1-B0",
+      "metric": "road_pattern_f1",
+      "baseline_regret": 0.13,
+      "candidate_regret": 0.13,
+      "difference_regret": 0.0,
+      "ci95": [
+        -0.04999999999999993,
+        0.040000000000000036
+      ],
+      "p_two_sided_centered_bootstrap": 1.0,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B2-B1",
+      "metric": "travel_distance_jsd",
+      "baseline_regret": 0.002987889632116044,
+      "candidate_regret": 0.005195809299878399,
+      "difference_regret": 0.002207919667762355,
+      "ci95": [
+        -0.0021252985731757567,
+        0.00750371015935186
+      ],
+      "p_two_sided_centered_bootstrap": 0.34182908545727136,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B2-B1",
+      "metric": "segment_distance_jsd",
+      "baseline_regret": 0.07139566075775193,
+      "candidate_regret": 0.07547510639017403,
+      "difference_regret": 0.004079445632422102,
+      "ci95": [
+        0.0008835147449838166,
+        0.0070252855906977815
+      ],
+      "p_two_sided_centered_bootstrap": 0.009995002498750625,
+      "holm_adjusted_p": 0.33983008495752126
+    },
+    {
+      "contrast": "B2-B1",
+      "metric": "radius_jsd",
+      "baseline_regret": 0.0030833197608305493,
+      "candidate_regret": 0.00410024764136341,
+      "difference_regret": 0.0010169278805328605,
+      "ci95": [
+        -0.0049708857833432344,
+        0.00692947264152193
+      ],
+      "p_two_sided_centered_bootstrap": 0.744127936031984,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B2-B1",
+      "metric": "point_to_road_jsd",
+      "baseline_regret": 0.3835866165811121,
+      "candidate_regret": 0.40585655676989957,
+      "difference_regret": 0.022269940188787474,
+      "ci95": [
+        0.015399997936500629,
+        0.028554348158366136
+      ],
+      "p_two_sided_centered_bootstrap": 0.0004997501249375312,
+      "holm_adjusted_p": 0.019990004997501247
+    },
+    {
+      "contrast": "B2-B1",
+      "metric": "grid_density_cosine",
+      "baseline_regret": 0.03246681341723501,
+      "candidate_regret": 0.031948348618927036,
+      "difference_regret": -0.0005184647983079715,
+      "ci95": [
+        -0.0037615043313866947,
+        0.0020551596575393463
+      ],
+      "p_two_sided_centered_bootstrap": 0.7241379310344828,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B2-B1",
+      "metric": "grid_pattern_f1",
+      "baseline_regret": 0.30000000000000004,
+      "candidate_regret": 0.30000000000000004,
+      "difference_regret": 0.0,
+      "ci95": [
+        -0.05999999999999994,
+        0.05999999999999994
+      ],
+      "p_two_sided_centered_bootstrap": 1.0,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B2-B1",
+      "metric": "road_density_cosine",
+      "baseline_regret": 0.02902900282907106,
+      "candidate_regret": 0.02890332816264951,
+      "difference_regret": -0.00012567466642154912,
+      "ci95": [
+        -0.0026890410836269336,
+        0.0022432068641295663
+      ],
+      "p_two_sided_centered_bootstrap": 0.9130434782608695,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "B2-B1",
+      "metric": "road_pattern_f1",
+      "baseline_regret": 0.13,
+      "candidate_regret": 0.13,
+      "difference_regret": 0.0,
+      "ci95": [
+        -0.039999999999999925,
+        0.05999999999999994
+      ],
+      "p_two_sided_centered_bootstrap": 1.0,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H2-B2",
+      "metric": "travel_distance_jsd",
+      "baseline_regret": 0.005195809299878399,
+      "candidate_regret": 0.003726716012538955,
+      "difference_regret": -0.0014690932873394442,
+      "ci95": [
+        -0.0065263107144504,
+        0.0032949277439463234
+      ],
+      "p_two_sided_centered_bootstrap": 0.5252373813093453,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H2-B2",
+      "metric": "segment_distance_jsd",
+      "baseline_regret": 0.07547510639017403,
+      "candidate_regret": 0.08379758727289989,
+      "difference_regret": 0.008322480882725858,
+      "ci95": [
+        0.005882473048367142,
+        0.011081456640168658
+      ],
+      "p_two_sided_centered_bootstrap": 0.0004997501249375312,
+      "holm_adjusted_p": 0.019990004997501247
+    },
+    {
+      "contrast": "H2-B2",
+      "metric": "radius_jsd",
+      "baseline_regret": 0.00410024764136341,
+      "candidate_regret": 0.003618417971893869,
+      "difference_regret": -0.000481829669469541,
+      "ci95": [
+        -0.006649943911878881,
+        0.005648730149676617
+      ],
+      "p_two_sided_centered_bootstrap": 0.88055972013993,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H2-B2",
+      "metric": "point_to_road_jsd",
+      "baseline_regret": 0.40585655676989957,
+      "candidate_regret": 0.39593970892284835,
+      "difference_regret": -0.009916847847051213,
+      "ci95": [
+        -0.014957560811077523,
+        -0.004964069148356113
+      ],
+      "p_two_sided_centered_bootstrap": 0.0009995002498750624,
+      "holm_adjusted_p": 0.03498250874562719
+    },
+    {
+      "contrast": "H2-B2",
+      "metric": "grid_density_cosine",
+      "baseline_regret": 0.031948348618927036,
+      "candidate_regret": 0.03193113288270788,
+      "difference_regret": -1.7215736219156064e-05,
+      "ci95": [
+        -0.0029623295376000696,
+        0.0024702498784156626
+      ],
+      "p_two_sided_centered_bootstrap": 0.9855072463768116,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H2-B2",
+      "metric": "grid_pattern_f1",
+      "baseline_regret": 0.30000000000000004,
+      "candidate_regret": 0.30000000000000004,
+      "difference_regret": 0.0,
+      "ci95": [
+        -0.05999999999999994,
+        0.050000000000000044
+      ],
+      "p_two_sided_centered_bootstrap": 1.0,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H2-B2",
+      "metric": "road_density_cosine",
+      "baseline_regret": 0.02890332816264951,
+      "candidate_regret": 0.030130646820992757,
+      "difference_regret": 0.001227318658343246,
+      "ci95": [
+        -0.0012676793816444709,
+        0.003430008640662405
+      ],
+      "p_two_sided_centered_bootstrap": 0.3218390804597701,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H2-B2",
+      "metric": "road_pattern_f1",
+      "baseline_regret": 0.13,
+      "candidate_regret": 0.14,
+      "difference_regret": 0.010000000000000009,
+      "ci95": [
+        -0.039999999999999925,
+        0.04999999999999993
+      ],
+      "p_two_sided_centered_bootstrap": 0.7626186906546727,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H3-B2",
+      "metric": "travel_distance_jsd",
+      "baseline_regret": 0.005195809299878399,
+      "candidate_regret": 0.003618880972427523,
+      "difference_regret": -0.0015769283274508759,
+      "ci95": [
+        -0.005692291242156486,
+        0.002785820764860724
+      ],
+      "p_two_sided_centered_bootstrap": 0.4427786106946527,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H3-B2",
+      "metric": "segment_distance_jsd",
+      "baseline_regret": 0.07547510639017403,
+      "candidate_regret": 0.0825372388444697,
+      "difference_regret": 0.007062132454295669,
+      "ci95": [
+        0.004319485380311197,
+        0.009830199435144434
+      ],
+      "p_two_sided_centered_bootstrap": 0.0004997501249375312,
+      "holm_adjusted_p": 0.019990004997501247
+    },
+    {
+      "contrast": "H3-B2",
+      "metric": "radius_jsd",
+      "baseline_regret": 0.00410024764136341,
+      "candidate_regret": 0.00497680803001549,
+      "difference_regret": 0.0008765603886520803,
+      "ci95": [
+        -0.005436472559056272,
+        0.00734738437332017
+      ],
+      "p_two_sided_centered_bootstrap": 0.7566216891554223,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H3-B2",
+      "metric": "point_to_road_jsd",
+      "baseline_regret": 0.40585655676989957,
+      "candidate_regret": 0.41098697129074546,
+      "difference_regret": 0.005130414520845894,
+      "ci95": [
+        -0.0009460170087349866,
+        0.010851843647667152
+      ],
+      "p_two_sided_centered_bootstrap": 0.08595702148925537,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H3-B2",
+      "metric": "grid_density_cosine",
+      "baseline_regret": 0.031948348618927036,
+      "candidate_regret": 0.03222749813721515,
+      "difference_regret": 0.0002791495182881132,
+      "ci95": [
+        -0.0028064672036811956,
+        0.0026347117917666354
+      ],
+      "p_two_sided_centered_bootstrap": 0.8435782108945528,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H3-B2",
+      "metric": "grid_pattern_f1",
+      "baseline_regret": 0.30000000000000004,
+      "candidate_regret": 0.29000000000000004,
+      "difference_regret": -0.010000000000000009,
+      "ci95": [
+        -0.05999999999999994,
+        0.05999999999999994
+      ],
+      "p_two_sided_centered_bootstrap": 0.8445777111444278,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H3-B2",
+      "metric": "road_density_cosine",
+      "baseline_regret": 0.02890332816264951,
+      "candidate_regret": 0.030474434989506527,
+      "difference_regret": 0.001571106826857016,
+      "ci95": [
+        -0.0009740507759208483,
+        0.004096039084766414
+      ],
+      "p_two_sided_centered_bootstrap": 0.2013993003498251,
+      "holm_adjusted_p": 1.0
+    },
+    {
+      "contrast": "H3-B2",
+      "metric": "road_pattern_f1",
+      "baseline_regret": 0.13,
+      "candidate_regret": 0.14,
+      "difference_regret": 0.010000000000000009,
+      "ci95": [
+        -0.039999999999999925,
+        0.04999999999999993
+      ],
+      "p_two_sided_centered_bootstrap": 0.7801099450274862,
+      "holm_adjusted_p": 1.0
+    }
+  ],
+  "method": "failure_fraction + valid_fraction * aggregate_regret; recomputed per paired trajectory bootstrap",
+  "limitations": [
+    "secondary common-support specification finalized after primary results inspected",
+    "approximate centered bootstrap p-values; single seed; CI conditional on trained checkpoints",
+    "density/pattern scores converted to regret=1-score; all reported differences lower is better",
+    "histogram quantiles determined solely from frozen training cohort; no validation tuning"
+  ]
+}

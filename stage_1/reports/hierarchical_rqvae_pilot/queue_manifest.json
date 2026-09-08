@@ -1,0 +1,114 @@
+{
+  "status": "analysis_artifacts_ready_for_final_review",
+  "pid": 3642857,
+  "source_pid": 2976898,
+  "analysis_revision": "75d53ed2992670fe3b4895c9ce97099ca5033367",
+  "root": "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907",
+  "config": "stage_1/configs/hierarchical_rqvae/pilot.json",
+  "command": [
+    "/workspace/guozuyu/HTP-hierarchical-rqvae-analysis/stage_1/src/hierarchical_rqvae/finish_pilot.py",
+    "--root",
+    "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907",
+    "--config",
+    "stage_1/configs/hierarchical_rqvae/pilot.json",
+    "--source-pid",
+    "2976898",
+    "--output",
+    "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/analysis/completion_001"
+  ],
+  "steps": [
+    {
+      "command": [
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-analysis/.venv/bin/python3",
+        "-m",
+        "hierarchical_rqvae.correct_interventions",
+        "--root",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907",
+        "--config",
+        "stage_1/configs/hierarchical_rqvae/pilot.json",
+        "--output",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/analysis/completion_001/corrected_interventions"
+      ],
+      "status": "completed",
+      "started_at": 1788846600.5573466,
+      "elapsed_seconds": 2358.843616962433
+    },
+    {
+      "command": [
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-analysis/.venv/bin/python3",
+        "-m",
+        "hierarchical_rqvae.analyze",
+        "--root",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907",
+        "--interventions-root",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/analysis/completion_001/corrected_interventions",
+        "--output",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/analysis/completion_001/final_statistics.json"
+      ],
+      "status": "completed",
+      "started_at": 1788848959.4018633,
+      "elapsed_seconds": 7.174968481063843
+    },
+    {
+      "command": [
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-analysis/.venv/bin/python3",
+        "-m",
+        "hierarchical_rqvae.analyze_domains",
+        "--root",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907",
+        "--config",
+        "stage_1/configs/hierarchical_rqvae/pilot.json",
+        "--output",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/analysis/completion_001/domains"
+      ],
+      "status": "completed",
+      "started_at": 1788848966.5777981,
+      "elapsed_seconds": 63.708051681518555
+    },
+    {
+      "command": [
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-analysis/.venv/bin/python3",
+        "-m",
+        "hierarchical_rqvae.analyze_information",
+        "--root",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907",
+        "--output",
+        "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/analysis/completion_001/information.json"
+      ],
+      "status": "completed",
+      "started_at": 1788849030.2870924,
+      "elapsed_seconds": 7.476342678070068
+    }
+  ],
+  "started_at": 1788837538.6557715,
+  "source_states": {
+    "B0": {
+      "status": "completed",
+      "stage": "diagnostics"
+    },
+    "B1": {
+      "status": "completed",
+      "stage": "diagnostics"
+    },
+    "B2": {
+      "status": "completed",
+      "stage": "diagnostics"
+    },
+    "H1": {
+      "status": "completed",
+      "stage": "diagnostics"
+    },
+    "H2": {
+      "status": "completed",
+      "stage": "diagnostics"
+    },
+    "H3": {
+      "status": "running",
+      "stage": "diagnostics"
+    }
+  },
+  "updated_at": 1788846570.4341617,
+  "pilot_elapsed_seconds": 46328.55105459504,
+  "postprocessing_elapsed_seconds": 2437.207298513502,
+  "total_conservative_gpu_hours": 13.546043986974594
+}
