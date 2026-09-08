@@ -121,7 +121,14 @@ def analyze(root, cells, n_resamples=2000, seed=271828):
         iv=read(p/'diagnostics/interventions/metrics.json')
         # Strip only per-trajectory rows and donor IDs; retain aggregate intervention evidence.
         def compact(x):
-            if isinstance(x,dict): return {k:compact(v) for k,v in x.items() if k not in ('per_trajectory','donors')}
+            if isinstance(x,dict):
+                result={k:compact(v) for k,v in x.items() if k not in ('per_trajectory','donors','gps_successful_only')}
+                if 'gps_successful_only' in x:
+                    rows=x['gps_successful_only']
+                    result['gps_successful_only']={'population':len(rows), 'means':{
+                        key:float(np.mean([r[key] for r in rows])) if rows else None for key in
+                        ('matched_progress_ade_m','fde_m','dtw_sum_m','length_absolute_error')}}
+                return result
             if isinstance(x,list): return [compact(v) for v in x]
             return x
         output[c]['interventions']=compact(iv)
@@ -131,6 +138,18 @@ def analyze(root, cells, n_resamples=2000, seed=271828):
         contrasts[f'{c}-{b}']={'primary':paired(values[b]['g11'],values[c]['g11'],weights),
             'invalid_penalty_10':paired(arrays(metrics[b]['g11'],ids,10.),arrays(metrics[c]['g11'],ids,10.),weights),
             'g00':paired(values[b]['g00'],values[c]['g00'],weights)}
+        contrasts[f'{c}-{b}']['gps_paired_successful_only']={}
+        for g in GROUPS:
+            rb={int(r['traj_id']):r for r in gps[b][g] if 'matched_progress_ade_m' in r}
+            rc={int(r['traj_id']):r for r in gps[c][g] if 'matched_progress_ade_m' in r}
+            common=sorted(rb.keys() & rc.keys())
+            if not common: continue
+            wg=(weights if len(common)==len(ids) else np.random.default_rng(seed).multinomial(
+                len(common),np.full(len(common),1/len(common)),size=n_resamples))
+            contrasts[f'{c}-{b}']['gps_paired_successful_only'][g]={
+                'n_common_successes':len(common),'excluded_from_coordinate_comparison':len(ids)-len(common),
+                'metrics':{k:paired([rb[i][k] for i in common],[rc[i][k] for i in common],wg) for k in
+                    ('matched_progress_ade_m','fde_m','dtw_sum_m','length_absolute_error')}}
     gates={}
     base=output['B2']
     for c in cells:
