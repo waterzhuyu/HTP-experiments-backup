@@ -59,9 +59,10 @@ def main():
     import staged_attribution.train_stage2 as stage2
     from staged_attribution.token_protocol import PREFIXES
     p=argparse.ArgumentParser();p.add_argument('--run',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
-    p.add_argument('--device',default='cuda:0');a=p.parse_args()
+    p.add_argument('--device',default='cuda:0');p.add_argument('--cpu-threads',type=int,default=2);a=p.parse_args()
+    if not 1<=a.cpu_threads<=32:raise ValueError('cpu threads must be between 1 and 32')
     if a.output.exists(): raise ValueError('refusing overwrite')
-    a.output.mkdir(parents=True); torch.set_num_threads(2)
+    a.output.mkdir(parents=True); torch.set_num_threads(a.cpu_threads if a.device=='cpu' else 2)
     for run in [a.run]:
         started=time.monotonic();manifest,count=verify_attempt(run)
         if manifest['budget']!='pilot':raise ValueError('requires full pilot validation')
@@ -73,6 +74,8 @@ def main():
         model=AutoPeftModelForCausalLM.from_pretrained(str(adapter),torch_dtype=torch.bfloat16).to(a.device).eval()
         model.config.use_cache=False
         restore_and_validate_loaded_compact_adapter(model,adapter)
+        # Verify exact saved BF16 tensors first, then use efficient CPU arithmetic.
+        if a.device=='cpu':model.float()
         frame=pd.read_parquet(run/'stage2_data/llm_test.parquet').sort_values('traj_id')
         tokens={int(r['traj_id']):r for r in map(json.loads,(run/'tokens/test_tokens.jsonl').read_text().splitlines())}
         generated={int(r['traj_id']):r for r in map(json.loads,(run/'decode/g11_reconstructed.jsonl').read_text().splitlines())}
@@ -110,6 +113,8 @@ def main():
         result={'status':'completed' if delta<=.005 and metrics['denominators']==original['denominators'] else 'evaluation_parity_failed',
             'analysis_revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
             'source_manifest_sha256':digest(run/'run_manifest.json'),'training_revision':manifest['revision'],
+            'evaluation_device':a.device,'evaluation_dtype':'float32' if a.device=='cpu' else 'bfloat16',
+            'cpu_threads':torch.get_num_threads(),'restoration_verified_before_dtype_conversion':True,
             'source_artifact_count':count,'vocab_sizes':sizes,'seed':manifest['seed'],'population':len(ids),'elapsed_seconds':time.monotonic()-started,
             'teacher_forced':correctness_summary(np.concatenate(correctness)),
             'free_running':correctness_summary(np.concatenate(free)),'free_running_failed_trajectories':failed,
