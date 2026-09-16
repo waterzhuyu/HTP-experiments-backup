@@ -1,0 +1,78 @@
+{
+  "LF": {
+    "status": "completed",
+    "revision": "b5e7dec07f2b4c362e6ed0e96f16b00123e25a56",
+    "seed": 42,
+    "config_sha256": "796f63b2472ab9e5aec5a6a0efa49879598e50376626230ff6857f5bfbecd193",
+    "elapsed_seconds": 229.70209056977183,
+    "current_stage": "diagnostics",
+    "error": null,
+    "stages": [
+      "stage1",
+      "tokens",
+      "stage2_data",
+      "stage2",
+      "stage3",
+      "g_attribution",
+      "decode",
+      "stage4",
+      "diagnostics"
+    ],
+    "decode": {
+      "g00": {
+        "n": 8,
+        "reconstructed": 8
+      },
+      "g10": {
+        "n": 8,
+        "reconstructed": 0
+      },
+      "g01": {
+        "n": 8,
+        "reconstructed": 0
+      },
+      "g11": {
+        "n": 8,
+        "reconstructed": 0
+      }
+    }
+  },
+  "HV": {
+    "status": "completed",
+    "revision": "b5e7dec07f2b4c362e6ed0e96f16b00123e25a56",
+    "seed": 42,
+    "config_sha256": "796f63b2472ab9e5aec5a6a0efa49879598e50376626230ff6857f5bfbecd193",
+    "elapsed_seconds": 221.4068787517026,
+    "current_stage": "diagnostics",
+    "error": null,
+    "stages": [
+      "stage1",
+      "tokens",
+      "stage2_data",
+      "stage2",
+      "stage3",
+      "g_attribution",
+      "decode",
+      "stage4",
+      "diagnostics"
+    ],
+    "decode": {
+      "g00": {
+        "n": 8,
+        "reconstructed": 8
+      },
+      "g10": {
+        "n": 8,
+        "reconstructed": 0
+      },
+      "g01": {
+        "n": 8,
+        "reconstructed": 0
+      },
+      "g11": {
+        "n": 8,
+        "reconstructed": 0
+      }
+    }
+  }
+}
