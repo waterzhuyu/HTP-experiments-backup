@@ -38,3 +38,13 @@
 全体轨迹平均惩罚误差（无量纲，四项km统计量abs-log1p差的均值，失败惩罚1）：G00=0.0182425980，G10=0.0222109983，G01=0.0193492120，G11=0.0217968975。该指标不是ADE或相对误差百分比。四条件沿用相同oracle路线，低误差不能独立证明SID保留了运动信息。完整对照、GPS对齐误差、冻结probe、tuple准确率及惩罚10敏感性尚待汇总，不据此声明分层方法有收益。
 
 精简汇总与原始来源SHA见hv_stage4_summary.json；权威原始逐轨迹数据保留远端stage4/stage4_metrics.json。当前HV已进入diagnostics（冻结特征与probe），整个run尚未验收完成；LF/H1/B2尚未产生结果。
+
+## HV完整验收与SID元组补测
+
+`analysis/results_snapshot_002.json` 已由已提交分析器验收HV：九阶段、训练步数、85项产物及SHA通过；LF处于stage1，H1/B2尚未启动。因此整体状态仍为incomplete，不生成组间比较。对应本地归档results_snapshot_002.json。
+
+HV的24项冻结probe均训练10epoch、1860step，seed42、AdamW lr=.001/wd=.0001、batch_events256，按有效点逆轨迹长度加权；输入为单层码向量或累计前缀及点内offset，目标和单位继承spec。前缀1→4：GPS MSE 0.030492→0.028385，Grid准确率0.007675→0.012349，Road准确率0.009518→0.017931；各深度总体单调改善。当前未观察到后续前缀使先前任务退化，不能把公式上的信息覆盖风险当作已发生的事实。绝对准确率需对照LF及常量基线，不等于信息量的直接测量。原始归档hv_probe_metrics.json。
+
+补测命令（分析revision `9f67a346f77cef999dbaeb8c4ca8a6cbf0742d26`）：`CUDA_VISIBLE_DEVICES=3 uv run python -m hierarchical_rqvae.audit_tuple_accuracy --root /workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917 --cells HV --output /workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/analysis/tuple_hv_001`。冻结已保存adapter，无重新训练；1024轨迹/5996目标事件，teacher-forced eval batch4。恢复SID NLL=0.569082514，与原0.568885164绝对差0.000197351<.005，分母一致；恢复评估小幅数值差异不覆盖原指标。
+
+完整四码同时正确：teacher-forced 2217/5996=36.97465%；free-running 1685/5996=28.10207%。自由生成按目标事件序号对齐，缺失事件及失败轨迹计错，额外45事件单列；不是时间或语义对齐。自由生成四层准确率94.179/76.518/48.949/46.848%，对应teacher-forced94.713/79.053/62.475/73.566%。第三、四层下降更明显，但不能仅凭条件相关性宣称误差传播的因果机制。原始归档hv_tuple_metrics.json含逐轨迹数据、源manifest SHA及完整revision。输出指标计算耗时87.779s（不含全部模型加载）。后续仍需LF/H1/B2对照及相同诊断后形成最终建议。
