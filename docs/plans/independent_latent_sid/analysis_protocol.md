@@ -34,3 +34,7 @@ CUDA_VISIBLE_DEVICES=3 uv run python -m hierarchical_rqvae.audit_tuple_accuracy 
 ```
 
 分析新增训练、初始化、优化器、loss、encoder、量化器、decoder变化均不适用；完全读取已提交训练run的冻结产物。输入、sample unit、mask、token支持和GPS恢复定义继承spec.md。新的统计输出不是新训练实验。结果JSON保存分析revision、命令、source manifest路径及SHA；路径和config/preflight身份可追溯。
+
+## 完整分析路径验证补充
+
+新增公开合成数据集测试：四组各1024条、逐轨迹已知HV比LF误差低20%，验证完整分析正确恢复20%改善和0.5 nats/token的unigram收益；将B2改为未完成时只能输出incomplete且不产生对比；修改已登记的stage4产物时拒绝统计。包含此前预算/人口测试共6项通过（0.95s）。所有合成指标仅为程序测试，不属于实验科学结果，不进入Notion结果表或正式比较。
