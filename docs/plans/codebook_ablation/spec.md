@@ -25,7 +25,7 @@ front_large 不意味着码字必须一一对应类别。改变 K 会改变码�
 
 ## 可复现方法
 
-数据、切分沿用冻结 preflight：Porto，官方train中的8192 train / 1024 validation，20–200观测点整条轨迹；同GPS/time哈希去重，固定split seed20260907。官方封存test不读取。车辆/道路/日期跨split有重叠，只支持同城held-out-trip，不声称跨车/跨道路泛化。GPS为train-only MBR归一化经纬度，Grid为100m ID，Road为逐点map-matched ID；按traj_id/point_index对齐，无新采样增强。padding按length mask。输入GPS B×T×2，Grid/Road B×T；时间不进入融合特征，仅诊断对齐。
+数据、切分沿用冻结 preflight：Porto，官方train中的8192 train / 1024 validation，20–200观测点整条轨迹；同GPS/time哈希去重，固定split seed20260907。官方封存test不读取。车辆/道路/日期跨split有重叠，只支持同城held-out-trip，不声称跨车/跨道路泛化。GPS经纬度按继承metadata中的固定Porto边界归一化（经度−8.69至−8.55，纬度41.13至41.19），该MBR并非本轮8192条训练轨迹拟合；dxy和percent_dist的均值/标准差由本轮训练集重新估计，Grid为100m ID，Road为逐点map-matched ID；按traj_id/point_index对齐，无新采样增强。padding按length mask。输入GPS B×T×2，Grid/Road B×T；时间不进入融合特征，仅诊断对齐。
 
 ViewFusion：GPS Linear2→64、Road冻结128维Node2Vec→Linear64、Grid embedding64，各自LayerNorm，同点求和除sqrt(3)；共享HTP Encoder hidden64、ch_multi[1,2,2,4]、每级2残差块、dropout0.1、三次stride2。Encoder输出256维经Linear→64 latent；事件数ceil(T/8)，不是独立8点窗口，存在上下文感受野。辅助head为[64维累计前缀+8维offset onehot]→64→SiLU→每点目标，预测块内所有有效观测，末块mask。
 
