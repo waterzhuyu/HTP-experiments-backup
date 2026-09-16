@@ -65,3 +65,23 @@ CUDA_VISIBLE_DEVICES=3 uv run python -m independent_latent_sid.inspect_latents -
 ```
 
 运行前核验stage1所有产物SHA、cell/config身份；run JSON记录checkpoint SHA、preflight SHA、训练与分析revision、完整命令。科学结论状态：incomplete，待四组完整端到端结果与probe。没有因当前不利结果更改原运行目标、超参或队列。
+
+## 八批梯度方向补查
+
+只读加载同一最终HV checkpoint，取冻结train按原顺序前8批×128=1024条轨迹，FP32 train模式、dropout seeds42–49，无optimizer、不更新checkpoint。计算每个视图projection weight上实际加权loss梯度的展平向量cosine；缺失/零梯度返回N/A。分析代码提交 `b087e2a`，1项测试通过（2.67s），验证反向/正交/无梯度的已知例子。原模型、数据、单位、事件支持、目标权重及其他方法组成均不变；无新增GPS解码。方法与限制写入输出JSON。
+
+|梯度对|8批平均cosine|范围|
+|---|---:|---|
+|Grid：VQ vs 0.1 Grid辅助|−0.999877|−0.999926 至 −0.999815|
+|Road：VQ vs 0.1 Road辅助|−0.999620|−0.999783 至 −0.999473|
+|GPS：重构 vs VQ|−0.646182|−0.772049 至 −0.470429|
+
+**解释边界：**这表明最终checkpoint的projection weight上，两种目标的局部方向几乎对立；结合前次量级相近，可解释为何梯度存在但未形成丰富表示。然而在目标加权和的稳定点，各项梯度本来就可能相互抵消。这不是训练过程追踪，不能单凭cosine断言冲突导致坍缩，也不能直接据此采用梯度投影算法。需要在LF上相同方法对照，并检查新初始化/训练阶段安排能否改善真实code信息和生成。
+
+优先候选补充：**先训练独立连续表示，再引入量化**。先用相同视图head/目标检验连续latent能否保持足够信息与维度，然后冻结encoder、在仅训练集latent上初始化/拟合码本，再训练严格只读取离散码字的decoder；最后可选择小学习率联合微调。该候选同时改变初始化和训练日程，须拆出“仅数据初始化”“冻结encoder量化”“连续预训练+量化”对照，且不能让最终decoder使用连续latent旁路。它目前是待比较LF结果后确定的改进意见，尚未执行新训练。
+
+```bash
+CUDA_VISIBLE_DEVICES=3 uv run python -m independent_latent_sid.gradient_conflict --config stage_1/configs/independent_latent_sid/pilot.json --run-dir /workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/pilot/porto/42/HV/attempt_001 --output /workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/analysis/hv_gradient_conflict_001.json
+```
+
+输出含完整分析/训练revision、checkpoint/config/preflight SHA、命令、逐batch记录。不能将本次诊断当成四组端到端分析已完成。
