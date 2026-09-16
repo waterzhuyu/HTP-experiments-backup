@@ -8,6 +8,7 @@ from hierarchical_rqvae.analyze import arrays, paired, shapley, verify_attempt
 from hierarchical_rqvae.preflight import atomic_json, sha256
 from codebook_ablation.queue import ROOT, PREFLIGHT, ORDER, SEEDS, STAGES
 from codebook_ablation.statistics import summarize
+from codebook_ablation.validation import SETTINGS
 
 def read(path):return json.loads(Path(path).read_text())
 
@@ -58,6 +59,11 @@ def collect(root=ROOT):
                     'ade_m_successful_only':float(np.mean(ade)) if ade else None,'ade_denominator':len(ade),
                     'sid_nll':s2['sid_nll'],'teacher_forced':s2,'codebooks':s1['codebook'],
                     'parameter_count':s1['parameter_count'],'information':info,
+                    'rq_vocab_sizes':SETTINGS[setting],
+                    'nominal_bits_per_event':float(sum(np.log2(SETTINGS[setting]))),
+                    'codebook_parameter_count':64*sum(SETTINGS[setting]),
+                    'llm_token_budget':read(run/'stage2/token_budget.json'),
+                    'llm_adapter_storage':read(run/'stage2/adapter_manifest.json')['adapter_storage'],
                     'probes':read(run/'diagnostics/probes/metrics.json'),
                     'shapley_mean':{k:float(v.mean()) for k,v in shapley(vectors).items()},
                     'run_path':str(run),'elapsed_seconds':m['elapsed_seconds']}
