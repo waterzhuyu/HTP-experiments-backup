@@ -1,0 +1,264 @@
+{
+  "schema_version": 1,
+  "experiment_id": "codebook_ablation_20260916_scale4",
+  "status": "pilot_ready",
+  "execution_enabled": true,
+  "implementation_status": "smoke_and_diagnostics_verified",
+  "provenance": {
+    "upstream_revision": "1294275d2bed5f9de86269ab285ff5e23828b947",
+    "fork_revision": "da3b80e3d9dffe525c67a7722e99387cdb345347",
+    "execution_revision": "runtime_git_head_recorded_in_manifest"
+  },
+  "paths": {
+    "worktree": "/workspace/guozuyu/HTP-codebook-ablation",
+    "artifact_root": "/workspace/guozuyu/HTP-codebook-ablation-artifacts",
+    "model_root": "/workspace/guozuyu/HTP-main/models/Qwen3-1.7B",
+    "data_root": "/workspace/guozuyu/HTP-main/traj_dataset",
+    "porto_aligned_root": "/workspace/guozuyu/HTP-main/reproduction/runs/multiview_vq/porto/data"
+  },
+  "data": {
+    "city": "porto",
+    "split_seed": 20260907,
+    "train_n": 8192,
+    "validation_n": 1024,
+    "heldout_test_n": 1024,
+    "length_range": [
+      20,
+      200
+    ],
+    "grid_meters": 100,
+    "max_sequence_length": 2048,
+    "split_manifest": null,
+    "source_hashes": null,
+    "normalization_manifest": null
+  },
+  "model": {
+    "latent_dim": 64,
+    "vocab_sizes": [
+      128,
+      256,
+      512,
+      1024
+    ],
+    "stride": 8,
+    "head_hidden_dim": 64,
+    "offset_encoding": "one_hot_8",
+    "ce_chunk_positions": 256,
+    "commitment_beta": 0.25,
+    "aux_weights": {
+      "grid": 0.1,
+      "road": 0.1,
+      "gps": 0.1
+    },
+    "other_loss_weights": 0,
+    "prefix_estimator": "z + stopgrad(prefix-z)"
+  },
+  "cells": {
+    "B2": {
+      "views": [
+        "gps",
+        "grid",
+        "road"
+      ],
+      "prefix_depths": {
+        "grid": 4,
+        "road": 4,
+        "gps": 4
+      },
+      "aux_weights": {
+        "grid": 0.1,
+        "road": 0.1,
+        "gps": 0.1
+      }
+    },
+    "H1": {
+      "views": [
+        "gps",
+        "grid",
+        "road"
+      ],
+      "prefix_depths": {
+        "grid": 1,
+        "road": 2,
+        "gps": 4
+      },
+      "aux_weights": {
+        "grid": 0.1,
+        "road": 0.1,
+        "gps": 0.1
+      }
+    }
+  },
+  "tokenizer_training": {
+    "optimizer": "AdamW",
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "gradient_clip": 1,
+    "epochs": 20,
+    "batch_size": 128,
+    "warmup_epochs": 10,
+    "warmup_start_ratio": 0.01,
+    "cosine_min_ratio": 0.1,
+    "precision": "bf16_with_fp32_quantizer_and_ce",
+    "early_stopping": false,
+    "num_workers": 0
+  },
+  "llm_training": {
+    "learning_rate": 0.0005,
+    "weight_decay": 0.0001,
+    "gradient_clip": 1,
+    "epochs": 2,
+    "microbatch": 2,
+    "gradient_accumulation": 8,
+    "scheduler": "linear",
+    "warmup_ratio": 0.05,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "lora_targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "precision": "bf16",
+    "gradient_checkpointing": true,
+    "tokenizer_frozen": true,
+    "base_frozen": true,
+    "new_token_rows_trainable": true,
+    "compact_adapter": true
+  },
+  "generation": {
+    "do_sample": false,
+    "max_new_tokens": 256,
+    "batch_size": 1,
+    "g_conditions": [
+      "G00",
+      "G10",
+      "G01",
+      "G11"
+    ],
+    "route": "oracle_same_for_all",
+    "retries": 0
+  },
+  "budgets": {
+    "smoke": {
+      "train_n": 32,
+      "validation_n": 16,
+      "stage1_epochs": 1,
+      "stage1_batch_size": 8,
+      "stage2_max_steps": 2,
+      "stage2_microbatch": 1,
+      "stage2_accumulation": 1,
+      "generation_n": 8,
+      "gpu_hours_cap": 2
+    },
+    "pilot": {
+      "cells": [
+        "B2",
+        "H1"
+      ],
+      "seed": 42,
+      "gpu_hours_cap": 12,
+      "artifact_gib_cap": 12,
+      "max_parallel_runs": 1
+    },
+    "repeat": {
+      "seeds": [
+        314159,
+        20260907
+      ],
+      "cells": [
+        "B2",
+        "H1",
+        "selected_H2_or_H3"
+      ],
+      "enabled": false
+    },
+    "confirmation": {
+      "cities": [
+        "porto",
+        "chengdu"
+      ],
+      "seeds": [
+        42,
+        314159,
+        20260907
+      ],
+      "cells": [
+        "B0",
+        "B2",
+        "selected_H"
+      ],
+      "stage1_epochs": 100,
+      "stage1_batch_size": 128,
+      "stage2_epochs": 2,
+      "train": "full_minus_validation",
+      "test": "full",
+      "enabled": false
+    }
+  },
+  "evaluation": {
+    "primary": "population_mean_penalized_error",
+    "primary_contrast": [
+      "H1",
+      "B2"
+    ],
+    "invalid_penalty": 1.0,
+    "sensitivity_invalid_penalty": 10.0,
+    "bootstrap_replicates": 2000,
+    "bootstrap_seed": 271828,
+    "progress_anchors": 100,
+    "probe": {
+      "hidden_dim": 64,
+      "epochs": 10,
+      "learning_rate": 0.001,
+      "batch_events": 256,
+      "seed": 42
+    },
+    "metric_manifest": null
+  },
+  "gates": {
+    "active_fraction_min": 0.1,
+    "perplexity_fraction_min": 0.05,
+    "max_share_max": 0.5,
+    "oracle_error_ratio_max": 1.1,
+    "valid_rate_min": 0.99,
+    "valid_rate_drop_max": 0.01,
+    "primary_improvement_min": 0.05,
+    "sid_nll_ratio_max": 1.02
+  },
+  "pending_before_execution": [],
+  "allowed_phases": [
+    "smoke",
+    "pilot"
+  ],
+  "execution_cell_order": [
+    "B2",
+    "H1"
+  ],
+  "budget_decision": "Prioritize B2/H1; retain original 36 GPU-hour cap and full sample sizes.",
+  "ablation": {
+    "setting": "scale4",
+    "seeds": [
+      42,
+      314159,
+      20260907
+    ],
+    "preflight_path": "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+    "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+    "initialization": "base_layer_scale_nested_common_codes_v1",
+    "status": "implementation_pending_smoke",
+    "total_gpu_hours_cap": 96,
+    "total_artifact_gib_cap": 100,
+    "scope": "Porto held-out-trip validation; sealed test untouched"
+  }
+}

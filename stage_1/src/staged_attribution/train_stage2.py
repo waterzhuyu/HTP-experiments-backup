@@ -16,7 +16,7 @@ from torch.utils.data import Dataset
 
 from .adapter_storage import compact_peft_adapter
 from .evaluate_stage2 import grouped_teacher_forced_accuracy
-from .token_protocol import PREFIXES, VOCAB_SIZES, special_tokens
+from .token_protocol import PREFIXES, current_vocab_sizes, special_tokens
 
 
 SYSTEM_MESSAGE = (
@@ -641,7 +641,7 @@ def run_hf_stage2(
         token_groups = {
             "sampling": set(tokenizer.convert_tokens_to_ids([f"<t_{value}>" for value in range(8)])),
         }
-        for prefix, size in zip(PREFIXES, VOCAB_SIZES):
+        for prefix, size in zip(PREFIXES, current_vocab_sizes()):
             token_groups[f"layer_{PREFIXES.index(prefix)}"] = set(
                 tokenizer.convert_tokens_to_ids([f"<{prefix}_{value}>" for value in range(size)])
             )

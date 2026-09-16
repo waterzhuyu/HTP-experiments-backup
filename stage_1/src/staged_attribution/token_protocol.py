@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import re
+from contextlib import contextmanager
+from contextvars import ContextVar
 from collections.abc import Sequence
 
 import numpy as np
@@ -8,6 +10,22 @@ import torch
 
 
 VOCAB_SIZES = (32, 64, 128, 256)
+_ACTIVE_SIZES = ContextVar("rq_vocab_sizes", default=VOCAB_SIZES)
+
+def current_vocab_sizes():
+    return _ACTIVE_SIZES.get()
+
+@contextmanager
+def codebook_protocol(sizes):
+    sizes = tuple(sizes)
+    if len(sizes) != 4 or any(type(k) is not int or k < 2 for k in sizes):
+        raise TokenProtocolError("exactly four integer codebook sizes >= 2 required")
+    token = _ACTIVE_SIZES.set(sizes)
+    try:
+        yield sizes
+    finally:
+        _ACTIVE_SIZES.reset(token)
+
 LENS_BITS = 3
 PREFIXES = ("a", "b", "c", "d")
 BOUNDARY_TOKENS = ("<|t_begin|>", "<|t_end|>", "<|p_begin|>", "<|p_end|>")
@@ -35,13 +53,13 @@ def _code_rows(values: object) -> np.ndarray:
         array = np.asarray(values)
     if array.size == 0:
         raise TokenProtocolError("codes must contain at least one event")
-    if array.ndim != 2 or array.shape[1] != len(VOCAB_SIZES):
+    if array.ndim != 2 or array.shape[1] != len(current_vocab_sizes()):
         raise TokenProtocolError("codes must have shape [events, 4]")
     if not np.issubdtype(array.dtype, np.integer):
         if not np.isfinite(array).all() or not np.equal(array, np.floor(array)).all():
             raise TokenProtocolError("codes must contain integers")
     array = array.astype(np.int64, copy=False)
-    for layer, size in enumerate(VOCAB_SIZES):
+    for layer, size in enumerate(current_vocab_sizes()):
         if int(array[:, layer].min()) < 0 or int(array[:, layer].max()) >= size:
             raise TokenProtocolError(f"codes in layer {layer} must be inside [0, {size})")
     return array
@@ -97,7 +115,7 @@ def special_tokens(num_roads: int) -> list[str]:
         raise TokenProtocolError("num_roads must be a non-negative integer")
     result = list(BOUNDARY_TOKENS)
     result.extend(f"<t_{value}>" for value in range(2**LENS_BITS))
-    for prefix, size in zip(PREFIXES, VOCAB_SIZES):
+    for prefix, size in zip(PREFIXES, current_vocab_sizes()):
         result.extend(f"<{prefix}_{value}>" for value in range(size))
     result.extend(f"<road_{value}>" for value in range(num_roads))
     return result
