@@ -1,0 +1,274 @@
+{
+  "status": "completed_tokenizer_only",
+  "analysis_revision": "a927df185a0bd102dc7715c621764b19f5ec17ce",
+  "audit": {
+    "HVAllRecon": {
+      "revision": "60f140aa92799c36b21dccec87bef5223480bba4",
+      "artifacts_verified": 64,
+      "manifest_sha256": "223b9d16e82dd4d8c00a886f177e8c1ec71c40ed7fc4287dee9fc21b7961fe40"
+    },
+    "HV": {
+      "revision": "70b82db195f600e3271030ddb5e6c228e4915f31",
+      "artifacts_verified": 85,
+      "manifest_sha256": "c840e067328926ed6fe11290fa6bd3135f3a3f1878b27ceec5d5efb744f6a095"
+    }
+  },
+  "bootstrap": {
+    "replicates": 2000,
+    "seed": 271828,
+    "unit": "paired validation trajectory",
+    "ci": "percentile95, descriptive single-seed; no multiplicity adjustment"
+  },
+  "g00": {
+    "candidate": 0.017997285300494117,
+    "baseline": 0.018242598024157092,
+    "difference": -0.00024531272366297235,
+    "difference_ci95": [
+      -0.0009551345895546057,
+      0.0004568109655418978
+    ],
+    "relative_improvement_pct": 1.3447247115686456,
+    "relative_improvement_ci95_pct": [
+      -2.5361276130470944,
+      5.081195535031841
+    ]
+  },
+  "ade": {
+    "candidate": 180.2404558816586,
+    "baseline": 196.32065222827856,
+    "difference": -16.080196346619974,
+    "difference_ci95": [
+      -23.178514075368064,
+      -8.855187710876187
+    ],
+    "relative_improvement_pct": 8.19078184801575,
+    "relative_improvement_ci95_pct": [
+      4.635333068988199,
+      11.64300639838794
+    ]
+  },
+  "fde": {
+    "candidate": 166.925081474531,
+    "baseline": 163.8811257127508,
+    "difference": 3.043955761780194,
+    "difference_ci95": [
+      -5.203002694260146,
+      11.9379460645412
+    ],
+    "relative_improvement_pct": -1.8574169225049397,
+    "relative_improvement_ci95_pct": [
+      -7.504271963552781,
+      3.112051583734187
+    ]
+  },
+  "validity": {
+    "candidate": 1.0,
+    "baseline": 1.0,
+    "candidate_success": 1024,
+    "baseline_success": 1024
+  },
+  "penalty10_sensitivity": "identical to penalty1 because neither G00 population contains failure",
+  "HVAllRecon": {
+    "layers": [
+      {
+        "K": 32,
+        "active": 4,
+        "perplexity": 3.8154334357965864,
+        "max_share": 0.37308205470313544,
+        "pass": true
+      },
+      {
+        "K": 64,
+        "active": 6,
+        "perplexity": 3.800662421814579,
+        "max_share": 0.36524349566377584,
+        "pass": false
+      },
+      {
+        "K": 128,
+        "active": 6,
+        "perplexity": 4.7064543552206155,
+        "max_share": 0.3178785857238159,
+        "pass": false
+      },
+      {
+        "K": 256,
+        "active": 7,
+        "perplexity": 5.374407039615147,
+        "max_share": 0.31987991994663106,
+        "pass": false
+      }
+    ],
+    "tuple_entropy_nats": 5.367193994607576,
+    "tuple_collision_probability": 0.006683521569286391,
+    "selected_probes": [
+      {
+        "representation": "prefixes",
+        "depth": 1,
+        "view": "grid",
+        "loss": 7.230955558323363,
+        "accuracy": 0.011227573133575027,
+        "epochs": 10,
+        "batch_events": 256,
+        "seed": 42,
+        "steps": 1860,
+        "elapsed_seconds": 4.565037149935961,
+        "optimizer": {
+          "name": "AdamW",
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        },
+        "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+      },
+      {
+        "representation": "prefixes",
+        "depth": 2,
+        "view": "road",
+        "loss": 7.429929507599857,
+        "accuracy": 0.016107790932560356,
+        "epochs": 10,
+        "batch_events": 256,
+        "seed": 42,
+        "steps": 1860,
+        "elapsed_seconds": 4.740737772546709,
+        "optimizer": {
+          "name": "AdamW",
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        },
+        "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+      },
+      {
+        "representation": "prefixes",
+        "depth": 4,
+        "view": "gps",
+        "loss": 0.018014915932567807,
+        "accuracy": null,
+        "epochs": 10,
+        "batch_events": 256,
+        "seed": 42,
+        "steps": 1860,
+        "elapsed_seconds": 3.8444373849779367,
+        "optimizer": {
+          "name": "AdamW",
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        },
+        "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+      }
+    ]
+  },
+  "HV": {
+    "layers": [
+      {
+        "K": 32,
+        "active": 29,
+        "perplexity": 1.3782219800754802,
+        "max_share": 0.9467978652434956,
+        "pass": false
+      },
+      {
+        "K": 64,
+        "active": 27,
+        "perplexity": 2.9419932195813994,
+        "max_share": 0.6541027351567712,
+        "pass": false
+      },
+      {
+        "K": 128,
+        "active": 6,
+        "perplexity": 3.987500011384488,
+        "max_share": 0.30403602401601065,
+        "pass": false
+      },
+      {
+        "K": 256,
+        "active": 7,
+        "perplexity": 4.630974699470388,
+        "max_share": 0.35340226817878584,
+        "pass": false
+      }
+    ],
+    "tuple_entropy_nats": 3.5244607336769445,
+    "tuple_collision_probability": 0.06610105931059962,
+    "selected_probes": [
+      {
+        "representation": "prefixes",
+        "depth": 1,
+        "view": "grid",
+        "loss": 7.292430655082375,
+        "accuracy": 0.007675227234698118,
+        "epochs": 10,
+        "batch_events": 256,
+        "seed": 42,
+        "steps": 1860,
+        "elapsed_seconds": 4.614808947779238,
+        "optimizer": {
+          "name": "AdamW",
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        },
+        "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+      },
+      {
+        "representation": "prefixes",
+        "depth": 2,
+        "view": "road",
+        "loss": 7.199789571766789,
+        "accuracy": 0.011487156136073873,
+        "epochs": 10,
+        "batch_events": 256,
+        "seed": 42,
+        "steps": 1860,
+        "elapsed_seconds": 4.713441915810108,
+        "optimizer": {
+          "name": "AdamW",
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        },
+        "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+      },
+      {
+        "representation": "prefixes",
+        "depth": 4,
+        "view": "gps",
+        "loss": 0.028384965326414286,
+        "accuracy": null,
+        "epochs": 10,
+        "batch_events": 256,
+        "seed": 42,
+        "steps": 1860,
+        "elapsed_seconds": 4.817525199614465,
+        "optimizer": {
+          "name": "AdamW",
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        },
+        "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+      }
+    ]
+  },
+  "gate": {
+    "g00_no_worse_than_10pct": true,
+    "validity": true,
+    "all_layers_healthy": false,
+    "llm": "NOT LAUNCHED; health gate failed"
+  },
+  "latent_rank": {
+    "grid": {
+      "events": 5996,
+      "effective_rank_singular_entropy": 8.063659141254192,
+      "mean_norm": 27.180233821106363
+    },
+    "road": {
+      "events": 5996,
+      "effective_rank_singular_entropy": 8.350807194974658,
+      "mean_norm": 26.13461135269477
+    },
+    "gps": {
+      "events": 5996,
+      "effective_rank_singular_entropy": 24.48722434599313,
+      "mean_norm": 4.630194881409484
+    }
+  }
+}
