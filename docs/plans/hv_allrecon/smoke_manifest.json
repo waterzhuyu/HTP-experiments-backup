@@ -1,0 +1,608 @@
+{
+  "base_model_manifest_sha256": "98bd92603d8227541d7351e8b15160ee186cd0eaf6038cafd787e49f89a32670",
+  "experiment_id": "hv_allrecon_20260917",
+  "cell_id": "HVAllRecon",
+  "city": "porto",
+  "seed": 42,
+  "budget": "smoke",
+  "evaluation_split": "validation_from_official_train",
+  "revision": "60f140aa92799c36b21dccec87bef5223480bba4",
+  "config_sha256": "d94c57c886d37883d29696612f1cd383471d98343b3b2355ed71731557ccc1a0",
+  "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+  "cell": {
+    "views": [
+      "gps",
+      "grid",
+      "road"
+    ],
+    "prefix_depths": {
+      "grid": 1,
+      "road": 2,
+      "gps": 4
+    },
+    "aux_weights": {
+      "grid": 0.1,
+      "road": 0.1,
+      "gps": 0.1
+    },
+    "construction": "conditional",
+    "reconstruction_route": "all_views"
+  },
+  "plan": {
+    "schema_version": 1,
+    "experiment_id": "hv_allrecon_20260917",
+    "status": "planned",
+    "execution_enabled": true,
+    "implementation_status": "gradient_route_ablation",
+    "provenance": {
+      "upstream_revision": "1294275d2bed5f9de86269ab285ff5e23828b947",
+      "fork_revision": "da3b80e3d9dffe525c67a7722e99387cdb345347",
+      "execution_revision": "runtime_git_head_recorded_in_manifest"
+    },
+    "paths": {
+      "worktree": "/workspace/guozuyu/HTP-hv-allrecon",
+      "artifact_root": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts",
+      "model_root": "/workspace/guozuyu/HTP-main/models/Qwen3-1.7B",
+      "data_root": "/workspace/guozuyu/HTP-main/traj_dataset",
+      "porto_aligned_root": "/workspace/guozuyu/HTP-main/reproduction/runs/multiview_vq/porto/data"
+    },
+    "data": {
+      "city": "porto",
+      "split_seed": 20260907,
+      "train_n": 8192,
+      "validation_n": 1024,
+      "heldout_test_n": 1024,
+      "length_range": [
+        20,
+        200
+      ],
+      "grid_meters": 100,
+      "max_sequence_length": 2048,
+      "split_manifest": null,
+      "source_hashes": null,
+      "normalization_manifest": null
+    },
+    "model": {
+      "latent_dim": 64,
+      "vocab_sizes": [
+        32,
+        64,
+        128,
+        256
+      ],
+      "stride": 8,
+      "head_hidden_dim": 64,
+      "offset_encoding": "one_hot_8",
+      "ce_chunk_positions": 256,
+      "commitment_beta": 0.25,
+      "aux_weights": {
+        "grid": 0.1,
+        "road": 0.1,
+        "gps": 0.1
+      },
+      "other_loss_weights": 0,
+      "prefix_estimator": "z + stopgrad(prefix-z)"
+    },
+    "cells": {
+      "HVAllRecon": {
+        "views": [
+          "gps",
+          "grid",
+          "road"
+        ],
+        "prefix_depths": {
+          "grid": 1,
+          "road": 2,
+          "gps": 4
+        },
+        "aux_weights": {
+          "grid": 0.1,
+          "road": 0.1,
+          "gps": 0.1
+        },
+        "construction": "conditional",
+        "reconstruction_route": "all_views"
+      }
+    },
+    "tokenizer_training": {
+      "optimizer": "AdamW",
+      "learning_rate": 0.0001,
+      "weight_decay": 0.0001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "gradient_clip": 1,
+      "epochs": 20,
+      "batch_size": 128,
+      "warmup_epochs": 10,
+      "warmup_start_ratio": 0.01,
+      "cosine_min_ratio": 0.1,
+      "precision": "bf16_with_fp32_quantizer_and_ce",
+      "early_stopping": false,
+      "num_workers": 0
+    },
+    "llm_training": {
+      "learning_rate": 0.0005,
+      "weight_decay": 0.0001,
+      "gradient_clip": 1,
+      "epochs": 2,
+      "microbatch": 2,
+      "gradient_accumulation": 8,
+      "scheduler": "linear",
+      "warmup_ratio": 0.05,
+      "lora_r": 16,
+      "lora_alpha": 32,
+      "lora_dropout": 0.05,
+      "lora_targets": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ],
+      "precision": "bf16",
+      "gradient_checkpointing": true,
+      "tokenizer_frozen": true,
+      "base_frozen": true,
+      "new_token_rows_trainable": true,
+      "compact_adapter": true
+    },
+    "generation": {
+      "do_sample": false,
+      "max_new_tokens": 256,
+      "batch_size": 1,
+      "g_conditions": [
+        "G00",
+        "G10",
+        "G01",
+        "G11"
+      ],
+      "route": "oracle_same_for_all",
+      "retries": 0
+    },
+    "budgets": {
+      "smoke": {
+        "train_n": 32,
+        "validation_n": 16,
+        "stage1_epochs": 1,
+        "stage1_batch_size": 8,
+        "stage2_max_steps": 2,
+        "stage2_microbatch": 1,
+        "stage2_accumulation": 1,
+        "generation_n": 8,
+        "gpu_hours_cap": 2
+      },
+      "pilot": {
+        "cells": [
+          "HVAllRecon"
+        ],
+        "seed": 42,
+        "gpu_hours_cap": 8,
+        "artifact_gib_cap": 20,
+        "max_parallel_runs": 1
+      },
+      "repeat": {
+        "seeds": [
+          314159,
+          20260907
+        ],
+        "cells": [
+          "B2",
+          "H1",
+          "LF",
+          "HV"
+        ],
+        "enabled": false
+      },
+      "confirmation": {
+        "cities": [
+          "porto",
+          "chengdu"
+        ],
+        "seeds": [
+          42,
+          314159,
+          20260907
+        ],
+        "cells": [
+          "B0",
+          "B2",
+          "selected_H"
+        ],
+        "stage1_epochs": 100,
+        "stage1_batch_size": 128,
+        "stage2_epochs": 2,
+        "train": "full_minus_validation",
+        "test": "full",
+        "enabled": false
+      }
+    },
+    "evaluation": {
+      "primary": "G00 population_mean_penalized_error and codebook health; G11 not executed",
+      "primary_contrast": [
+        "HVAllRecon",
+        "frozen_HV"
+      ],
+      "invalid_penalty": 1.0,
+      "sensitivity_invalid_penalty": 10.0,
+      "bootstrap_replicates": 2000,
+      "bootstrap_seed": 271828,
+      "progress_anchors": 100,
+      "probe": {
+        "hidden_dim": 64,
+        "epochs": 10,
+        "learning_rate": 0.001,
+        "batch_events": 256,
+        "seed": 42
+      },
+      "metric_manifest": null,
+      "secondary_contrasts": []
+    },
+    "gates": {
+      "active_fraction_min": 0.1,
+      "perplexity_fraction_min": 0.05,
+      "max_share_max": 0.5,
+      "oracle_error_ratio_max": 1.1,
+      "valid_rate_min": 0.99,
+      "valid_rate_drop_max": 0.01,
+      "primary_improvement_min": 0.05,
+      "sid_nll_ratio_max": 1.02
+    },
+    "pending_before_execution": [],
+    "allowed_phases": [
+      "smoke",
+      "pilot"
+    ],
+    "execution_cell_order": [
+      "HVAllRecon"
+    ],
+    "budget_decision": "Tokenizer-only pilot 8 GPU-hours; full LLM stages disabled pending tokenizer gate.",
+    "ablation": {
+      "setting": "reconstruction_gradient_route",
+      "seeds": [
+        42
+      ],
+      "preflight_path": "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+      "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+      "initialization": "identical_copied_independent_encoders",
+      "status": "planned",
+      "total_gpu_hours_cap": 8,
+      "total_artifact_gib_cap": 20,
+      "scope": "Porto held-out-trip validation; sealed test untouched",
+      "baseline_revision": "70b82db195f600e3271030ddb5e6c228e4915f31",
+      "baseline_manifest": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/pilot/porto/42/HV/attempt_001/run_manifest.json",
+      "baseline_manifest_sha256": "c840e067328926ed6fe11290fa6bd3135f3a3f1878b27ceec5d5efb744f6a095"
+    },
+    "tokenizer_gate": {
+      "llm_execution_enabled": false,
+      "rule": "Review G00 <=1.10 baseline, valid >=0.99 with drop <=0.01, each layer active/K>=0.10, perplexity/K>=0.05 and max_share<=0.50. Report rank/probes descriptively; no automatic LLM launch."
+    }
+  },
+  "codebook_initialization": "base_layer_scale_nested_common_codes_v1",
+  "rq_vocab_sizes": [
+    32,
+    64,
+    128,
+    256
+  ],
+  "status": "completed",
+  "command": [
+    "/workspace/guozuyu/HTP-hv-allrecon/stage_1/src/independent_latent_sid/recon_run.py",
+    "--config",
+    "/workspace/guozuyu/HTP-hv-allrecon/stage_1/configs/independent_latent_sid/hv_allrecon.json",
+    "--preflight",
+    "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+    "--phase",
+    "smoke",
+    "--cells",
+    "HVAllRecon",
+    "--seed",
+    "42"
+  ],
+  "pid": 3639731,
+  "started_at": 1789616422.3222218,
+  "elapsed_seconds": 13.430482869967818,
+  "stages": {
+    "initial_audit": {
+      "status": "completed",
+      "artifacts": {
+        "initial_route_audit.json": {
+          "sha256": "717360373f87978950bdd534fb675244d4590c7e08cb0cc8261be66b8d8bd38e",
+          "bytes": 985
+        }
+      },
+      "elapsed_seconds": 3.8566993586719036,
+      "peak_allocated_bytes": 251873280,
+      "peak_reserved_bytes": 278921216
+    },
+    "stage1": {
+      "status": "completed",
+      "artifacts": {
+        "stage1/resolved_config.json": {
+          "sha256": "39a5269908ca467c18c51e97ec5f251cbcdc610067b1048215126d8de9d208b0",
+          "bytes": 7922
+        },
+        "stage1/stage1_model.pt": {
+          "sha256": "419d39bcdbd0857f9072ce7f20bb3b9833b8ec6a8cab83d9b162511e80bdc9d3",
+          "bytes": 80029532
+        },
+        "stage1/stage1_metrics.json": {
+          "sha256": "ed2ab251a248bf3954174703d17261a3a17efa90411bb02966d9860745cb220a",
+          "bytes": 1539
+        }
+      },
+      "elapsed_seconds": 3.113012446090579,
+      "peak_allocated_bytes": 417227776,
+      "peak_reserved_bytes": 465567744
+    },
+    "tokens": {
+      "status": "completed",
+      "artifacts": {
+        "tokens/train_tokens.jsonl": {
+          "sha256": "19158e9fae9b52de018823a044f45e3093a4ea5345a7fbb97602d4524cb66441",
+          "bytes": 20697
+        },
+        "tokens/test_tokens.jsonl": {
+          "sha256": "f49fd1c523b2248ea6bbcd4fbc7e5f65e7d1132b1db4f5d51fc8d5924bbb8a11",
+          "bytes": 10471
+        },
+        "tokens/token_audit.json": {
+          "sha256": "2987bcb4dcdfa8a8813b5a57449a27ca54660812a41f04d7da8c8e7bfa1a0819",
+          "bytes": 530
+        }
+      },
+      "elapsed_seconds": 0.933816428296268,
+      "peak_allocated_bytes": 99968512,
+      "peak_reserved_bytes": 109051904
+    },
+    "oracle": {
+      "status": "completed",
+      "artifacts": {
+        "oracle/g00_metrics.json": {
+          "sha256": "25af922819567c38b6e6bf91e724d64dcbea4faa76bdca79223b228a3974830a",
+          "bytes": 12441
+        },
+        "oracle/g00_reconstructed.jsonl": {
+          "sha256": "679b6786c8ee13f03274bc2cdfbd5a02a17d4ef1897f76e291ae7876b8606953",
+          "bytes": 81903
+        },
+        "oracle/gps_errors.json": {
+          "sha256": "9e5b7af8af55d87c59b34ec605e65b893c99e83608f62c0896b813d0719415c8",
+          "bytes": 4339
+        }
+      },
+      "elapsed_seconds": 1.768881157040596,
+      "peak_allocated_bytes": 98711552,
+      "peak_reserved_bytes": 106954752
+    },
+    "tokenizer_diagnostics": {
+      "status": "completed",
+      "artifacts": {
+        "diagnostics/sampling.json": {
+          "sha256": "a58393bde7291bacc89b40da53ab6736bb2f9fc54720811870eb2282e71685dc",
+          "bytes": 681
+        },
+        "diagnostics/information.json": {
+          "sha256": "9237a14839942dbcde9b1a0a89545e6e752a6200ece4e778e6595165e5426555",
+          "bytes": 14304
+        },
+        "diagnostics/frozen_features.pt": {
+          "sha256": "b16e9e3d15bea3cf1855a94800577a8b946e513e3fcfa1739fdc2ec622f5cd81",
+          "bytes": 630125
+        },
+        "diagnostics/latent_rank.json": {
+          "sha256": "f474e8f9e97116faeabb31a28241e3a6b109dcd1b04c86b261593f1ad69f1692",
+          "bytes": 389
+        },
+        "diagnostics/probes/layers_2_grid.pt": {
+          "sha256": "30ebadec40c5037fe0318a9fd35bf3a3b48758ae0ad714cae1db0e9e412f3124",
+          "bytes": 2077209
+        },
+        "diagnostics/probes/prefixes_4_road.pt": {
+          "sha256": "7c5e03fbbdbbe46070761b997ffb5a69c5b48711fe26e364454fc206ae165dcb",
+          "bytes": 2761261
+        },
+        "diagnostics/probes/prefixes_2_grid.pt": {
+          "sha256": "7528482b4c4ece2ea46b9c6249cfa64cfc28563753be82a4c6e54539d14217df",
+          "bytes": 2077229
+        },
+        "diagnostics/probes/prefixes_1_gps.progress.json": {
+          "sha256": "5c87a80e341cd94e47924f7fa74b6ab5e0a33a7914a8d369cd09755ca64353da",
+          "bytes": 449
+        },
+        "diagnostics/probes/layers_4_road.progress.json": {
+          "sha256": "20ef7f20f5645205feb9c46a5a9cacc1fa52943ea8a85f68de91083744702ead",
+          "bytes": 445
+        },
+        "diagnostics/probes/prefixes_4_gps.progress.json": {
+          "sha256": "b0fd8f900b016ac8a133174f5f315a37e67da41390e496bdee43ddc15203f3ad",
+          "bytes": 448
+        },
+        "diagnostics/probes/prefixes_4_grid.progress.json": {
+          "sha256": "394b6d914412d5ccc3aaf8ecf15a3389cf69afa0ff37cd2fd2f994c263cc6834",
+          "bytes": 448
+        },
+        "diagnostics/probes/layers_4_gps.pt": {
+          "sha256": "f55445acf91a3b2032e64d6c7c44211c2a15ad702aba2fc45fbadedbb5f4e4f1",
+          "bytes": 22159
+        },
+        "diagnostics/probes/prefixes_2_road.progress.json": {
+          "sha256": "a6f4fc8405e0d42fabc9b4d097ff3aa64b8b6387098b0ac1c5cd8eb367a6de26",
+          "bytes": 447
+        },
+        "diagnostics/probes/prefixes_2_gps.pt": {
+          "sha256": "24ec669b3b456fe9be3de7e1ae28b1002b815058acde5f7f5bad91a391af3cb7",
+          "bytes": 22179
+        },
+        "diagnostics/probes/prefixes_1_gps.pt": {
+          "sha256": "b94d51c9b93d4e0d61753bd2e0b76c1011455f7c44829c08d166d397c8dfb762",
+          "bytes": 22179
+        },
+        "diagnostics/probes/layers_1_road.pt": {
+          "sha256": "28172899e56944d57329e351e9bb69a297c03a205e4d696008fab84a77a7ae73",
+          "bytes": 2761241
+        },
+        "diagnostics/probes/layers_3_gps.progress.json": {
+          "sha256": "b77427c683652748bb7649c97850a7777a4aa9893bb13bdf67ddd250216c1213",
+          "bytes": 447
+        },
+        "diagnostics/probes/prefixes_2_road.pt": {
+          "sha256": "78ab6f887ffcf22d6eadb848b43accdce68614d0ed7f256f76bd6dd84d3ffb22",
+          "bytes": 2761261
+        },
+        "diagnostics/probes/prefixes_3_road.progress.json": {
+          "sha256": "298638b4a8cb1dd61808df8377eedd2ccac48a9fc67ea7ac90def7d1bbd3982f",
+          "bytes": 446
+        },
+        "diagnostics/probes/prefixes_4_gps.pt": {
+          "sha256": "7581c6631941feb205f43def94857f90c74de062826a3abd1bab207137ae1223",
+          "bytes": 22179
+        },
+        "diagnostics/probes/layers_2_grid.progress.json": {
+          "sha256": "af1138ff79aca26ce1d3c4816d380f2c56715ec7f372f16fe57ba3d847a521a4",
+          "bytes": 446
+        },
+        "diagnostics/probes/layers_2_road.pt": {
+          "sha256": "aac8ab5398494eecf2a036ceee7f9c3ddfee6edef73669c28dd68c04462299d0",
+          "bytes": 2761241
+        },
+        "diagnostics/probes/layers_1_grid.progress.json": {
+          "sha256": "d9cbd1bc4b8f00c4e45dc0483d3ba1dece5fca532a214b0b77715c89655deb86",
+          "bytes": 444
+        },
+        "diagnostics/probes/layers_3_road.pt": {
+          "sha256": "877b67e5f12dc3b2c01cd4df5d1663618f66f3a07bb9d38926431ca29ddbf99a",
+          "bytes": 2761241
+        },
+        "diagnostics/probes/layers_4_grid.pt": {
+          "sha256": "35aecbf60b2302106e6c17fabcc0fbab3d798557fb5657a72d0f3f419b7419a5",
+          "bytes": 2077209
+        },
+        "diagnostics/probes/layers_2_road.progress.json": {
+          "sha256": "b2f32e7bdf587eb0b2c420e1623889d0e1dea02ef359208d30fa5ad8a4a06720",
+          "bytes": 445
+        },
+        "diagnostics/probes/prefixes_2_grid.progress.json": {
+          "sha256": "7d51f0052ce9a4dc0e0492f45791088b0640253ec0f6e1c7bb53d144f1144e32",
+          "bytes": 448
+        },
+        "diagnostics/probes/layers_1_grid.pt": {
+          "sha256": "ffccc593cbde43e2853b437394c53ff3cca8f6ec21d8a448e2c0b4e3f7194967",
+          "bytes": 2077209
+        },
+        "diagnostics/probes/layers_3_gps.pt": {
+          "sha256": "a0ea9200e88f6df63497e096560cc9f32fcac6b65a3bac64625154180bb81dc9",
+          "bytes": 22159
+        },
+        "diagnostics/probes/prefixes_3_road.pt": {
+          "sha256": "985553870d077f4b9f436b08daac6b90bb41c793a8699b2e0aca5ef236d36d82",
+          "bytes": 2761261
+        },
+        "diagnostics/probes/prefixes_3_grid.pt": {
+          "sha256": "ea9801471620bffa46281621c2da11f35953ae0fee1b903770ade91ea85dbdb5",
+          "bytes": 2077229
+        },
+        "diagnostics/probes/layers_4_road.pt": {
+          "sha256": "3d7b0c26866cd7962b218c1361f5ba8e39558002bc126d0f0b634073055495d6",
+          "bytes": 2761241
+        },
+        "diagnostics/probes/layers_4_gps.progress.json": {
+          "sha256": "09b40fd6dd3ce7b9bf08d2217b881b81fee38ef2de25c06cf39df0e7fe2f5b95",
+          "bytes": 446
+        },
+        "diagnostics/probes/layers_3_road.progress.json": {
+          "sha256": "b35e46dbfa46ce3044c075473e524dd6c45b4da9423803ccbf8b50d5c60d3606",
+          "bytes": 445
+        },
+        "diagnostics/probes/layers_1_gps.progress.json": {
+          "sha256": "97cac88cb539fedcadf56116eae9c700036ea9748b8ac33bf329c8a923281b8e",
+          "bytes": 448
+        },
+        "diagnostics/probes/prefixes_3_grid.progress.json": {
+          "sha256": "3a85769819720c1597ff0e4472601cd98362cda590d4dc6e45f6aaccb11f7661",
+          "bytes": 446
+        },
+        "diagnostics/probes/metrics.json": {
+          "sha256": "f5ad15a45a749f2a4269a607a79ec8510a9c9c0a9a3060f0bbed92c832a9cec3",
+          "bytes": 11010
+        },
+        "diagnostics/probes/layers_2_gps.progress.json": {
+          "sha256": "8fb5f96a16e85aebe2289facf79f8fd2f11414057d10897d799ded3f8f878fa3",
+          "bytes": 448
+        },
+        "diagnostics/probes/layers_3_grid.pt": {
+          "sha256": "a7325d4dab9de3dfc5fe416b5b43aa00f86087d6fa7eb715310ac0f5fa32a077",
+          "bytes": 2077209
+        },
+        "diagnostics/probes/layers_4_grid.progress.json": {
+          "sha256": "da81ba0d66949698a5222538770767dbab56404e533bf1f1919162241adc221c",
+          "bytes": 444
+        },
+        "diagnostics/probes/prefixes_4_road.progress.json": {
+          "sha256": "3eeccb336008dcb581ba74456c9a728bf56f3f7c8c0996be75a426123d699950",
+          "bytes": 447
+        },
+        "diagnostics/probes/prefixes_4_grid.pt": {
+          "sha256": "b5462cb071f23b04ecf73957658d2025ebb1fc0b093c74bf655a1ddc92a3450f",
+          "bytes": 2077229
+        },
+        "diagnostics/probes/prefixes_1_road.progress.json": {
+          "sha256": "f17eeb45ad9b2616b8ea69001150a58e95b28e9d9d190d874f182b5993b028d0",
+          "bytes": 447
+        },
+        "diagnostics/probes/prefixes_1_grid.progress.json": {
+          "sha256": "c84f4948544336a658c63c385d8c5aa0c7f29fb72247637a8cb25ba492e4da9e",
+          "bytes": 446
+        },
+        "diagnostics/probes/prefixes_1_grid.pt": {
+          "sha256": "9ff6c9ce6a0b9cbe7d3392fa7df83ef5b2d347f27cc1d46f459a86b17a502445",
+          "bytes": 2077229
+        },
+        "diagnostics/probes/prefixes_2_gps.progress.json": {
+          "sha256": "3c26282670c42d59680bb73e75421400e8b4ac8ba67e2fc6b87c0d63002381cf",
+          "bytes": 448
+        },
+        "diagnostics/probes/layers_1_gps.pt": {
+          "sha256": "d0b2372ecbe1c4488922102059e74c7e532227335ba0f3e469148578816e015e",
+          "bytes": 22159
+        },
+        "diagnostics/probes/prefixes_3_gps.pt": {
+          "sha256": "33cf91f0752c215da72ebc54696b13857f7a0dd354145288b2929552cbcdd581",
+          "bytes": 22179
+        },
+        "diagnostics/probes/prefixes_3_gps.progress.json": {
+          "sha256": "c57fdd76792c6984ef4165c31c2689b2bc770238e062c6b9ae1a882574cb0831",
+          "bytes": 449
+        },
+        "diagnostics/probes/layers_2_gps.pt": {
+          "sha256": "9df6e9a717bef7e095bfba4d50540637c1dc5b1d56e7890506a7395e6c68b2bc",
+          "bytes": 22159
+        },
+        "diagnostics/probes/layers_3_grid.progress.json": {
+          "sha256": "ff5c270ae14dcec0297c830d943a544b63731c398f5fd72358cf06e1846ee9bc",
+          "bytes": 446
+        },
+        "diagnostics/probes/layers_1_road.progress.json": {
+          "sha256": "a7c19b7841cca46e3b1b398e79383efec195add694d0674879024bbacd145c4d",
+          "bytes": 446
+        },
+        "diagnostics/probes/prefixes_1_road.pt": {
+          "sha256": "0f8551c2ba49719e832690b2b4404dcb0363ed2e80a9023c2744faff973bafa8",
+          "bytes": 2761261
+        },
+        "final_route_audit.json": {
+          "sha256": "a7153a3c6894aa81f8ccc4a27529108e242775bd1923afc9d5c4cabfd1d5f280",
+          "bytes": 988
+        }
+      },
+      "elapsed_seconds": 2.4301918167620897,
+      "peak_allocated_bytes": 252097536,
+      "peak_reserved_bytes": 635437056
+    }
+  },
+  "current_stage": "tokenizer_diagnostics"
+}

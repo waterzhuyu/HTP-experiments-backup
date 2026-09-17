@@ -1,0 +1,25 @@
+{
+  "status": "launched",
+  "pid": 3641123,
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "-m",
+    "independent_latent_sid.recon_run",
+    "--config",
+    "/workspace/guozuyu/HTP-hv-allrecon/stage_1/configs/independent_latent_sid/hv_allrecon.json",
+    "--preflight",
+    "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+    "--phase",
+    "pilot",
+    "--cells",
+    "HVAllRecon",
+    "--seed",
+    "42"
+  ],
+  "gpu": 2,
+  "log": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/hv_allrecon_20260917/pilot.log",
+  "revision": "60f140aa92799c36b21dccec87bef5223480bba4",
+  "config_sha256": "d94c57c886d37883d29696612f1cd383471d98343b3b2355ed71731557ccc1a0"
+}
