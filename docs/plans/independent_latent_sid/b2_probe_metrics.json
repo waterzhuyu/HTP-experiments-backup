@@ -1,0 +1,434 @@
+[
+  {
+    "representation": "prefixes",
+    "depth": 1,
+    "view": "gps",
+    "loss": 0.029901226139506857,
+    "accuracy": null,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 2.9449972407892346,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 1,
+    "view": "grid",
+    "loss": 7.135841001514174,
+    "accuracy": 0.012558672318262387,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.516370104625821,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 1,
+    "view": "road",
+    "loss": 7.421259192647207,
+    "accuracy": 0.017592718431516326,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 4.041562197729945,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 2,
+    "view": "gps",
+    "loss": 0.029691359528719794,
+    "accuracy": null,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 2.7143113408237696,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 2,
+    "view": "grid",
+    "loss": 7.0717809854794815,
+    "accuracy": 0.013263591887183762,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.2923585027456284,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 2,
+    "view": "road",
+    "loss": 7.336088910637299,
+    "accuracy": 0.02021562449152117,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.8737507797777653,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 3,
+    "view": "gps",
+    "loss": 0.029485121874471266,
+    "accuracy": null,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 2.5289064776152372,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 3,
+    "view": "grid",
+    "loss": 7.028303942941786,
+    "accuracy": 0.014116554656604014,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.181893879547715,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 3,
+    "view": "road",
+    "loss": 7.283702568329068,
+    "accuracy": 0.021470890773645248,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 4.018798785284162,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 4,
+    "view": "gps",
+    "loss": 0.02920756272414559,
+    "accuracy": null,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 2.9125514356419444,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 4,
+    "view": "grid",
+    "loss": 7.000246308738448,
+    "accuracy": 0.014865234467535626,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.166498293168843,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "prefixes",
+    "depth": 4,
+    "view": "road",
+    "loss": 7.253189669850699,
+    "accuracy": 0.023367224728396727,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.8464704770594835,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 1,
+    "view": "gps",
+    "loss": 0.029901226139506857,
+    "accuracy": null,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 2.4591585947200656,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 1,
+    "view": "grid",
+    "loss": 7.135841001514174,
+    "accuracy": 0.012558672318262387,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.7443756330758333,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 1,
+    "view": "road",
+    "loss": 7.421259192647207,
+    "accuracy": 0.017592718431516326,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 4.021123006008565,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 2,
+    "view": "gps",
+    "loss": 0.029978981037162667,
+    "accuracy": null,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 2.6426191721111536,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 2,
+    "view": "grid",
+    "loss": 7.135434259427318,
+    "accuracy": 0.011626512709214533,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.7216808684170246,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 2,
+    "view": "road",
+    "loss": 7.426886750156728,
+    "accuracy": 0.016393807350237502,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.968727331608534,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 3,
+    "view": "gps",
+    "loss": 0.029660271283382073,
+    "accuracy": null,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 2.6489247707650065,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 3,
+    "view": "grid",
+    "loss": 7.133811686922349,
+    "accuracy": 0.013203589008761443,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 4.413150077685714,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 3,
+    "view": "road",
+    "loss": 7.425738034567132,
+    "accuracy": 0.015221837713314123,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.867065795697272,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 4,
+    "view": "gps",
+    "loss": 0.029914628744170918,
+    "accuracy": null,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 3.7544836550951004,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 4,
+    "view": "grid",
+    "loss": 7.157104242806787,
+    "accuracy": 0.012432971880523185,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 4.552801802754402,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  },
+  {
+    "representation": "layers",
+    "depth": 4,
+    "view": "road",
+    "loss": 7.448369425944177,
+    "accuracy": 0.014701763450547752,
+    "epochs": 10,
+    "batch_events": 256,
+    "seed": 42,
+    "steps": 1860,
+    "elapsed_seconds": 4.188734332099557,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+  }
+]

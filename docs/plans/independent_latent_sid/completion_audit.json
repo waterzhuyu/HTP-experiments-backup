@@ -1,0 +1,38 @@
+{
+  "status": "completed_result_audit",
+  "scope": "single-seed exploratory objective, not scientific success",
+  "cells": {
+    "HV": {
+      "artifact_count": 85,
+      "tuple_identity_and_nll_passed": true,
+      "complete_probes": 24,
+      "population": 1024,
+      "source_manifest_sha256": "c840e067328926ed6fe11290fa6bd3135f3a3f1878b27ceec5d5efb744f6a095"
+    },
+    "LF": {
+      "artifact_count": 85,
+      "tuple_identity_and_nll_passed": true,
+      "complete_probes": 24,
+      "population": 1024,
+      "source_manifest_sha256": "98e1afb6d26f298710aea5973a5fdcf3c68184068ce7b226fa0364f213c121a2"
+    },
+    "H1": {
+      "artifact_count": 85,
+      "tuple_identity_and_nll_passed": true,
+      "complete_probes": 24,
+      "population": 1024,
+      "source_manifest_sha256": "a7945c41efd35cb983ee266c1a59d7ee92988ba684cba9879787c7c54bcf6aea"
+    },
+    "B2": {
+      "artifact_count": 85,
+      "tuple_identity_and_nll_passed": true,
+      "complete_probes": 24,
+      "population": 1024,
+      "source_manifest_sha256": "7f8ddabaf36cf1afd69486c1734fea734d43ae508f1b42646f8a6887794ec1ab"
+    }
+  },
+  "analysis_sha256": "0fdd5d2de63f15101145db49301c9d0dc01a0a1eee9fd8457ed717ef42f0ee08",
+  "scientific_gate": "HV_failed_primary_and_codebook_health",
+  "required_training_remaining": false,
+  "new_proposed_experiments": "not executed; recommendations only"
+}

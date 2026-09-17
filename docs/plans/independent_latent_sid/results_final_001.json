@@ -1,0 +1,3929 @@
+{
+  "status": "complete_single_seed_analysis",
+  "pending": {},
+  "analysis_revision": "0ec2ffbc6b229c516deed4dc6f88deb88ab0c695",
+  "command": [
+    "/workspace/guozuyu/HTP-independent-latent-sid-analysis/stage_1/src/independent_latent_sid/analyze_results.py",
+    "--root",
+    "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917",
+    "--config",
+    "stage_1/configs/independent_latent_sid/pilot.json",
+    "--output",
+    "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/analysis/results_final_001.json"
+  ],
+  "config_sha256": "796f63b2472ab9e5aec5a6a0efa49879598e50376626230ff6857f5bfbecd193",
+  "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+  "verified_cells": [
+    "HV",
+    "LF",
+    "H1",
+    "B2"
+  ],
+  "verified_artifact_counts": {
+    "HV": 85,
+    "LF": 85,
+    "H1": 85,
+    "B2": 85
+  },
+  "source_manifests": {
+    "HV": {
+      "path": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/pilot/porto/42/HV/attempt_001/run_manifest.json",
+      "sha256": "c840e067328926ed6fe11290fa6bd3135f3a3f1878b27ceec5d5efb744f6a095",
+      "revision": "70b82db195f600e3271030ddb5e6c228e4915f31"
+    },
+    "LF": {
+      "path": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/pilot/porto/42/LF/attempt_001/run_manifest.json",
+      "sha256": "98e1afb6d26f298710aea5973a5fdcf3c68184068ce7b226fa0364f213c121a2",
+      "revision": "70b82db195f600e3271030ddb5e6c228e4915f31"
+    },
+    "H1": {
+      "path": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/pilot/porto/42/H1/attempt_001/run_manifest.json",
+      "sha256": "a7945c41efd35cb983ee266c1a59d7ee92988ba684cba9879787c7c54bcf6aea",
+      "revision": "70b82db195f600e3271030ddb5e6c228e4915f31"
+    },
+    "B2": {
+      "path": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/pilot/porto/42/B2/attempt_001/run_manifest.json",
+      "sha256": "7f8ddabaf36cf1afd69486c1734fea734d43ae508f1b42646f8a6887794ec1ab",
+      "revision": "70b82db195f600e3271030ddb5e6c228e4915f31"
+    }
+  },
+  "cells": {
+    "HV": {
+      "stage1": {
+        "codebook": [
+          {
+            "active_codes": 29,
+            "active_fraction": 0.90625,
+            "events": 5996,
+            "layer": 0,
+            "max_share": 0.9467978652434956,
+            "perplexity": 1.3782219800754802,
+            "perplexity_fraction": 0.04306943687735876,
+            "vocab_size": 32
+          },
+          {
+            "active_codes": 27,
+            "active_fraction": 0.421875,
+            "events": 5996,
+            "layer": 1,
+            "max_share": 0.6541027351567712,
+            "perplexity": 2.9419932195814,
+            "perplexity_fraction": 0.04596864405595937,
+            "vocab_size": 64
+          },
+          {
+            "active_codes": 6,
+            "active_fraction": 0.046875,
+            "events": 5996,
+            "layer": 2,
+            "max_share": 0.30403602401601065,
+            "perplexity": 3.987500011384488,
+            "perplexity_fraction": 0.03115234383894131,
+            "vocab_size": 128
+          },
+          {
+            "active_codes": 7,
+            "active_fraction": 0.02734375,
+            "events": 5996,
+            "layer": 3,
+            "max_share": 0.35340226817878584,
+            "perplexity": 4.630974699470388,
+            "perplexity_fraction": 0.018089744919806205,
+            "vocab_size": 256
+          }
+        ],
+        "gate": {
+          "passed": null,
+          "reasons": [],
+          "status": "pending_e0_oracle_ratio"
+        },
+        "losses": {
+          "base_loss": 2.7359465658664703,
+          "loss": 2.9202326834201813,
+          "quant_loss": 1.300172135233879,
+          "reconstruction_loss": 1.4357744455337524
+        },
+        "parameter_count": 19836061,
+        "population": 1024,
+        "prefix_conditional_entropy": [
+          0.09256165420678147,
+          0.24928519743977717,
+          0.27783850834857426,
+          0.14766662602137678
+        ]
+      },
+      "teacher_forced": {
+        "accuracy": {
+          "layer_0": 0.946964643095397,
+          "layer_1": 0.7901934623082054,
+          "layer_2": 0.6264176117411607,
+          "layer_3": 0.7354903268845897,
+          "sampling": 0.720703125
+        },
+        "denominators": {
+          "layer_0": 5996,
+          "layer_1": 5996,
+          "layer_2": 5996,
+          "layer_3": 5996,
+          "sampling": 1024
+        },
+        "first_error_histogram": {
+          "layer_0": 53,
+          "layer_1": 191,
+          "layer_2": 361,
+          "layer_3": 115,
+          "none": 18,
+          "sampling": 286
+        },
+        "group_nll": {
+          "layer_0": 0.22671638016903983,
+          "layer_1": 0.5472729124397219,
+          "layer_2": 0.8621026245731763,
+          "layer_3": 0.6394487375255582,
+          "sampling": 0.7874256422510371
+        },
+        "nll": 0.27791533604969476,
+        "perplexity": 1.3203744043637948,
+        "population": 1024,
+        "sequence_exact_accuracy": 0.017578125,
+        "sid_nll": 0.568885163676874,
+        "tokens": 52064
+      },
+      "information": {
+        "train": {
+          "events": 47533,
+          "layers": [
+            {
+              "layer": 1,
+              "entropy_nats": 0.33674588828556085,
+              "active_codes": 32
+            },
+            {
+              "layer": 2,
+              "entropy_nats": 1.0387922161871104,
+              "active_codes": 36
+            },
+            {
+              "layer": 3,
+              "entropy_nats": 1.376948221374146,
+              "active_codes": 7
+            },
+            {
+              "layer": 4,
+              "entropy_nats": 1.5298330791554189,
+              "active_codes": 8
+            }
+          ],
+          "unique_tuples": 843,
+          "duplicate_event_fraction": 0.9822649527696548,
+          "pair_collision_probability": 0.06728031334494697,
+          "tuple_entropy_nats": 3.5456358785822237
+        },
+        "validation": {
+          "events": 5996,
+          "layers": [
+            {
+              "layer": 1,
+              "entropy_nats": 0.3207942482069759,
+              "active_codes": 29
+            },
+            {
+              "layer": 2,
+              "entropy_nats": 1.079087317479581,
+              "active_codes": 27
+            },
+            {
+              "layer": 3,
+              "entropy_nats": 1.383164470966007,
+              "active_codes": 6
+            },
+            {
+              "layer": 4,
+              "entropy_nats": 1.532767364186431,
+              "active_codes": 7
+            }
+          ],
+          "unique_tuples": 275,
+          "duplicate_event_fraction": 0.9541360907271514,
+          "pair_collision_probability": 0.06610105931059962,
+          "tuple_entropy_nats": 3.5244607336769445
+        },
+        "unigram_nll_per_layer": [
+          0.32468406597387767,
+          1.0843469141150133,
+          1.385195660453605,
+          1.5363901558378692
+        ],
+        "interventions": "N/A: this ablation uses frozen probes and production singleton GPS decoding; no legacy batch interventions"
+      },
+      "probes": [
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "gps",
+          "loss": 0.03049191368575587,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.7916929591447115,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "grid",
+          "loss": 7.292430655082375,
+          "accuracy": 0.007675227234698118,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.614808947779238,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "road",
+          "loss": 7.631859757784164,
+          "accuracy": 0.009518140426809787,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.72990829590708,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "gps",
+          "loss": 0.029495917998345538,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.738445286639035,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "grid",
+          "loss": 6.952622347639002,
+          "accuracy": 0.009983305894502586,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.68475562799722,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "road",
+          "loss": 7.199789571766789,
+          "accuracy": 0.011487156136073873,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.713441915810108,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "gps",
+          "loss": 0.029092476227582032,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 5.099959573708475,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "grid",
+          "loss": 6.853959615812609,
+          "accuracy": 0.011516579969764762,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.659658193588257,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "road",
+          "loss": 7.056371680132187,
+          "accuracy": 0.015944660546796535,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.89045973867178,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "gps",
+          "loss": 0.028384965326414286,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.817525199614465,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "grid",
+          "loss": 6.835423883003953,
+          "accuracy": 0.012349049612121013,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.5704384464770555,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "road",
+          "loss": 7.0363655901767554,
+          "accuracy": 0.017930891022233865,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.7062183963134885,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "gps",
+          "loss": 0.03049191368575587,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 5.039074816741049,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "grid",
+          "loss": 7.292430655082375,
+          "accuracy": 0.007675227234698118,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.596238871105015,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "road",
+          "loss": 7.631859757784164,
+          "accuracy": 0.009518140426809787,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.4969139993190765,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "gps",
+          "loss": 0.029604264455379597,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.973731461912394,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "grid",
+          "loss": 6.980327554486821,
+          "accuracy": 0.009681699419218199,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.575968220829964,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "road",
+          "loss": 7.232736634476409,
+          "accuracy": 0.009890604870568946,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.716199442744255,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "gps",
+          "loss": 0.030270015842765216,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.880926243960857,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "grid",
+          "loss": 7.202595877589378,
+          "accuracy": 0.009345943095753775,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.622852188535035,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "road",
+          "loss": 7.488568913447062,
+          "accuracy": 0.013653495189329717,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.609948714263737,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "gps",
+          "loss": 0.029825994427479928,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.7408020766451955,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "grid",
+          "loss": 7.182737741260132,
+          "accuracy": 0.009248755101637102,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.708410324528813,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "road",
+          "loss": 7.47483901363226,
+          "accuracy": 0.013712997041683944,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.736596019007266,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        }
+      ],
+      "gps": {
+        "g00": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 196.32065222827856,
+            "fde_m": 163.8811257127508,
+            "length_absolute_error": 0.0
+          }
+        },
+        "g10": {
+          "population": 1024,
+          "successful": 1023,
+          "failed": 1,
+          "successful_only": {
+            "matched_progress_ade_m": 290.41364170620375,
+            "fde_m": 160.13410347478757,
+            "length_absolute_error": 0.3831867057673509
+          }
+        },
+        "g01": {
+          "population": 1024,
+          "successful": 1023,
+          "failed": 1,
+          "successful_only": {
+            "matched_progress_ade_m": 197.9455518673169,
+            "fde_m": 164.37078294173662,
+            "length_absolute_error": 0.5689149560117303
+          }
+        },
+        "g11": {
+          "population": 1024,
+          "successful": 1023,
+          "failed": 1,
+          "successful_only": {
+            "matched_progress_ade_m": 286.35745449428765,
+            "fde_m": 155.00522785915103,
+            "length_absolute_error": 0.4359726295210166
+          }
+        }
+      },
+      "sampling": {
+        "2": {
+          "events": 5996,
+          "layer_agreement": [
+            0.945963978767395,
+            0.8757504820823669,
+            0.9698132276535034,
+            0.9529686570167542
+          ],
+          "tuple_agreement": 0.7933622598648071,
+          "layer_ami": [
+            0.4077501593565434,
+            0.5943886282432864,
+            0.8850996425902871,
+            0.846508281580995
+          ]
+        },
+        "3": {
+          "events": 5996,
+          "layer_agreement": [
+            0.9391260743141174,
+            0.8644096255302429,
+            0.9349566102027893,
+            0.914943277835846
+          ],
+          "tuple_agreement": 0.7206470966339111,
+          "layer_ami": [
+            0.3428643112564882,
+            0.5693702313002423,
+            0.7884288986417457,
+            0.7579765420746287
+          ]
+        }
+      },
+      "g": {
+        "g00": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.018242598024157092,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.0025461099189033045,
+              "segment_distance_jsd": 0.09353034890182993,
+              "radius_jsd": 0.0011589584549442002,
+              "grid_density_cosine": 0.9675398889899306,
+              "grid_pattern_f1": 0.72,
+              "road_density_cosine": 0.9689388001987679,
+              "road_pattern_f1": 0.86,
+              "point_to_road_jsd": 0.055764735568670176
+            }
+          }
+        },
+        "g10": {
+          "population": 1024,
+          "successful": 1023,
+          "failed": 1,
+          "validity_rate": 0.9990234375,
+          "failure_reasons": {
+            "generation_truncated": 1
+          },
+          "population_mean_penalized_error": 0.02221099827124816,
+          "successful_only": {
+            "population": 1023,
+            "metrics": {
+              "travel_distance_jsd": 0.0015294535493361743,
+              "segment_distance_jsd": 0.08741259940287294,
+              "radius_jsd": 0.0033952346739624904,
+              "grid_density_cosine": 0.9658541941557782,
+              "grid_pattern_f1": 0.7,
+              "road_density_cosine": 0.9693626228592499,
+              "road_pattern_f1": 0.85,
+              "point_to_road_jsd": 0.05464238235500036
+            }
+          }
+        },
+        "g01": {
+          "population": 1024,
+          "successful": 1023,
+          "failed": 1,
+          "validity_rate": 0.9990234375,
+          "failure_reasons": {
+            "generation_truncated": 1
+          },
+          "population_mean_penalized_error": 0.01934921204516262,
+          "successful_only": {
+            "population": 1023,
+            "metrics": {
+              "travel_distance_jsd": 0.003040879958491489,
+              "segment_distance_jsd": 0.09136183468404253,
+              "radius_jsd": 0.0015417355326136604,
+              "grid_density_cosine": 0.9677971740938982,
+              "grid_pattern_f1": 0.74,
+              "road_density_cosine": 0.9696267603089342,
+              "road_pattern_f1": 0.88,
+              "point_to_road_jsd": 0.05547533380577163
+            }
+          }
+        },
+        "g11": {
+          "population": 1024,
+          "successful": 1023,
+          "failed": 1,
+          "validity_rate": 0.9990234375,
+          "failure_reasons": {
+            "generation_truncated": 1
+          },
+          "population_mean_penalized_error": 0.021796897452127824,
+          "successful_only": {
+            "population": 1023,
+            "metrics": {
+              "travel_distance_jsd": 0.001335841610681566,
+              "segment_distance_jsd": 0.08842345856605444,
+              "radius_jsd": 0.0031006642140946426,
+              "grid_density_cosine": 0.9659580992662805,
+              "grid_pattern_f1": 0.71,
+              "road_density_cosine": 0.9692660536605571,
+              "road_pattern_f1": 0.86,
+              "point_to_road_jsd": 0.055312710820061436
+            }
+          }
+        }
+      },
+      "nll_context_gain": {
+        "unigram_mean_nll": 1.0826541990950913,
+        "llm_mean_layer_nll": 0.568885163676874,
+        "gain_over_unigram_nats_per_token": 0.5137690354182173,
+        "per_layer_gain": [
+          0.09796768580483783,
+          0.5370740016752914,
+          0.5230930358804288,
+          0.896941418312311
+        ],
+        "interpretation": "descriptive; train unigram alpha=.5 ignores route/prior layers/events; not a matched conditional baseline"
+      },
+      "shapley": {
+        "sid": {
+          "mean": 0.003208042827028138,
+          "ci95": [
+            0.0022569074893774217,
+            0.004570271672504289
+          ]
+        },
+        "sampling": {
+          "mean": 0.0003462566009425959,
+          "ci95": [
+            -0.00028021100297055776,
+            0.0014608006775321438
+          ]
+        },
+        "interaction": {
+          "mean": -0.001520714840125867,
+          "ci95": [
+            -0.0036853052613859344,
+            -0.00035636943945532173
+          ]
+        },
+        "total": {
+          "mean": 0.0035542994279707334,
+          "ci95": [
+            0.002149697100444484,
+            0.005964162301085152
+          ]
+        }
+      }
+    },
+    "LF": {
+      "stage1": {
+        "codebook": [
+          {
+            "active_codes": 8,
+            "active_fraction": 0.25,
+            "events": 5996,
+            "layer": 0,
+            "max_share": 0.42845230153435626,
+            "perplexity": 4.158249213627713,
+            "perplexity_fraction": 0.12994528792586604,
+            "vocab_size": 32
+          },
+          {
+            "active_codes": 9,
+            "active_fraction": 0.140625,
+            "events": 5996,
+            "layer": 1,
+            "max_share": 0.34989993328885927,
+            "perplexity": 4.198008507847314,
+            "perplexity_fraction": 0.06559388293511428,
+            "vocab_size": 64
+          },
+          {
+            "active_codes": 8,
+            "active_fraction": 0.0625,
+            "events": 5996,
+            "layer": 2,
+            "max_share": 0.36274182788525683,
+            "perplexity": 4.567862208096031,
+            "perplexity_fraction": 0.03568642350075024,
+            "vocab_size": 128
+          },
+          {
+            "active_codes": 12,
+            "active_fraction": 0.046875,
+            "events": 5996,
+            "layer": 3,
+            "max_share": 0.2871914609739827,
+            "perplexity": 5.037362144241315,
+            "perplexity_fraction": 0.019677195875942636,
+            "vocab_size": 256
+          }
+        ],
+        "gate": {
+          "passed": null,
+          "reasons": [],
+          "status": "pending_e0_oracle_ratio"
+        },
+        "losses": {
+          "base_loss": 1.8413944244384766,
+          "loss": 2.026287391781807,
+          "quant_loss": 0.6466566845774651,
+          "reconstruction_loss": 1.194737747311592
+        },
+        "parameter_count": 19836061,
+        "population": 1024,
+        "prefix_conditional_entropy": [
+          0.4111952449769475,
+          0.23216202545563705,
+          0.18145233354813184,
+          0.13885745303085442
+        ]
+      },
+      "teacher_forced": {
+        "accuracy": {
+          "layer_0": 0.5680453635757171,
+          "layer_1": 0.6330887258172114,
+          "layer_2": 0.6611074049366245,
+          "layer_3": 0.716310873915944,
+          "sampling": 0.7216796875
+        },
+        "denominators": {
+          "layer_0": 5996,
+          "layer_1": 5996,
+          "layer_2": 5996,
+          "layer_3": 5996,
+          "sampling": 1024
+        },
+        "first_error_histogram": {
+          "layer_0": 358,
+          "layer_1": 167,
+          "layer_2": 159,
+          "layer_3": 55,
+          "sampling": 285
+        },
+        "group_nll": {
+          "layer_0": 1.056830638086422,
+          "layer_1": 0.8187252606766633,
+          "layer_2": 0.7916068038278774,
+          "layer_3": 0.6872039194342452,
+          "sampling": 0.8166952448082156
+        },
+        "nll": 0.4028484794209908,
+        "perplexity": 1.496080187552585,
+        "population": 1024,
+        "sequence_exact_accuracy": 0.0,
+        "sid_nll": 0.838591655506302,
+        "tokens": 52064
+      },
+      "information": {
+        "train": {
+          "events": 47533,
+          "layers": [
+            {
+              "layer": 1,
+              "entropy_nats": 1.4180493784486752,
+              "active_codes": 10
+            },
+            {
+              "layer": 2,
+              "entropy_nats": 1.4248504281701504,
+              "active_codes": 12
+            },
+            {
+              "layer": 3,
+              "entropy_nats": 1.523902778870742,
+              "active_codes": 11
+            },
+            {
+              "layer": 4,
+              "entropy_nats": 1.596663018015976,
+              "active_codes": 14
+            }
+          ],
+          "unique_tuples": 540,
+          "duplicate_event_fraction": 0.9886394715250457,
+          "pair_collision_probability": 0.027003157998601427,
+          "tuple_entropy_nats": 4.069973013460394
+        },
+        "validation": {
+          "events": 5996,
+          "layers": [
+            {
+              "layer": 1,
+              "entropy_nats": 1.4250941235771357,
+              "active_codes": 8
+            },
+            {
+              "layer": 2,
+              "entropy_nats": 1.4346102480393876,
+              "active_codes": 9
+            },
+            {
+              "layer": 3,
+              "entropy_nats": 1.5190453072963033,
+              "active_codes": 8
+            },
+            {
+              "layer": 4,
+              "entropy_nats": 1.6168825609909168,
+              "active_codes": 12
+            }
+          ],
+          "unique_tuples": 259,
+          "duplicate_event_fraction": 0.9568045363575717,
+          "pair_collision_probability": 0.027812425408988255,
+          "tuple_entropy_nats": 4.041030274222049
+        },
+        "unigram_nll_per_layer": [
+          1.4266344619396851,
+          1.4359343285672517,
+          1.5217279381775755,
+          1.6218639558437553
+        ],
+        "interventions": "N/A: this ablation uses frozen probes and production singleton GPS decoding; no legacy batch interventions"
+      },
+      "probes": [
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "gps",
+          "loss": 0.029846385560172373,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.468436355702579,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "grid",
+          "loss": 7.154721606789791,
+          "accuracy": 0.011531238470168577,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.840541521087289,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "road",
+          "loss": 7.451934618087084,
+          "accuracy": 0.016140079579910347,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.820958703756332,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "gps",
+          "loss": 0.02965584319388472,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.5675280718132854,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "grid",
+          "loss": 7.105535899724009,
+          "accuracy": 0.013864736170271721,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.488923695869744,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "road",
+          "loss": 7.387520833592396,
+          "accuracy": 0.01868043505683966,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.484759429469705,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "gps",
+          "loss": 0.029190615564049432,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.085057613439858,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "grid",
+          "loss": 7.050776324031286,
+          "accuracy": 0.015500628159367409,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.020560157485306,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "road",
+          "loss": 7.3412806240928035,
+          "accuracy": 0.02188464213956016,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.194575398229063,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "gps",
+          "loss": 0.028149783447762203,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.402402910403907,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "grid",
+          "loss": 7.02224577168571,
+          "accuracy": 0.01695349671295013,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.59209406003356,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "road",
+          "loss": 7.307269856916297,
+          "accuracy": 0.022915323625814388,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.474115817807615,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "gps",
+          "loss": 0.029846385560172373,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 5.167714254930615,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "grid",
+          "loss": 7.154721606789791,
+          "accuracy": 0.011531238470168577,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.69486924353987,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "road",
+          "loss": 7.451934618087084,
+          "accuracy": 0.016140079579910347,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.31551425345242,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "gps",
+          "loss": 0.030015090158803236,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.5190481105819345,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "grid",
+          "loss": 7.171532470624168,
+          "accuracy": 0.012931437597396315,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.965312092565,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "road",
+          "loss": 7.473990645840973,
+          "accuracy": 0.014903752906070957,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.727722147479653,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "gps",
+          "loss": 0.030126359979126008,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 5.124795773997903,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "grid",
+          "loss": 7.166347045458547,
+          "accuracy": 0.012503651695360765,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.641906409524381,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "road",
+          "loss": 7.468327444754673,
+          "accuracy": 0.015655054157160876,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.618763184174895,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "gps",
+          "loss": 0.029008904289255195,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.4404919194057584,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "grid",
+          "loss": 7.14020559623378,
+          "accuracy": 0.013751257427474317,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.693060266785324,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "road",
+          "loss": 7.44004779815567,
+          "accuracy": 0.014453395325102389,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.0494328597560525,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        }
+      ],
+      "gps": {
+        "g00": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 166.39347710868,
+            "fde_m": 165.52606227526036,
+            "length_absolute_error": 0.0
+          }
+        },
+        "g10": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 287.9131797162519,
+            "fde_m": 161.55121012418783,
+            "length_absolute_error": 0.3671875
+          }
+        },
+        "g01": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 171.32507789886412,
+            "fde_m": 164.60276957362294,
+            "length_absolute_error": 0.572265625
+          }
+        },
+        "g11": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 284.45433501926436,
+            "fde_m": 158.65279651649394,
+            "length_absolute_error": 0.421875
+          }
+        }
+      },
+      "sampling": {
+        "2": {
+          "events": 5996,
+          "layer_agreement": [
+            0.7191460728645325,
+            0.70797199010849,
+            0.6739493012428284,
+            0.6519346237182617
+          ],
+          "tuple_agreement": 0.2658438980579376,
+          "layer_ami": [
+            0.37869272841220203,
+            0.3698586562100098,
+            0.3369654020920944,
+            0.33306380271244157
+          ]
+        },
+        "3": {
+          "events": 5996,
+          "layer_agreement": [
+            0.6320880651473999,
+            0.613742470741272,
+            0.5778852701187134,
+            0.559706449508667
+          ],
+          "tuple_agreement": 0.19329552352428436,
+          "layer_ami": [
+            0.27276200678825263,
+            0.2598670862208689,
+            0.2424195960846568,
+            0.23749316540344204
+          ]
+        }
+      },
+      "g": {
+        "g00": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.01764743359180145,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.002547559795565287,
+              "segment_distance_jsd": 0.03233990696999306,
+              "radius_jsd": 0.0016752140825509552,
+              "grid_density_cosine": 0.9684012975230197,
+              "grid_pattern_f1": 0.69,
+              "road_density_cosine": 0.9709467312647527,
+              "road_pattern_f1": 0.86,
+              "point_to_road_jsd": 0.0537767441138617
+            }
+          }
+        },
+        "g10": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.021536851060222736,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.002277752856216476,
+              "segment_distance_jsd": 0.04010552624337227,
+              "radius_jsd": 0.0007622681356737441,
+              "grid_density_cosine": 0.9669241564549805,
+              "grid_pattern_f1": 0.73,
+              "road_density_cosine": 0.9694474434311028,
+              "road_pattern_f1": 0.83,
+              "point_to_road_jsd": 0.05715469963479754
+            }
+          }
+        },
+        "g01": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.017705329077129614,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.003573854470580489,
+              "segment_distance_jsd": 0.03191763586457597,
+              "radius_jsd": 0.0012615907491570371,
+              "grid_density_cosine": 0.9678384767285255,
+              "grid_pattern_f1": 0.69,
+              "road_density_cosine": 0.9716285513133159,
+              "road_pattern_f1": 0.87,
+              "point_to_road_jsd": 0.05411803888582478
+            }
+          }
+        },
+        "g11": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.021205848841167024,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.002916397280254171,
+              "segment_distance_jsd": 0.04045510109182771,
+              "radius_jsd": 0.00044171592279967985,
+              "grid_density_cosine": 0.9667326867431539,
+              "grid_pattern_f1": 0.71,
+              "road_density_cosine": 0.9692467478408106,
+              "road_pattern_f1": 0.83,
+              "point_to_road_jsd": 0.05772129555476109
+            }
+          }
+        }
+      },
+      "nll_context_gain": {
+        "unigram_mean_nll": 1.501540171132067,
+        "llm_mean_layer_nll": 0.838591655506302,
+        "gain_over_unigram_nats_per_token": 0.6629485156257648,
+        "per_layer_gain": [
+          0.36980382385326305,
+          0.6172090678905884,
+          0.730121134349698,
+          0.9346600364095101
+        ],
+        "interpretation": "descriptive; train unigram alpha=.5 ignores route/prior layers/events; not a matched conditional baseline"
+      },
+      "shapley": {
+        "sid": {
+          "mean": 0.0036949686162293504,
+          "ci95": [
+            0.0029389460562933576,
+            0.004476412721051877
+          ]
+        },
+        "sampling": {
+          "mean": -0.0001365533668637709,
+          "ci95": [
+            -0.000345835095422426,
+            9.10552885430349e-05
+          ]
+        },
+        "interaction": {
+          "mean": -0.0003888977043838733,
+          "ci95": [
+            -0.0007329426288165054,
+            -8.132493915475491e-05
+          ]
+        },
+        "total": {
+          "mean": 0.0035584152493655795,
+          "ci95": [
+            0.002790285320891541,
+            0.004366076995100243
+          ]
+        }
+      }
+    },
+    "H1": {
+      "stage1": {
+        "codebook": [
+          {
+            "active_codes": 8,
+            "active_fraction": 0.25,
+            "events": 5996,
+            "layer": 0,
+            "max_share": 0.3655770513675784,
+            "perplexity": 4.368822951056665,
+            "perplexity_fraction": 0.1365257172205208,
+            "vocab_size": 32
+          },
+          {
+            "active_codes": 8,
+            "active_fraction": 0.125,
+            "events": 5996,
+            "layer": 1,
+            "max_share": 0.47164776517678453,
+            "perplexity": 4.1971148333596044,
+            "perplexity_fraction": 0.06557991927124382,
+            "vocab_size": 64
+          },
+          {
+            "active_codes": 8,
+            "active_fraction": 0.0625,
+            "events": 5996,
+            "layer": 2,
+            "max_share": 0.39459639759839893,
+            "perplexity": 4.096955656129895,
+            "perplexity_fraction": 0.0320074660635148,
+            "vocab_size": 128
+          },
+          {
+            "active_codes": 11,
+            "active_fraction": 0.04296875,
+            "events": 5996,
+            "layer": 3,
+            "max_share": 0.3880920613742495,
+            "perplexity": 3.912454003926783,
+            "perplexity_fraction": 0.015283023452838997,
+            "vocab_size": 256
+          }
+        ],
+        "gate": {
+          "passed": null,
+          "reasons": [],
+          "status": "pending_e0_oracle_ratio"
+        },
+        "losses": {
+          "base_loss": 1.7797081023454666,
+          "loss": 1.967362031340599,
+          "quant_loss": 0.5399132706224918,
+          "reconstruction_loss": 1.2397948503494263
+        },
+        "parameter_count": 13226269,
+        "population": 1024,
+        "prefix_conditional_entropy": [
+          0.42544892819198815,
+          0.22583304949241761,
+          0.1426557735797379,
+          0.11582152045137555
+        ]
+      },
+      "teacher_forced": {
+        "accuracy": {
+          "layer_0": 0.5532021347565044,
+          "layer_1": 0.6686124082721815,
+          "layer_2": 0.7511674449633089,
+          "layer_3": 0.747498332221481,
+          "sampling": 0.7216796875
+        },
+        "denominators": {
+          "layer_0": 5996,
+          "layer_1": 5996,
+          "layer_2": 5996,
+          "layer_3": 5996,
+          "sampling": 1024
+        },
+        "first_error_histogram": {
+          "layer_0": 393,
+          "layer_1": 167,
+          "layer_2": 76,
+          "layer_3": 103,
+          "sampling": 285
+        },
+        "group_nll": {
+          "layer_0": 1.0870831139967234,
+          "layer_1": 0.7914868126399045,
+          "layer_2": 0.6247716664154582,
+          "layer_3": 0.5900678623509932,
+          "sampling": 0.7889806728344411
+        },
+        "nll": 0.37215215440315197,
+        "perplexity": 1.4508537182812464,
+        "population": 1024,
+        "sequence_exact_accuracy": 0.0,
+        "sid_nll": 0.7733523638507698,
+        "tokens": 52064
+      },
+      "information": {
+        "train": {
+          "events": 47533,
+          "layers": [
+            {
+              "layer": 1,
+              "entropy_nats": 1.4935319262292037,
+              "active_codes": 9
+            },
+            {
+              "layer": 2,
+              "entropy_nats": 1.4144726125358005,
+              "active_codes": 8
+            },
+            {
+              "layer": 3,
+              "entropy_nats": 1.4176339428893148,
+              "active_codes": 12
+            },
+            {
+              "layer": 4,
+              "entropy_nats": 1.3392337886651466,
+              "active_codes": 16
+            }
+          ],
+          "unique_tuples": 369,
+          "duplicate_event_fraction": 0.9922369722087813,
+          "pair_collision_probability": 0.03673069526460115,
+          "tuple_entropy_nats": 3.7687441103570483
+        },
+        "validation": {
+          "events": 5996,
+          "layers": [
+            {
+              "layer": 1,
+              "entropy_nats": 1.4744936252426362,
+              "active_codes": 8
+            },
+            {
+              "layer": 2,
+              "entropy_nats": 1.4343973447966922,
+              "active_codes": 8
+            },
+            {
+              "layer": 3,
+              "entropy_nats": 1.4102441750084527,
+              "active_codes": 8
+            },
+            {
+              "layer": 4,
+              "entropy_nats": 1.3641647996123194,
+              "active_codes": 11
+            }
+          ],
+          "unique_tuples": 191,
+          "duplicate_event_fraction": 0.968145430286858,
+          "pair_collision_probability": 0.03747853030738869,
+          "tuple_entropy_nats": 3.7481278879642286
+        },
+        "unigram_nll_per_layer": [
+          1.4762559680485003,
+          1.4355797195748743,
+          1.4119283651959762,
+          1.3689732846619982
+        ],
+        "interventions": "N/A: this ablation uses frozen probes and production singleton GPS decoding; no legacy batch interventions"
+      },
+      "probes": [
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "gps",
+          "loss": 0.030214366526208077,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.050985577516258,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "grid",
+          "loss": 7.163556117633966,
+          "accuracy": 0.011656625779802893,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.593787768855691,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "road",
+          "loss": 7.455052954218098,
+          "accuracy": 0.015554931351036437,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.959089705720544,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "gps",
+          "loss": 0.029710473061491407,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 5.141102406196296,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "grid",
+          "loss": 7.088466605056824,
+          "accuracy": 0.013398499554312798,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.804341800510883,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "road",
+          "loss": 7.364761426342396,
+          "accuracy": 0.0188517611683884,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.558809693902731,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "gps",
+          "loss": 0.02954959512297969,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 5.068370018154383,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "grid",
+          "loss": 7.053473612961017,
+          "accuracy": 0.015125397327463574,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.162954639643431,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "road",
+          "loss": 7.328941911557125,
+          "accuracy": 0.021464067540818248,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.791231677867472,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "gps",
+          "loss": 0.02943039369412749,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.6029826970770955,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "grid",
+          "loss": 7.0398578560384095,
+          "accuracy": 0.015267922158068855,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.211422082968056,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "road",
+          "loss": 7.304480449010124,
+          "accuracy": 0.0221987747049233,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.747389268130064,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "gps",
+          "loss": 0.030214366526208077,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.774820274673402,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "grid",
+          "loss": 7.163556117633966,
+          "accuracy": 0.011656625779802893,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.640100325457752,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "road",
+          "loss": 7.455052954218098,
+          "accuracy": 0.015554931351036437,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.71932146884501,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "gps",
+          "loss": 0.029777141088013177,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.747463257052004,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "grid",
+          "loss": 7.143416200352843,
+          "accuracy": 0.011831481683866064,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.786690969020128,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "road",
+          "loss": 7.439112169166382,
+          "accuracy": 0.016590446561415943,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.8195803966373205,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "gps",
+          "loss": 0.029948768758894455,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.839733002707362,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "grid",
+          "loss": 7.158900667155519,
+          "accuracy": 0.013453295619339594,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.540221780538559,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "road",
+          "loss": 7.458388370460532,
+          "accuracy": 0.016545333733467376,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.248589006252587,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "gps",
+          "loss": 0.02986576143486586,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.758145051077008,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "grid",
+          "loss": 7.160001579821074,
+          "accuracy": 0.013149995106528622,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.43174584582448,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "road",
+          "loss": 7.470538598212482,
+          "accuracy": 0.015266207942493268,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.765114729292691,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        }
+      ],
+      "gps": {
+        "g00": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 178.9184478005542,
+            "fde_m": 146.53027894787647,
+            "length_absolute_error": 0.0
+          }
+        },
+        "g10": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 277.31215538319617,
+            "fde_m": 144.63169499267116,
+            "length_absolute_error": 0.3359375
+          }
+        },
+        "g01": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 180.81052431137988,
+            "fde_m": 144.46872121580657,
+            "length_absolute_error": 0.568359375
+          }
+        },
+        "g11": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 273.7189079808328,
+            "fde_m": 140.7964247077312,
+            "length_absolute_error": 0.40625
+          }
+        }
+      },
+      "sampling": {
+        "2": {
+          "events": 5996,
+          "layer_agreement": [
+            0.6884589791297913,
+            0.7123082280158997,
+            0.6886257529258728,
+            0.7026351094245911
+          ],
+          "tuple_agreement": 0.2806871235370636,
+          "layer_ami": [
+            0.3519712616014795,
+            0.3737522570125609,
+            0.32900597777122326,
+            0.32523639544930566
+          ]
+        },
+        "3": {
+          "events": 5996,
+          "layer_agreement": [
+            0.6152434945106506,
+            0.6557705402374268,
+            0.6297531723976135,
+            0.6531020402908325
+          ],
+          "tuple_agreement": 0.22114743292331696,
+          "layer_ami": [
+            0.2559361222557858,
+            0.2950251330871283,
+            0.25409484309424785,
+            0.2641262928722901
+          ]
+        }
+      },
+      "g": {
+        "g00": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.01665292334991235,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.002243848605390509,
+              "segment_distance_jsd": 0.04406064903620692,
+              "radius_jsd": 0.0025562972790877927,
+              "grid_density_cosine": 0.969909413663889,
+              "grid_pattern_f1": 0.72,
+              "road_density_cosine": 0.9713361205022965,
+              "road_pattern_f1": 0.84,
+              "point_to_road_jsd": 0.05696946884491491
+            }
+          }
+        },
+        "g10": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.020242912183963797,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.0020517247042573807,
+              "segment_distance_jsd": 0.0588718132818557,
+              "radius_jsd": 0.00173123987076883,
+              "grid_density_cosine": 0.9669630735536241,
+              "grid_pattern_f1": 0.74,
+              "road_density_cosine": 0.9706151581939202,
+              "road_pattern_f1": 0.85,
+              "point_to_road_jsd": 0.05801824940518593
+            }
+          }
+        },
+        "g01": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.016822412976542866,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.002790226581673301,
+              "segment_distance_jsd": 0.043690305577912494,
+              "radius_jsd": 0.0023245221283213586,
+              "grid_density_cosine": 0.9697065578947692,
+              "grid_pattern_f1": 0.72,
+              "road_density_cosine": 0.9712986556634247,
+              "road_pattern_f1": 0.87,
+              "point_to_road_jsd": 0.056674173120370375
+            }
+          }
+        },
+        "g11": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.0200275766271018,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.0022714377727951355,
+              "segment_distance_jsd": 0.0586490742464221,
+              "radius_jsd": 0.0014214000628003207,
+              "grid_density_cosine": 0.9670608294863209,
+              "grid_pattern_f1": 0.72,
+              "road_density_cosine": 0.9708062877690278,
+              "road_pattern_f1": 0.83,
+              "point_to_road_jsd": 0.0585044525110183
+            }
+          }
+        }
+      },
+      "nll_context_gain": {
+        "unigram_mean_nll": 1.4231843343703374,
+        "llm_mean_layer_nll": 0.7733523638507699,
+        "gain_over_unigram_nats_per_token": 0.6498319705195674,
+        "per_layer_gain": [
+          0.38917285405177693,
+          0.6440929069349698,
+          0.787156698780518,
+          0.778905422311005
+        ],
+        "interpretation": "descriptive; train unigram alpha=.5 ignores route/prior layers/events; not a matched conditional baseline"
+      },
+      "shapley": {
+        "sid": {
+          "mean": 0.003397576242305189,
+          "ci95": [
+            0.0026666164885057004,
+            0.004158558572615897
+          ]
+        },
+        "sampling": {
+          "mean": -2.2922965115741402e-05,
+          "ci95": [
+            -0.00023717543704038926,
+            0.00019283747368189737
+          ]
+        },
+        "interaction": {
+          "mean": -0.00038482518349250915,
+          "ci95": [
+            -0.0007022864473784962,
+            -0.00010015437769217745
+          ]
+        },
+        "total": {
+          "mean": 0.0033746532771894476,
+          "ci95": [
+            0.0025860033348213797,
+            0.0041352599392824214
+          ]
+        }
+      }
+    },
+    "B2": {
+      "stage1": {
+        "codebook": [
+          {
+            "active_codes": 7,
+            "active_fraction": 0.21875,
+            "events": 5996,
+            "layer": 0,
+            "max_share": 0.3420613742494997,
+            "perplexity": 4.439649532671977,
+            "perplexity_fraction": 0.13873904789599928,
+            "vocab_size": 32
+          },
+          {
+            "active_codes": 11,
+            "active_fraction": 0.171875,
+            "events": 5996,
+            "layer": 1,
+            "max_share": 0.30103402268178786,
+            "perplexity": 5.259856408237332,
+            "perplexity_fraction": 0.08218525637870831,
+            "vocab_size": 64
+          },
+          {
+            "active_codes": 8,
+            "active_fraction": 0.0625,
+            "events": 5996,
+            "layer": 2,
+            "max_share": 0.3482321547698466,
+            "perplexity": 4.790839869065741,
+            "perplexity_fraction": 0.0374284364770761,
+            "vocab_size": 128
+          },
+          {
+            "active_codes": 12,
+            "active_fraction": 0.046875,
+            "events": 5996,
+            "layer": 3,
+            "max_share": 0.26400933955970646,
+            "perplexity": 5.789264004058068,
+            "perplexity_fraction": 0.022614312515851828,
+            "vocab_size": 256
+          }
+        ],
+        "gate": {
+          "passed": null,
+          "reasons": [],
+          "status": "pending_e0_oracle_ratio"
+        },
+        "losses": {
+          "base_loss": 1.6301688253879547,
+          "loss": 1.8140837252140045,
+          "quant_loss": 0.39440566673874855,
+          "reconstruction_loss": 1.2357631772756577
+        },
+        "parameter_count": 13226269,
+        "population": 1024,
+        "prefix_conditional_entropy": [
+          0.43008915885415694,
+          0.252435033171867,
+          0.16454807745489872,
+          0.1629460491195555
+        ]
+      },
+      "teacher_forced": {
+        "accuracy": {
+          "layer_0": 0.5885590393595731,
+          "layer_1": 0.6185790527018012,
+          "layer_2": 0.6831220813875917,
+          "layer_3": 0.6941294196130754,
+          "sampling": 0.7216796875
+        },
+        "denominators": {
+          "layer_0": 5996,
+          "layer_1": 5996,
+          "layer_2": 5996,
+          "layer_3": 5996,
+          "sampling": 1024
+        },
+        "first_error_histogram": {
+          "layer_0": 375,
+          "layer_1": 184,
+          "layer_2": 111,
+          "layer_3": 69,
+          "sampling": 285
+        },
+        "group_nll": {
+          "layer_0": 1.0450551244240749,
+          "layer_1": 0.9051068998162471,
+          "layer_2": 0.7069962757122047,
+          "layer_3": 0.8094612336142847,
+          "sampling": 0.7956980360904709
+        },
+        "nll": 0.41526698582584165,
+        "perplexity": 1.514775110192943,
+        "population": 1024,
+        "sequence_exact_accuracy": 0.0,
+        "sid_nll": 0.8666548833917028,
+        "tokens": 52064
+      },
+      "information": {
+        "train": {
+          "events": 47533,
+          "layers": [
+            {
+              "layer": 1,
+              "entropy_nats": 1.5000058347590646,
+              "active_codes": 9
+            },
+            {
+              "layer": 2,
+              "entropy_nats": 1.6488958689696525,
+              "active_codes": 12
+            },
+            {
+              "layer": 3,
+              "entropy_nats": 1.55215287679292,
+              "active_codes": 21
+            },
+            {
+              "layer": 4,
+              "entropy_nats": 1.7410970657912346,
+              "active_codes": 19
+            }
+          ],
+          "unique_tuples": 600,
+          "duplicate_event_fraction": 0.9873771905833841,
+          "pair_collision_probability": 0.02560830816893296,
+          "tuple_entropy_nats": 4.297488426938017
+        },
+        "validation": {
+          "events": 5996,
+          "layers": [
+            {
+              "layer": 1,
+              "entropy_nats": 1.4905754392457866,
+              "active_codes": 7
+            },
+            {
+              "layer": 2,
+              "entropy_nats": 1.6601037275628037,
+              "active_codes": 11
+            },
+            {
+              "layer": 3,
+              "entropy_nats": 1.566705734062461,
+              "active_codes": 8
+            },
+            {
+              "layer": 4,
+              "entropy_nats": 1.7560051684892277,
+              "active_codes": 12
+            }
+          ],
+          "unique_tuples": 278,
+          "duplicate_event_fraction": 0.9536357571714477,
+          "pair_collision_probability": 0.026855156704414008,
+          "tuple_entropy_nats": 4.242380236277377
+        },
+        "unigram_nll_per_layer": [
+          1.4915626786359983,
+          1.6618809786507942,
+          1.5704115410657158,
+          1.7596626220102234
+        ],
+        "interventions": "N/A: this ablation uses frozen probes and production singleton GPS decoding; no legacy batch interventions"
+      },
+      "probes": [
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "gps",
+          "loss": 0.029901226139506857,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 2.9449972407892346,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "grid",
+          "loss": 7.135841001514174,
+          "accuracy": 0.012558672318262387,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.516370104625821,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 1,
+          "view": "road",
+          "loss": 7.421259192647207,
+          "accuracy": 0.017592718431516326,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.041562197729945,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "gps",
+          "loss": 0.029691359528719794,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 2.7143113408237696,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "grid",
+          "loss": 7.0717809854794815,
+          "accuracy": 0.013263591887183762,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.2923585027456284,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 2,
+          "view": "road",
+          "loss": 7.336088910637299,
+          "accuracy": 0.02021562449152117,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.8737507797777653,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "gps",
+          "loss": 0.029485121874471266,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 2.5289064776152372,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "grid",
+          "loss": 7.028303942941786,
+          "accuracy": 0.014116554656604014,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.181893879547715,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 3,
+          "view": "road",
+          "loss": 7.283702568329068,
+          "accuracy": 0.021470890773645248,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.018798785284162,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "gps",
+          "loss": 0.02920756272414559,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 2.9125514356419444,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "grid",
+          "loss": 7.000246308738448,
+          "accuracy": 0.014865234467535626,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.166498293168843,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "prefixes",
+          "depth": 4,
+          "view": "road",
+          "loss": 7.253189669850699,
+          "accuracy": 0.023367224728396727,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.8464704770594835,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "gps",
+          "loss": 0.029901226139506857,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 2.4591585947200656,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "grid",
+          "loss": 7.135841001514174,
+          "accuracy": 0.012558672318262387,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.7443756330758333,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 1,
+          "view": "road",
+          "loss": 7.421259192647207,
+          "accuracy": 0.017592718431516326,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.021123006008565,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "gps",
+          "loss": 0.029978981037162667,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 2.6426191721111536,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "grid",
+          "loss": 7.135434259427318,
+          "accuracy": 0.011626512709214533,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.7216808684170246,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 2,
+          "view": "road",
+          "loss": 7.426886750156728,
+          "accuracy": 0.016393807350237502,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.968727331608534,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "gps",
+          "loss": 0.029660271283382073,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 2.6489247707650065,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "grid",
+          "loss": 7.133811686922349,
+          "accuracy": 0.013203589008761443,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.413150077685714,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 3,
+          "view": "road",
+          "loss": 7.425738034567132,
+          "accuracy": 0.015221837713314123,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.867065795697272,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "gps",
+          "loss": 0.029914628744170918,
+          "accuracy": null,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 3.7544836550951004,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "grid",
+          "loss": 7.157104242806787,
+          "accuracy": 0.012432971880523185,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.552801802754402,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        },
+        {
+          "representation": "layers",
+          "depth": 4,
+          "view": "road",
+          "loss": 7.448369425944177,
+          "accuracy": 0.014701763450547752,
+          "epochs": 10,
+          "batch_events": 256,
+          "seed": 42,
+          "steps": 1860,
+          "elapsed_seconds": 4.188734332099557,
+          "optimizer": {
+            "name": "AdamW",
+            "lr": 0.001,
+            "weight_decay": 0.0001
+          },
+          "loss_weighting": "valid points weighted by inverse trajectory length; each batch normalized by weight sum"
+        }
+      ],
+      "gps": {
+        "g00": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 179.9862593378947,
+            "fde_m": 157.35134525665057,
+            "length_absolute_error": 0.0
+          }
+        },
+        "g10": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 276.18132012050523,
+            "fde_m": 147.65267873178425,
+            "length_absolute_error": 0.375
+          }
+        },
+        "g01": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 182.7125948833972,
+            "fde_m": 157.8882319325309,
+            "length_absolute_error": 0.5673828125
+          }
+        },
+        "g11": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "successful_only": {
+            "matched_progress_ade_m": 272.46898909122456,
+            "fde_m": 144.03007132698804,
+            "length_absolute_error": 0.4306640625
+          }
+        }
+      },
+      "sampling": {
+        "2": {
+          "events": 5996,
+          "layer_agreement": [
+            0.6909606456756592,
+            0.6234155893325806,
+            0.6654436588287354,
+            0.6087391376495361
+          ],
+          "tuple_agreement": 0.23799198865890503,
+          "layer_ami": [
+            0.35871947943747934,
+            0.3306438141699316,
+            0.34367964900707426,
+            0.292693184708983
+          ]
+        },
+        "3": {
+          "events": 5996,
+          "layer_agreement": [
+            0.6209139227867126,
+            0.575550377368927,
+            0.613742470741272,
+            0.5522014498710632
+          ],
+          "tuple_agreement": 0.19963309168815613,
+          "layer_ami": [
+            0.2680620079472881,
+            0.26886753751504344,
+            0.2763067172195391,
+            0.23007368503686265
+          ]
+        }
+      },
+      "g": {
+        "g00": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.017250305401983572,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.0021114555738375755,
+              "segment_distance_jsd": 0.04620625722561227,
+              "radius_jsd": 0.0017842707318045557,
+              "grid_density_cosine": 0.9681975390346503,
+              "grid_pattern_f1": 0.69,
+              "road_density_cosine": 0.9705631164840336,
+              "road_pattern_f1": 0.86,
+              "point_to_road_jsd": 0.05836070803030312
+            }
+          }
+        },
+        "g10": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.020330296126832806,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.001931669593976437,
+              "segment_distance_jsd": 0.03948085966758372,
+              "radius_jsd": 0.0006702609267077244,
+              "grid_density_cosine": 0.9688323491985622,
+              "grid_pattern_f1": 0.69,
+              "road_density_cosine": 0.9714956602518644,
+              "road_pattern_f1": 0.88,
+              "point_to_road_jsd": 0.05590630848898273
+            }
+          }
+        },
+        "g01": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.01738894275708082,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.002901145913569562,
+              "segment_distance_jsd": 0.04580372608867782,
+              "radius_jsd": 0.001963038213767128,
+              "grid_density_cosine": 0.9683813994063976,
+              "grid_pattern_f1": 0.69,
+              "road_density_cosine": 0.9705798213721137,
+              "road_pattern_f1": 0.87,
+              "point_to_road_jsd": 0.05843977901671667
+            }
+          }
+        },
+        "g11": {
+          "population": 1024,
+          "successful": 1024,
+          "failed": 0,
+          "validity_rate": 1.0,
+          "failure_reasons": {},
+          "population_mean_penalized_error": 0.020088851524957926,
+          "successful_only": {
+            "population": 1024,
+            "metrics": {
+              "travel_distance_jsd": 0.001999968410863524,
+              "segment_distance_jsd": 0.039362797883369896,
+              "radius_jsd": 0.0006018261088633262,
+              "grid_density_cosine": 0.9691324318213486,
+              "grid_pattern_f1": 0.7,
+              "road_density_cosine": 0.971460957740676,
+              "road_pattern_f1": 0.88,
+              "point_to_road_jsd": 0.05673781037460285
+            }
+          }
+        }
+      },
+      "nll_context_gain": {
+        "unigram_mean_nll": 1.6208794550906829,
+        "llm_mean_layer_nll": 0.8666548833917028,
+        "gain_over_unigram_nats_per_token": 0.75422457169898,
+        "per_layer_gain": [
+          0.44650755421192345,
+          0.7567740788345471,
+          0.8634152653535111,
+          0.9502013883959387
+        ],
+        "interpretation": "descriptive; train unigram alpha=.5 ignores route/prior layers/events; not a matched conditional baseline"
+      },
+      "shapley": {
+        "sid": {
+          "mean": 0.002889949746363168,
+          "ci95": [
+            0.002207158924305216,
+            0.0036075153156097163
+          ]
+        },
+        "sampling": {
+          "mean": -5.140362338881447e-05,
+          "ci95": [
+            -0.0002449873384336148,
+            0.00015570257062773158
+          ]
+        },
+        "interaction": {
+          "mean": -0.00038008195697212724,
+          "ci95": [
+            -0.0007127517382698339,
+            -8.19442526894723e-05
+          ]
+        },
+        "total": {
+          "mean": 0.0028385461229743537,
+          "ci95": [
+            0.0021465301325547825,
+            0.0035703834076471685
+          ]
+        }
+      }
+    }
+  },
+  "contrasts": {
+    "HV-LF": {
+      "g00": {
+        "baseline": 0.01764743359180145,
+        "candidate": 0.018242598024157092,
+        "difference": 0.0005951644323556411,
+        "difference_ci95": [
+          -0.0001725403290548569,
+          0.0012958927683998258
+        ],
+        "relative_improvement": -0.03372526828105715,
+        "relative_improvement_ci95": [
+          -0.07498181650586935,
+          0.00952129548293153
+        ],
+        "n_pairs": 1024
+      },
+      "g10": {
+        "baseline": 0.021536851060222736,
+        "candidate": 0.02221099827124816,
+        "difference": 0.0006741472110254252,
+        "difference_ci95": [
+          -0.0008572010528866221,
+          0.0030362657207742057
+        ],
+        "relative_improvement": -0.03130203246242114,
+        "relative_improvement_ci95": [
+          -0.14179765415267698,
+          0.03927382891263505
+        ],
+        "n_pairs": 1024
+      },
+      "g01": {
+        "baseline": 0.017705329077129614,
+        "candidate": 0.01934921204516262,
+        "difference": 0.0016438829680330046,
+        "difference_ci95": [
+          0.00015261287617048796,
+          0.004056101349857449
+        ],
+        "relative_improvement": -0.09284678984907702,
+        "relative_improvement_ci95": [
+          -0.23012972074662544,
+          -0.00828499803857725
+        ],
+        "n_pairs": 1024
+      },
+      "g11": {
+        "baseline": 0.021205848841167024,
+        "candidate": 0.021796897452127824,
+        "difference": 0.0005910486109607948,
+        "difference_ci95": [
+          -0.0009317090211536955,
+          0.002959954656646998
+        ],
+        "relative_improvement": -0.027871961900124198,
+        "relative_improvement_ci95": [
+          -0.14057520447024383,
+          0.04358746312743082
+        ],
+        "n_pairs": 1024
+      },
+      "g11_penalty10": {
+        "baseline": 0.021205848841167024,
+        "candidate": 0.030585959952127824,
+        "difference": 0.009380111110960794,
+        "difference_ci95": [
+          -0.0009317090211536955,
+          0.02945539371010215
+        ],
+        "relative_improvement": -0.4423360357427024,
+        "relative_improvement_ci95": [
+          -1.4159101085791783,
+          0.04358746312743082
+        ],
+        "n_pairs": 1024
+      },
+      "primary_relative_improvement_simultaneous_ci95": [
+        -0.17971445916569476,
+        0.05580736873487181
+      ],
+      "gps_common_success_only": {
+        "g00": {
+          "excluded": 0,
+          "baseline": 166.39347710868,
+          "candidate": 196.32065222827856,
+          "difference": 29.927175119598544,
+          "difference_ci95": [
+            22.569117606891364,
+            36.64566896924531
+          ],
+          "relative_improvement": -0.1798578624572622,
+          "relative_improvement_ci95": [
+            -0.22476688553370128,
+            -0.13335185904571634
+          ],
+          "n_pairs": 1024
+        },
+        "g10": {
+          "excluded": 1,
+          "baseline": 287.7466138543837,
+          "candidate": 290.41364170620375,
+          "difference": 2.6670278518199146,
+          "difference_ci95": [
+            -7.2283321457264105,
+            12.237550975035271
+          ],
+          "relative_improvement": -0.009268668069086994,
+          "relative_improvement_ci95": [
+            -0.04323624622762554,
+            0.02506452352222239
+          ],
+          "n_pairs": 1023
+        },
+        "g01": {
+          "excluded": 1,
+          "baseline": 171.24412552796886,
+          "candidate": 197.9455518673169,
+          "difference": 26.701426339348057,
+          "difference_ci95": [
+            19.360070873226963,
+            33.610009867911614
+          ],
+          "relative_improvement": -0.15592608655639384,
+          "relative_improvement_ci95": [
+            -0.19980179742672616,
+            -0.11073325403925398
+          ],
+          "n_pairs": 1023
+        },
+        "g11": {
+          "excluded": 1,
+          "baseline": 284.28438807753605,
+          "candidate": 286.35745449428765,
+          "difference": 2.0730664167515713,
+          "difference_ci95": [
+            -7.849205099261114,
+            11.617366935381705
+          ],
+          "relative_improvement": -0.007292227444393395,
+          "relative_improvement_ci95": [
+            -0.04103829797097153,
+            0.02724659243802342
+          ],
+          "n_pairs": 1023
+        }
+      }
+    },
+    "LF-H1": {
+      "g00": {
+        "baseline": 0.01665292334991235,
+        "candidate": 0.01764743359180145,
+        "difference": 0.0009945102418890972,
+        "difference_ci95": [
+          0.0004230456233428654,
+          0.001580408271385275
+        ],
+        "relative_improvement": -0.05971985945004277,
+        "relative_improvement_ci95": [
+          -0.09794485973751944,
+          -0.025151108739032448
+        ],
+        "n_pairs": 1024
+      },
+      "g10": {
+        "baseline": 0.020242912183963797,
+        "candidate": 0.021536851060222736,
+        "difference": 0.0012939388762589405,
+        "difference_ci95": [
+          0.0005933756583743074,
+          0.0020271013586119387
+        ],
+        "relative_improvement": -0.06392058931540401,
+        "relative_improvement_ci95": [
+          -0.10147425369188168,
+          -0.029112033595156496
+        ],
+        "n_pairs": 1024
+      },
+      "g01": {
+        "baseline": 0.016822412976542866,
+        "candidate": 0.017705329077129614,
+        "difference": 0.0008829161005867498,
+        "difference_ci95": [
+          0.00034688436083203796,
+          0.0014732375492233778
+        ],
+        "relative_improvement": -0.05248450991055109,
+        "relative_improvement_ci95": [
+          -0.08921587200896568,
+          -0.02054278433762332
+        ],
+        "n_pairs": 1024
+      },
+      "g11": {
+        "baseline": 0.0200275766271018,
+        "candidate": 0.021205848841167024,
+        "difference": 0.0011782722140652293,
+        "difference_ci95": [
+          0.0004756158341970009,
+          0.0018848316458821188
+        ],
+        "relative_improvement": -0.05883249062049578,
+        "relative_improvement_ci95": [
+          -0.09510805693145996,
+          -0.023264360346235264
+        ],
+        "n_pairs": 1024
+      },
+      "g11_penalty10": {
+        "baseline": 0.0200275766271018,
+        "candidate": 0.021205848841167024,
+        "difference": 0.0011782722140652293,
+        "difference_ci95": [
+          0.0004756158341970009,
+          0.0018848316458821188
+        ],
+        "relative_improvement": -0.05883249062049578,
+        "relative_improvement_ci95": [
+          -0.09510805693145996,
+          -0.023264360346235264
+        ],
+        "n_pairs": 1024
+      },
+      "primary_relative_improvement_simultaneous_ci95": [
+        -0.10669976523595881,
+        -0.013586897142144611
+      ],
+      "gps_common_success_only": {
+        "g00": {
+          "excluded": 0,
+          "baseline": 178.9184478005542,
+          "candidate": 166.39347710868,
+          "difference": -12.524970691874177,
+          "difference_ci95": [
+            -18.84278141132151,
+            -6.843854054167228
+          ],
+          "relative_improvement": 0.0700037969580205,
+          "relative_improvement_ci95": [
+            0.03820797539799938,
+            0.10380625970074173
+          ],
+          "n_pairs": 1024
+        },
+        "g10": {
+          "excluded": 0,
+          "baseline": 277.31215538319617,
+          "candidate": 287.9131797162519,
+          "difference": 10.601024333055712,
+          "difference_ci95": [
+            1.1182182693652465,
+            19.72429343663558
+          ],
+          "relative_improvement": -0.038227766534095764,
+          "relative_improvement_ci95": [
+            -0.0717872095503333,
+            -0.004024379599349287
+          ],
+          "n_pairs": 1024
+        },
+        "g01": {
+          "excluded": 0,
+          "baseline": 180.81052431137988,
+          "candidate": 171.32507789886412,
+          "difference": -9.485446412515785,
+          "difference_ci95": [
+            -15.553986373909183,
+            -3.836757560873502
+          ],
+          "relative_improvement": 0.052460698560779284,
+          "relative_improvement_ci95": [
+            0.02137949262647335,
+            0.08557954461179573
+          ],
+          "n_pairs": 1024
+        },
+        "g11": {
+          "excluded": 0,
+          "baseline": 273.7189079808328,
+          "candidate": 284.45433501926436,
+          "difference": 10.735427038431542,
+          "difference_ci95": [
+            1.2165640630848642,
+            20.000790574409457
+          ],
+          "relative_improvement": -0.039220626436166084,
+          "relative_improvement_ci95": [
+            -0.07488332353808835,
+            -0.004360489205398996
+          ],
+          "n_pairs": 1024
+        }
+      }
+    },
+    "HV-H1": {
+      "g00": {
+        "baseline": 0.01665292334991235,
+        "candidate": 0.018242598024157092,
+        "difference": 0.0015896746742447383,
+        "difference_ci95": [
+          0.0008866748639852689,
+          0.002279486617452425
+        ],
+        "relative_improvement": -0.09545919601275954,
+        "relative_improvement_ci95": [
+          -0.13989207791358774,
+          -0.051859622784005466
+        ],
+        "n_pairs": 1024
+      },
+      "g10": {
+        "baseline": 0.020242912183963797,
+        "candidate": 0.02221099827124816,
+        "difference": 0.0019680860872843655,
+        "difference_ci95": [
+          0.0004683605751217994,
+          0.004384552327328287
+        ],
+        "relative_improvement": -0.0972234661395932,
+        "relative_improvement_ci95": [
+          -0.2160773809046194,
+          -0.022947186911087148
+        ],
+        "n_pairs": 1024
+      },
+      "g01": {
+        "baseline": 0.016822412976542866,
+        "candidate": 0.01934921204516262,
+        "difference": 0.0025267990686197546,
+        "difference_ci95": [
+          0.0010674500354237492,
+          0.004944026598259787
+        ],
+        "relative_improvement": -0.15020431802162504,
+        "relative_improvement_ci95": [
+          -0.29746135868240636,
+          -0.06226033276238091
+        ],
+        "n_pairs": 1024
+      },
+      "g11": {
+        "baseline": 0.0200275766271018,
+        "candidate": 0.021796897452127824,
+        "difference": 0.0017693208250260245,
+        "difference_ci95": [
+          0.0002731355366397551,
+          0.004117187119115604
+        ],
+        "relative_improvement": -0.08834422945768372,
+        "relative_improvement_ci95": [
+          -0.20941189708892918,
+          -0.013277151694905854
+        ],
+        "n_pairs": 1024
+      },
+      "g11_penalty10": {
+        "baseline": 0.0200275766271018,
+        "candidate": 0.030585959952127824,
+        "difference": 0.010558383325026025,
+        "difference_ci95": [
+          0.0002731355366397551,
+          0.03066964122368665
+        ],
+        "relative_improvement": -0.5271922570371377,
+        "relative_improvement_ci95": [
+          -1.5610461681580874,
+          -0.013277151694905854
+        ],
+        "n_pairs": 1024
+      },
+      "primary_relative_improvement_simultaneous_ci95": [
+        -0.24735966036328416,
+        -0.004013350111287042
+      ],
+      "gps_common_success_only": {
+        "g00": {
+          "excluded": 0,
+          "baseline": 178.9184478005542,
+          "candidate": 196.32065222827856,
+          "difference": 17.40220442772437,
+          "difference_ci95": [
+            9.72328535254231,
+            24.58969961008202
+          ],
+          "relative_improvement": -0.0972633322144798,
+          "relative_improvement_ci95": [
+            -0.14042606180784584,
+            -0.0534101411773868
+          ],
+          "n_pairs": 1024
+        },
+        "g10": {
+          "excluded": 1,
+          "baseline": 277.3326518914834,
+          "candidate": 290.41364170620375,
+          "difference": 13.080989814720303,
+          "difference_ci95": [
+            3.78477576849795,
+            21.672665769936646
+          ],
+          "relative_improvement": -0.0471671464773602,
+          "relative_improvement_ci95": [
+            -0.07976912946639265,
+            -0.013401627489562803
+          ],
+          "n_pairs": 1023
+        },
+        "g01": {
+          "excluded": 1,
+          "baseline": 180.2706262692668,
+          "candidate": 197.9455518673169,
+          "difference": 17.674925598050137,
+          "difference_ci95": [
+            10.890626728106792,
+            24.950734826204563
+          ],
+          "relative_improvement": -0.09804662003919251,
+          "relative_improvement_ci95": [
+            -0.1396588237280057,
+            -0.05940841340249243
+          ],
+          "n_pairs": 1023
+        },
+        "g11": {
+          "excluded": 1,
+          "baseline": 273.76708414334905,
+          "candidate": 286.35745449428765,
+          "difference": 12.590370350938628,
+          "difference_ci95": [
+            3.277753671810481,
+            21.443846296272802
+          ],
+          "relative_improvement": -0.04598935036450946,
+          "relative_improvement_ci95": [
+            -0.0802565806921403,
+            -0.011608903050039627
+          ],
+          "n_pairs": 1023
+        }
+      }
+    },
+    "H1-B2": {
+      "g00": {
+        "baseline": 0.017250305401983572,
+        "candidate": 0.01665292334991235,
+        "difference": -0.00059738205207122,
+        "difference_ci95": [
+          -0.0010010662627555457,
+          -0.0001824136935910654
+        ],
+        "relative_improvement": 0.03463023048870373,
+        "relative_improvement_ci95": [
+          0.010770306355611426,
+          0.05759925954895861
+        ],
+        "n_pairs": 1024
+      },
+      "g10": {
+        "baseline": 0.020330296126832806,
+        "candidate": 0.020242912183963797,
+        "difference": -8.738394286900776e-05,
+        "difference_ci95": [
+          -0.00072744815157656,
+          0.0005650877269123603
+        ],
+        "relative_improvement": 0.0042982129883329945,
+        "relative_improvement_ci95": [
+          -0.0283275877825263,
+          0.035567566642039514
+        ],
+        "n_pairs": 1024
+      },
+      "g01": {
+        "baseline": 0.01738894275708082,
+        "candidate": 0.016822412976542866,
+        "difference": -0.0005665297805379557,
+        "difference_ci95": [
+          -0.0009732705503933777,
+          -0.00015308010186329576
+        ],
+        "relative_improvement": 0.03257988645153609,
+        "relative_improvement_ci95": [
+          0.008935728913597184,
+          0.05556155601162093
+        ],
+        "n_pairs": 1024
+      },
+      "g11": {
+        "baseline": 0.020088851524957926,
+        "candidate": 0.0200275766271018,
+        "difference": -6.127489785612573e-05,
+        "difference_ci95": [
+          -0.0007015612970936326,
+          0.0005623632977555479
+        ],
+        "relative_improvement": 0.0030501941726235327,
+        "relative_improvement_ci95": [
+          -0.02887962227957091,
+          0.034580543023236585
+        ],
+        "n_pairs": 1024
+      },
+      "g11_penalty10": {
+        "baseline": 0.020088851524957926,
+        "candidate": 0.0200275766271018,
+        "difference": -6.127489785612573e-05,
+        "difference_ci95": [
+          -0.0007015612970936326,
+          0.0005623632977555479
+        ],
+        "relative_improvement": 0.0030501941726235327,
+        "relative_improvement_ci95": [
+          -0.02887962227957091,
+          0.034580543023236585
+        ],
+        "n_pairs": 1024
+      },
+      "primary_relative_improvement_simultaneous_ci95": [
+        -0.03658948332724172,
+        0.04135797088635889
+      ],
+      "gps_common_success_only": {
+        "g00": {
+          "excluded": 0,
+          "baseline": 179.9862593378947,
+          "candidate": 178.9184478005542,
+          "difference": -1.067811537340528,
+          "difference_ci95": [
+            -5.152862764100389,
+            2.9500024277127035
+          ],
+          "relative_improvement": 0.005932739206140569,
+          "relative_improvement_ci95": [
+            -0.01630942542952187,
+            0.027716932501458253
+          ],
+          "n_pairs": 1024
+        },
+        "g10": {
+          "excluded": 0,
+          "baseline": 276.18132012050523,
+          "candidate": 277.31215538319617,
+          "difference": 1.130835262690879,
+          "difference_ci95": [
+            -6.920034098023926,
+            8.586420896368582
+          ],
+          "relative_improvement": -0.004094539276579434,
+          "relative_improvement_ci95": [
+            -0.03144553518782545,
+            0.024650393298743627
+          ],
+          "n_pairs": 1024
+        },
+        "g01": {
+          "excluded": 0,
+          "baseline": 182.7125948833972,
+          "candidate": 180.81052431137988,
+          "difference": -1.9020705720172897,
+          "difference_ci95": [
+            -6.123914656581979,
+            2.171822183852251
+          ],
+          "relative_improvement": 0.010410177652127262,
+          "relative_improvement_ci95": [
+            -0.011875711822303953,
+            0.03321214636849766
+          ],
+          "n_pairs": 1024
+        },
+        "g11": {
+          "excluded": 0,
+          "baseline": 272.46898909122456,
+          "candidate": 273.7189079808328,
+          "difference": 1.249918889608253,
+          "difference_ci95": [
+            -6.518161465887824,
+            8.68343148889753
+          ],
+          "relative_improvement": -0.0045873803612555,
+          "relative_improvement_ci95": [
+            -0.03220258736843328,
+            0.02386673538985713
+          ],
+          "n_pairs": 1024
+        }
+      }
+    }
+  },
+  "codebook_health": {
+    "HV": {
+      "passed": false,
+      "failures": [
+        "layer1:perplexity_fraction",
+        "layer1:max_share",
+        "layer2:perplexity_fraction",
+        "layer2:max_share",
+        "layer3:active_fraction",
+        "layer3:perplexity_fraction",
+        "layer4:active_fraction",
+        "layer4:perplexity_fraction"
+      ]
+    },
+    "LF": {
+      "passed": false,
+      "failures": [
+        "layer3:active_fraction",
+        "layer3:perplexity_fraction",
+        "layer4:active_fraction",
+        "layer4:perplexity_fraction"
+      ]
+    },
+    "H1": {
+      "passed": false,
+      "failures": [
+        "layer3:active_fraction",
+        "layer3:perplexity_fraction",
+        "layer4:active_fraction",
+        "layer4:perplexity_fraction"
+      ]
+    },
+    "B2": {
+      "passed": false,
+      "failures": [
+        "layer3:active_fraction",
+        "layer3:perplexity_fraction",
+        "layer4:active_fraction",
+        "layer4:perplexity_fraction"
+      ]
+    }
+  },
+  "bootstrap": {
+    "unit": "paired validation trajectory",
+    "replicates": 2000,
+    "seed": 271828,
+    "ci95": "percentile",
+    "simultaneous": "Bonferroni four predeclared G11 contrasts; descriptive"
+  },
+  "limitations": [
+    "Single seed: trajectory bootstrap does not measure training variability.",
+    "Shared roads/vehicles/dates and oracle route; no cross-city or route-choice claims.",
+    "Probe losses descriptive without trajectory-wise uncertainty; no causal view-exclusivity claim.",
+    "GPS coordinate comparison excludes failures, primary population error retains them.",
+    "No automatic improvement gate: jointly interpret primary error, G00, validity, probes and entropy."
+  ]
+}

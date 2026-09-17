@@ -1,0 +1,46 @@
+{
+  "teacher_forced": {
+    "accuracy": {
+      "layer_0": 0.5885590393595731,
+      "layer_1": 0.6185790527018012,
+      "layer_2": 0.6831220813875917,
+      "layer_3": 0.6941294196130754,
+      "sampling": 0.7216796875
+    },
+    "denominators": {
+      "layer_0": 5996,
+      "layer_1": 5996,
+      "layer_2": 5996,
+      "layer_3": 5996,
+      "sampling": 1024
+    },
+    "first_error_histogram": {
+      "layer_0": 375,
+      "layer_1": 184,
+      "layer_2": 111,
+      "layer_3": 69,
+      "sampling": 285
+    },
+    "group_nll": {
+      "layer_0": 1.0450551244240749,
+      "layer_1": 0.9051068998162471,
+      "layer_2": 0.7069962757122047,
+      "layer_3": 0.8094612336142847,
+      "sampling": 0.7956980360904709
+    },
+    "nll": 0.41526698582584165,
+    "perplexity": 1.514775110192943,
+    "population": 1024,
+    "sequence_exact_accuracy": 0.0,
+    "sid_nll": 0.8666548833917028,
+    "tokens": 52064
+  },
+  "train": {
+    "epoch": 2.0,
+    "total_flos": 5.201104521270067e+16,
+    "train_loss": 0.7791293509071693,
+    "train_runtime": 3428.1079,
+    "train_samples_per_second": 4.779,
+    "train_steps_per_second": 0.299
+  }
+}

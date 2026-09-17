@@ -1,0 +1,92 @@
+{
+  "status": "completed_and_verified",
+  "training_revision": "70b82db195f600e3271030ddb5e6c228e4915f31",
+  "source": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/pilot/porto/42/B2/attempt_001/stage4/stage4_metrics.json",
+  "source_sha256": "d34d117bd7baced8ad1f97e52ca90b766e94df34f039cb0d2587ce20463c29f4",
+  "metrics": {
+    "g00": {
+      "population": 1024,
+      "successful": 1024,
+      "failed": 0,
+      "validity_rate": 1.0,
+      "failure_reasons": {},
+      "population_mean_penalized_error": 0.017250305401983572,
+      "successful_only": {
+        "population": 1024,
+        "metrics": {
+          "travel_distance_jsd": 0.0021114555738375755,
+          "segment_distance_jsd": 0.04620625722561227,
+          "radius_jsd": 0.0017842707318045557,
+          "grid_density_cosine": 0.9681975390346503,
+          "grid_pattern_f1": 0.69,
+          "road_density_cosine": 0.9705631164840336,
+          "road_pattern_f1": 0.86,
+          "point_to_road_jsd": 0.05836070803030312
+        }
+      }
+    },
+    "g10": {
+      "population": 1024,
+      "successful": 1024,
+      "failed": 0,
+      "validity_rate": 1.0,
+      "failure_reasons": {},
+      "population_mean_penalized_error": 0.020330296126832806,
+      "successful_only": {
+        "population": 1024,
+        "metrics": {
+          "travel_distance_jsd": 0.001931669593976437,
+          "segment_distance_jsd": 0.03948085966758372,
+          "radius_jsd": 0.0006702609267077244,
+          "grid_density_cosine": 0.9688323491985622,
+          "grid_pattern_f1": 0.69,
+          "road_density_cosine": 0.9714956602518644,
+          "road_pattern_f1": 0.88,
+          "point_to_road_jsd": 0.05590630848898273
+        }
+      }
+    },
+    "g01": {
+      "population": 1024,
+      "successful": 1024,
+      "failed": 0,
+      "validity_rate": 1.0,
+      "failure_reasons": {},
+      "population_mean_penalized_error": 0.01738894275708082,
+      "successful_only": {
+        "population": 1024,
+        "metrics": {
+          "travel_distance_jsd": 0.002901145913569562,
+          "segment_distance_jsd": 0.04580372608867782,
+          "radius_jsd": 0.001963038213767128,
+          "grid_density_cosine": 0.9683813994063976,
+          "grid_pattern_f1": 0.69,
+          "road_density_cosine": 0.9705798213721137,
+          "road_pattern_f1": 0.87,
+          "point_to_road_jsd": 0.05843977901671667
+        }
+      }
+    },
+    "g11": {
+      "population": 1024,
+      "successful": 1024,
+      "failed": 0,
+      "validity_rate": 1.0,
+      "failure_reasons": {},
+      "population_mean_penalized_error": 0.020088851524957926,
+      "successful_only": {
+        "population": 1024,
+        "metrics": {
+          "travel_distance_jsd": 0.001999968410863524,
+          "segment_distance_jsd": 0.039362797883369896,
+          "radius_jsd": 0.0006018261088633262,
+          "grid_density_cosine": 0.9691324318213486,
+          "grid_pattern_f1": 0.7,
+          "road_density_cosine": 0.971460957740676,
+          "road_pattern_f1": 0.88,
+          "point_to_road_jsd": 0.05673781037460285
+        }
+      }
+    }
+  }
+}

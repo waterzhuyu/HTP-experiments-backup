@@ -48,3 +48,10 @@ HV的24项冻结probe均训练10epoch、1860step，seed42、AdamW lr=.001/wd=.00
 补测命令（分析revision `9f67a346f77cef999dbaeb8c4ca8a6cbf0742d26`）：`CUDA_VISIBLE_DEVICES=3 uv run python -m hierarchical_rqvae.audit_tuple_accuracy --root /workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917 --cells HV --output /workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/analysis/tuple_hv_001`。冻结已保存adapter，无重新训练；1024轨迹/5996目标事件，teacher-forced eval batch4。恢复SID NLL=0.569082514，与原0.568885164绝对差0.000197351<.005，分母一致；恢复评估小幅数值差异不覆盖原指标。
 
 完整四码同时正确：teacher-forced 2217/5996=36.97465%；free-running 1685/5996=28.10207%。自由生成按目标事件序号对齐，缺失事件及失败轨迹计错，额外45事件单列；不是时间或语义对齐。自由生成四层准确率94.179/76.518/48.949/46.848%，对应teacher-forced94.713/79.053/62.475/73.566%。第三、四层下降更明显，但不能仅凭条件相关性宣称误差传播的因果机制。原始归档hv_tuple_metrics.json含逐轨迹数据、源manifest SHA及完整revision。输出指标计算耗时87.779s（不含全部模型加载）。后续仍需LF/H1/B2对照及相同诊断后形成最终建议。
+## 最终状态（2026-09-17）
+
+四组HV/LF/H1/B2及全部SID元组补评均完成；`results_final_001.json`已验收九阶段、每组85项产物和固定训练预算。此前区段保留为历史快照，不代表当前状态。
+
+HV未通过探索门槛：对LF的G11相对改善−2.787%，95%CI[−14.058%,+4.359%]；前两层分布集中，四组后两层均未通过码本健康门槛。LF/HV相对H1的G11分别恶化5.883%/8.834%，H1对B2仅改善.305%且CI跨零。单seed、oracle路线，不作训练稳定性或跨域声明。
+
+完整方法、结果、门槛判断和优先级见`final_analysis.md`。建议先单独验证HV重构ST路由，再独立验证码本初始化/训练机制；不自动追加训练，不直接扩规模。
