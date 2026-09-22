@@ -7,7 +7,7 @@ from hierarchical_rqvae.preflight import sha256
 
 def reports():
     return [{'setting':setting,'seed':seed,'status':'pair_completed','population':1024,
-        'support_sha256':SUPPORT_SHA,'bootstrap_replicates':2000,'bootstrap_seed':271828,
+        'support_sha256':SUPPORT_SHA,'bootstrap_replicates':20000,'bootstrap_seed':271828,
         'source_runs':{cell:{'training_revision':'same'} for cell in ('B2','H1')},
         'comparisons':[{'metric':metric,'baseline_regret':.2,'candidate_regret':.3,
             'difference_regret':.1,'ci95':[.05,.15],'p_two_sided_centered_bootstrap':1.}
@@ -44,3 +44,17 @@ def test_tampered_report_rejected_before_source_loading(tmp_path):
     (tmp_path/'artifact_manifest.json').write_text(json.dumps(receipt))
     report.write_text('{"changed":true}')
     with pytest.raises(ValueError,match='artifact hash mismatch'):load_verified(report)
+
+
+def test_old_or_mixed_bootstrap_protocol_rejected():
+    data=reports()
+    data[0]['bootstrap_replicates']=2000
+    with pytest.raises(ValueError,match='protocol mismatch'):summarize(data)
+
+
+def test_global_family_has_sufficient_p_resolution():
+    data=reports()
+    data[0]['comparisons'][0]['p_two_sided_centered_bootstrap']=1/20001
+    result=summarize(data)
+    assert result['comparisons'][0]['holm_p_global_120']==pytest.approx(120/20001)
+    assert result['minimum_first_step_holm_p'] < .05

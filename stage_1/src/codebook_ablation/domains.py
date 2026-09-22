@@ -14,6 +14,9 @@ from hierarchical_rqvae.analyze_domains import centered_p
 from hierarchical_rqvae.preflight import atomic_json,sha256
 from staged_attribution.population_bootstrap import build_metric_contributions,population_regrets,save_metric_contributions,DOMAIN_METRICS
 
+BOOTSTRAP_REPLICATES=20000
+BOOTSTRAP_SEED=271828
+
 SUPPORT_SHA='efa83492f44f2843018b850ecb68d4a9de56ffa3c7dcde093519924cb08e7b38'
 
 def read(p):return json.loads(Path(p).read_text())
@@ -54,7 +57,7 @@ def main():
     for i in range(len(val)):
         item=val[i];tid=int(item['traj_id']);real[tid]=np.asarray(val.records_by_id[tid]['gps_seq'],dtype=np.float64);roads[tid]=item['point_road'].tolist()
     if len(real)!=1024:raise ValueError('invalid validation population')
-    a.output.mkdir(parents=True);weights=np.random.default_rng(271828).multinomial(1024,np.full(1024,1/1024),size=2000)
+    a.output.mkdir(parents=True);weights=np.random.default_rng(BOOTSTRAP_SEED).multinomial(1024,np.full(1024,1/1024),size=BOOTSTRAP_REPLICATES)
     points={};draws={};ids=None
     for cell,run in sources.items():
         generated=[json.loads(l) for l in (run/'decode/g11_reconstructed.jsonl').read_text().splitlines()]
@@ -69,7 +72,7 @@ def main():
     report={'status':'pair_completed','setting':a.setting,'seed':a.seed,'population':1024,
         'analysis_revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
         'command':sys.argv,'source_runs':manifests,'support_sha256':SUPPORT_SHA,
-        'bootstrap_replicates':2000,'bootstrap_seed':271828,'comparisons':compare(points,draws),
+        'bootstrap_replicates':BOOTSTRAP_REPLICATES,'bootstrap_seed':BOOTSTRAP_SEED,'comparisons':compare(points,draws),
         'multiplicity':'raw p values only; final family is 5 capacities x 3 seeds x 8 metrics = 120, globally Holm adjusted after all pairs',
         'interpretation':'difference in failure_fraction + valid_fraction * aggregate_regret; lower is better; conditional on these checkpoints',
         'limitations':['secondary analysis','paired-trip confidence does not replace independent training seeds','same training-only bins for all capacities and seeds']}

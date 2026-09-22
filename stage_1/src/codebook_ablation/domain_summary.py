@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import numpy as np
-from codebook_ablation.domains import SUPPORT_SHA, DOMAIN_METRICS
+from codebook_ablation.domains import SUPPORT_SHA, DOMAIN_METRICS, BOOTSTRAP_REPLICATES, BOOTSTRAP_SEED
 from codebook_ablation.queue import SEEDS
 from codebook_ablation.validation import SETTINGS
 from codebook_ablation.collect import validate_identity
@@ -22,7 +22,7 @@ def summarize(reports):
             raise ValueError('unexpected or duplicate pair')
         if (report['status']!='pair_completed' or report['population']!=1024
                 or report['support_sha256']!=SUPPORT_SHA
-                or report['bootstrap_replicates']!=2000 or report['bootstrap_seed']!=271828):
+                or report['bootstrap_replicates']!=BOOTSTRAP_REPLICATES or report['bootstrap_seed']!=BOOTSTRAP_SEED):
             raise ValueError('pair protocol mismatch')
         metrics=[r['metric'] for r in report['comparisons']]
         if len(metrics)!=len(DOMAIN_METRICS) or set(metrics)!=set(DOMAIN_METRICS):
@@ -43,7 +43,11 @@ def summarize(reports):
     result={'status':'incomplete' if missing else 'secondary_analysis_ready',
         'verified_pairs':len(seen),'expected_pairs':len(expected),'missing_pairs':missing,
         'family_size':len(expected)*len(DOMAIN_METRICS),'support_sha256':SUPPORT_SHA,
+        'bootstrap_replicates':BOOTSTRAP_REPLICATES,'bootstrap_seed':BOOTSTRAP_SEED,
+        'minimum_raw_p':1/(BOOTSTRAP_REPLICATES+1),
+        'minimum_first_step_holm_p':len(expected)*len(DOMAIN_METRICS)/(BOOTSTRAP_REPLICATES+1),
         'limitations':['Secondary comparisons conditional on individual checkpoints.',
+            'Monte Carlo p values have finite resolution; near-threshold conclusions require caution.',
             'Per-seed trajectory intervals do not establish cross-seed equivalence.',
             'This report alone cannot exclude capacity effects; use the primary crossed-seed analysis.']}
     if missing:return result
