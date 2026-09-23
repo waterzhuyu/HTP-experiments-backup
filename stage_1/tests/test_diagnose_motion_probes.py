@@ -3,7 +3,7 @@ import torch
 from independent_latent_sid.diagnose_motion_probes import labels, run_probe
 
 
-def test_event_endpoint_labels_exclude_singletons_and_missing_roads():
+def test_event_endpoint_labels_exclude_singletons_and_keep_road_zero():
     cache = {
         "mask": torch.tensor([[1, 1, 0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0, 0, 0], [1, 1, 0, 0, 0, 0, 0, 0]], dtype=torch.bool),
         "targets": {
@@ -14,7 +14,7 @@ def test_event_endpoint_labels_exclude_singletons_and_missing_roads():
     result = labels(cache, (2., 3.))
     assert result["displacement"].tolist() == [[2., 6.], [0., 0.], [2., 3.]]
     assert result["valid_motion"].tolist() == [True, False, True]
-    assert result["valid_road"].tolist() == [True, False, False]
+    assert result["valid_road"].tolist() == [True, False, True]
     assert result["transition"].tolist() == [1., 0., 1.]
 
 

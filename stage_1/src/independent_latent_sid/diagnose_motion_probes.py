@@ -32,7 +32,8 @@ def labels(cache: dict, scale_km: tuple[float, float]) -> dict:
     displacement = (finish - start) * torch.tensor(scale_km)
     transition = (roads[rows, last] != roads[:, 0]).float()
     valid_motion = count >= 2
-    valid_road = valid_motion & (roads[:, 0] > 0) & (roads[rows, last] > 0)
+    # Aligned road IDs are zero-based; ID 0 is a real road, not a missing sentinel.
+    valid_road = valid_motion
     return {
         "displacement": displacement,
         "transition": transition,
