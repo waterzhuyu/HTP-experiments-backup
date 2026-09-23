@@ -52,6 +52,10 @@ def audit_one(root: pathlib.Path, analysis: pathlib.Path, ledger: dict, row: dic
     receipt_path = completed[0]
     run_dir = receipt_path.parent
     receipt = json.loads(receipt_path.read_text())
+    require(receipt["analysis_revision"] in {
+        "32493fdfc2240ae141ba8abd668566bfdb1b07e3",
+        "b5ef8e928da8aea1d3203958c83723bfa872f1e3",
+    }, f"{setting}/{seed}/{cell}: unreviewed analysis revision")
     manifest = pathlib.Path(ledger["path"]) / "run_manifest.json"
     require(manifest.exists(), f"{setting}/{seed}/{cell}: missing source manifest")
     require(sha256(manifest) == ledger["manifest_sha256"] == receipt["source_manifest_sha256"], f"{setting}/{seed}/{cell}: source manifest SHA")
@@ -70,6 +74,7 @@ def audit_one(root: pathlib.Path, analysis: pathlib.Path, ledger: dict, row: dic
     require(metrics["restoration_verified_before_dtype_conversion"] is True, f"{setting}/{seed}/{cell}: BF16 restoration")
     require(metrics["analysis_revision"] == receipt["analysis_revision"] and metrics["training_revision"] == receipt["training_revision"], f"{setting}/{seed}/{cell}: revisions")
     require(metrics["source_manifest_sha256"] == receipt["source_manifest_sha256"], f"{setting}/{seed}/{cell}: metrics source SHA")
+    close(metrics["original_sid_nll"], row["sid_nll"], f"{setting}/{seed}/{cell}: primary SID NLL")
     require(metrics["evaluation_device"] == "cpu" and metrics["evaluation_dtype"] == "float32", f"{setting}/{seed}/{cell}: metrics dtype/device")
     require(metrics["vocab_sizes"] == row["rq_vocab_sizes"], f"{setting}/{seed}/{cell}: codebook capacities")
     require(metrics["source_artifact_count"] == ledger["artifacts_verified"], f"{setting}/{seed}/{cell}: source artifacts")
@@ -112,6 +117,9 @@ def main() -> int:
     require(len(validation_ids) == 1024, "primary validation ID set is not 1024")
     rows = {(row["setting"], row["seed"], row["cell"]): row for row in snapshot["rows"]}
     require(len(rows) == 30, "primary rows are not 30 unique runs")
+    ledger_keys = [(entry["setting"], entry["seed"], entry["cell"]) for entry in snapshot["ledger"]]
+    require(len(set(ledger_keys)) == 30 and set(ledger_keys) == set(rows), "primary ledger/rows do not cover the same 30 unique runs")
+    require(all(entry["verified"] and len(entry["attempts"]) == 1 and entry["attempts"][0]["status"] == "completed" for entry in snapshot["ledger"]), "primary ledger contains an unverified or repeated training run")
     results, pending, issues = [], [], []
     for ledger in snapshot["ledger"]:
         key = (ledger["setting"], ledger["seed"], ledger["cell"])
