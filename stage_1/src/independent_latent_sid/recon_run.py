@@ -52,7 +52,7 @@ def run():
     if baseline['status']!='completed' or baseline['revision']!=plan['ablation']['baseline_revision']:
         raise ValueError('baseline is not the completed frozen HV')
     if args.phase=='pilot' and not args.validate_only:
-        smoke_root=Path(plan['paths']['artifact_root'])/plan['experiment_id']/'smoke/porto/42/HVAllRecon'
+        smoke_root=Path(plan['paths']['artifact_root'])/plan['experiment_id']/'smoke/porto/42/HVGpsScale'
         accepted=[]
         for p in smoke_root.glob('attempt_*/run_manifest.json'):
             m=json.loads(p.read_text())

@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "experiment_id": "hv_gps_scale_20260924",
+  "status": "planned",
+  "execution_enabled": true,
+  "implementation_status": "gps_only_gradient_scale_control",
+  "provenance": {
+    "upstream_revision": "1294275d2bed5f9de86269ab285ff5e23828b947",
+    "fork_revision": "da3b80e3d9dffe525c67a7722e99387cdb345347",
+    "execution_revision": "runtime_git_head_recorded_in_manifest"
+  },
+  "paths": {
+    "worktree": "/workspace/guozuyu/HTP-hv-gps-scale",
+    "artifact_root": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts",
+    "model_root": "/workspace/guozuyu/HTP-main/models/Qwen3-1.7B",
+    "data_root": "/workspace/guozuyu/HTP-main/traj_dataset",
+    "porto_aligned_root": "/workspace/guozuyu/HTP-main/reproduction/runs/multiview_vq/porto/data"
+  },
+  "data": {
+    "city": "porto",
+    "split_seed": 20260907,
+    "train_n": 8192,
+    "validation_n": 1024,
+    "heldout_test_n": 1024,
+    "length_range": [
+      20,
+      200
+    ],
+    "grid_meters": 100,
+    "max_sequence_length": 2048,
+    "split_manifest": null,
+    "source_hashes": null,
+    "normalization_manifest": null
+  },
+  "model": {
+    "latent_dim": 64,
+    "vocab_sizes": [
+      32,
+      64,
+      128,
+      256
+    ],
+    "stride": 8,
+    "head_hidden_dim": 64,
+    "offset_encoding": "one_hot_8",
+    "ce_chunk_positions": 256,
+    "commitment_beta": 0.25,
+    "aux_weights": {
+      "grid": 0.1,
+      "road": 0.1,
+      "gps": 0.1
+    },
+    "other_loss_weights": 0,
+    "prefix_estimator": "z + stopgrad(prefix-z)"
+  },
+  "cells": {
+    "HVGpsScale": {
+      "views": [
+        "gps",
+        "grid",
+        "road"
+      ],
+      "prefix_depths": {
+        "grid": 1,
+        "road": 2,
+        "gps": 4
+      },
+      "aux_weights": {
+        "grid": 0.1,
+        "road": 0.1,
+        "gps": 0.1
+      },
+      "construction": "conditional",
+      "reconstruction_route": "gps_only",
+      "reconstruction_scale": 1.2593601909739016
+    }
+  },
+  "tokenizer_training": {
+    "optimizer": "AdamW",
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "gradient_clip": 1,
+    "epochs": 20,
+    "batch_size": 128,
+    "warmup_epochs": 10,
+    "warmup_start_ratio": 0.01,
+    "cosine_min_ratio": 0.1,
+    "precision": "bf16_with_fp32_quantizer_and_ce",
+    "early_stopping": false,
+    "num_workers": 0
+  },
+  "llm_training": {
+    "learning_rate": 0.0005,
+    "weight_decay": 0.0001,
+    "gradient_clip": 1,
+    "epochs": 2,
+    "microbatch": 2,
+    "gradient_accumulation": 8,
+    "scheduler": "linear",
+    "warmup_ratio": 0.05,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "lora_targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "precision": "bf16",
+    "gradient_checkpointing": true,
+    "tokenizer_frozen": true,
+    "base_frozen": true,
+    "new_token_rows_trainable": true,
+    "compact_adapter": true
+  },
+  "generation": {
+    "do_sample": false,
+    "max_new_tokens": 256,
+    "batch_size": 1,
+    "g_conditions": [
+      "G00",
+      "G10",
+      "G01",
+      "G11"
+    ],
+    "route": "oracle_same_for_all",
+    "retries": 0
+  },
+  "budgets": {
+    "smoke": {
+      "train_n": 32,
+      "validation_n": 16,
+      "stage1_epochs": 1,
+      "stage1_batch_size": 8,
+      "stage2_max_steps": 2,
+      "stage2_microbatch": 1,
+      "stage2_accumulation": 1,
+      "generation_n": 8,
+      "gpu_hours_cap": 2
+    },
+    "pilot": {
+      "cells": [
+        "HVGpsScale"
+      ],
+      "seed": 42,
+      "gpu_hours_cap": 8,
+      "artifact_gib_cap": 20,
+      "max_parallel_runs": 1
+    },
+    "repeat": {
+      "seeds": [
+        314159,
+        20260907
+      ],
+      "cells": [
+        "B2",
+        "H1",
+        "LF",
+        "HV"
+      ],
+      "enabled": false
+    },
+    "confirmation": {
+      "cities": [
+        "porto",
+        "chengdu"
+      ],
+      "seeds": [
+        42,
+        314159,
+        20260907
+      ],
+      "cells": [
+        "B0",
+        "B2",
+        "selected_H"
+      ],
+      "stage1_epochs": 100,
+      "stage1_batch_size": 128,
+      "stage2_epochs": 2,
+      "train": "full_minus_validation",
+      "test": "full",
+      "enabled": false
+    }
+  },
+  "evaluation": {
+    "primary": "G00 population_mean_penalized_error and codebook health; G11 not executed",
+    "primary_contrast": [
+      "HVAllRecon",
+      "frozen_HV"
+    ],
+    "invalid_penalty": 1.0,
+    "sensitivity_invalid_penalty": 10.0,
+    "bootstrap_replicates": 2000,
+    "bootstrap_seed": 271828,
+    "progress_anchors": 100,
+    "probe": {
+      "hidden_dim": 64,
+      "epochs": 10,
+      "learning_rate": 0.001,
+      "batch_events": 256,
+      "seed": 42
+    },
+    "metric_manifest": null,
+    "secondary_contrasts": []
+  },
+  "gates": {
+    "active_fraction_min": 0.1,
+    "perplexity_fraction_min": 0.05,
+    "max_share_max": 0.5,
+    "oracle_error_ratio_max": 1.1,
+    "valid_rate_min": 0.99,
+    "valid_rate_drop_max": 0.01,
+    "primary_improvement_min": 0.05,
+    "sid_nll_ratio_max": 1.02
+  },
+  "pending_before_execution": [],
+  "allowed_phases": [
+    "smoke",
+    "pilot"
+  ],
+  "execution_cell_order": [
+    "HVGpsScale"
+  ],
+  "budget_decision": "Tokenizer-only pilot 8 GPU-hours; full LLM stages disabled pending tokenizer gate.",
+  "ablation": {
+    "setting": "gps_only_reconstruction_gradient_scale",
+    "seeds": [
+      42
+    ],
+    "preflight_path": "/workspace/guozuyu/HTP-hierarchical-rqvae-artifacts/hierarchical_rqvae_gps_grid_road_v1_20260907/preflight",
+    "preflight_sha256": "a8857cd044076731d133841b1f4ba45fe7e44e7198c2242c939239a25bbaad28",
+    "initialization": "identical_copied_independent_encoders",
+    "status": "planned",
+    "total_gpu_hours_cap": 8,
+    "total_artifact_gib_cap": 20,
+    "scope": "Porto held-out-trip validation; sealed test untouched",
+    "baseline_revision": "70b82db195f600e3271030ddb5e6c228e4915f31",
+    "baseline_manifest": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/independent_latent_sid_20260917/pilot/porto/42/HV/attempt_001/run_manifest.json",
+    "baseline_manifest_sha256": "c840e067328926ed6fe11290fa6bd3135f3a3f1878b27ceec5d5efb744f6a095",
+    "scale_rule": "sqrt(grid_encoder_grad^2+road_encoder_grad^2+gps_encoder_grad^2)/gps_encoder_grad from frozen AllRecon initial_route_audit fixed first validation batch; 1.2593601909739016",
+    "scale_source": "/workspace/guozuyu/HTP-independent-latent-sid-artifacts/hv_allrecon_20260917/pilot/porto/42/HVAllRecon/attempt_001/initial_route_audit.json"
+  },
+  "tokenizer_gate": {
+    "llm_execution_enabled": false,
+    "rule": "Review G00 <=1.10 baseline, valid >=0.99 with drop <=0.01, each layer active/K>=0.10, perplexity/K>=0.05 and max_share<=0.50. Report rank/probes descriptively; no automatic LLM launch."
+  }
+}

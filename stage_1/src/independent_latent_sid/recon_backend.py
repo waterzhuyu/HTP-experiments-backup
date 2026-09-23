@@ -16,14 +16,19 @@ class Backend(OriginalBackend):
     def _new_model(self):
         model = super()._new_model()
         model.reconstruction_route = self.plan['cells'][self.cell_id]['reconstruction_route']
+        model.reconstruction_scale = self.plan['cells'][self.cell_id]['reconstruction_scale']
         return model
 
     def _route_audit(self, run_dir, trained=False):
         model = (self._load_model(run_dir) if trained else self._new_model()).to(self.device)
         batch = {k:v.to(self.device) for k,v in next(iter(self._loader('test'))).items()}
         evidence = {}
-        for route in ('gps_only', 'all_views'):
+        original_route, original_scale = model.reconstruction_route, model.reconstruction_scale
+        for route, scale, label in (('gps_only', 1.0, 'gps_only_baseline'),
+                                    ('gps_only', original_scale, 'gps_only_scaled'),
+                                    ('all_views', 1.0, 'all_views_reference')):
             model.reconstruction_route = route
+            model.reconstruction_scale = scale
             model.train(); model.zero_grad(set_to_none=True)
             torch.manual_seed(self.seed); torch.cuda.manual_seed_all(self.seed)
             with torch.autocast('cuda', dtype=torch.bfloat16):
@@ -32,10 +37,11 @@ class Backend(OriginalBackend):
             out['reconstruction_loss'].backward()
             def norm(parameters):
                 return math.sqrt(sum(float(p.grad.detach().float().square().sum()) for p in parameters if p.grad is not None))
-            evidence[route] = {'reconstruction_loss':float(out['reconstruction_loss'].detach()),
+            evidence[label] = {'reconstruction_loss':float(out['reconstruction_loss'].detach()),
                 'encoder_grad_l2':{v:norm(model.view_encoders[v].parameters()) for v in ('grid','road','gps')},
                 'projection_grad_l2':{v:norm(model.view_projections[v].parameters()) for v in ('grid','road','gps')},
                 'codebook_grad_l2':norm(model.rq_quant.parameters())}
+        model.reconstruction_route, model.reconstruction_scale = original_route, original_scale
         p = run_dir/('final_route_audit.json' if trained else 'initial_route_audit.json')
         atomic_json(p, {'mode':'same-checkpoint, fixed first validation batch, train-mode BF16, no optimizer; pre-clipping gradient norms',
             'traj_ids':batch['traj_id'].tolist(), 'seed':self.seed, 'routes':evidence})

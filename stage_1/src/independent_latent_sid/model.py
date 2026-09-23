@@ -13,7 +13,7 @@ from staged_attribution.quantizer import AttributionQuantizerOutput
 
 
 class IndependentLatentSID(HierarchicalRQVAE):
-    def __init__(self, *args, construction="conditional", reconstruction_route="gps_only", **kwargs):
+    def __init__(self, *args, construction="conditional", reconstruction_route="gps_only", reconstruction_scale=1.0, **kwargs):
         super().__init__(*args, **kwargs)
         if construction not in {"late_fusion", "conditional"}:
             raise ValueError("unknown SID construction")
@@ -25,6 +25,9 @@ class IndependentLatentSID(HierarchicalRQVAE):
         if construction != "conditional" and reconstruction_route != "gps_only":
             raise ValueError("route ablation applies only to conditional SID")
         self.reconstruction_route = reconstruction_route
+        if not math.isfinite(reconstruction_scale) or reconstruction_scale <= 0:
+            raise ValueError("reconstruction_scale must be finite and positive")
+        self.reconstruction_scale = float(reconstruction_scale)
         # Equal initial weights, independent parameter storage; no RNG shift between cells.
         self.view_encoders = nn.ModuleDict({v: copy.deepcopy(self.encoder) for v in ("grid", "road", "gps")})
         self.view_projections = nn.ModuleDict({v: copy.deepcopy(self.rq_pre_quant_linear) for v in self.view_encoders})
@@ -79,6 +82,8 @@ class IndependentLatentSID(HierarchicalRQVAE):
             z = latents["gps"]
             if self.reconstruction_route == "all_views":
                 z = z + (latents["grid"] - latents["grid"].detach()) + (latents["road"] - latents["road"].detach())
+            else:
+                z = z + (self.reconstruction_scale - 1.0) * (z - z.detach())
             st = z + (aggregate - z).detach() if self.training else aggregate
             return AttributionQuantizerOutput(aggregate, st, torch.stack(codes, -1),
                 torch.stack(losses).mean(), z.sum() * 0, (), info)
