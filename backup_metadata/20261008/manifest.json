@@ -1,0 +1,413 @@
+{
+  "captured_at_utc": "2026-10-08T05:32:27.494221+00:00",
+  "source_host": "3090s",
+  "source_repository": "/workspace/guozuyu/HTP",
+  "scope": "All Git refs and active worktree HEADs; staged/unstaged patches; untracked source and configuration files. Untracked data, checkpoints, logs, reports and ignored files excluded.",
+  "worktrees": [
+    {
+      "worktree": "/workspace/guozuyu/HTP",
+      "HEAD": "1294275d2bed5f9de86269ab285ff5e23828b947",
+      "branch": "refs/heads/main",
+      "name": "HTP",
+      "status": "?? .gitignore\n?? stage_1/reports/data_audit.md\n?? stage_1/reports/gate_0_data_audit.json\n?? stage_1/reports/gate_1_report.md\n?? stage_1/reports/preregistration.md\n?? stage_1/reports/rqvae_sampling_pilot.json\n?? stage_1/reports/rqvae_sampling_pilot.md\n?? stage_1/reports/rqvae_sampling_pilot_256_seed42.json\n?? stage_1/reports/rqvae_sampling_pilot_256_seed42.md\n?? stage_1/runs/chengdu_p0_time.log\n?? stage_1/runs/chengdu_p1_time.log\n?? stage_1/runs/chengdu_p1_time_lambda0p1.log\n?? stage_1/runs/p1_fixed8_multiview/chengdu_fixed8_multiview_seed20260813.pt\n?? stage_1/runs/p1_fixed8_multiview/porto_fixed8_multiview_seed20260813.pt\n?? stage_1/runs/p1_fixed8_multiview_smoke/\n?? stage_1/runs/p1_fixed8_multiview_smoke_batch32/\n?? stage_1/runs/p1_fixed_time_pilot/chengdu_p0_time_seed20260813.pt\n?? stage_1/runs/p1_fixed_time_pilot/chengdu_p1_time_seed20260813.pt\n?? stage_1/runs/p1_fixed_time_pilot/porto_p0_time_seed20260813.pt\n?? stage_1/runs/p1_fixed_time_pilot/porto_p1_time_seed20260813.pt\n?? stage_1/runs/p1_fixed_time_pilot_lambda0p001/\n?? stage_1/runs/p1_fixed_time_pilot_lambda0p01/\n?? stage_1/runs/p1_fixed_time_pilot_lambda0p1/chengdu_p1_time_seed20260813.pt\n?? stage_1/runs/p1_fixed_time_pilot_lambda0p1/porto_p1_time_seed20260813.pt\n?? stage_1/runs/p1_fixed_time_smoke/\n?? stage_1/runs/porto_p0_time.log\n?? stage_1/runs/porto_p1_time.log\n?? stage_1/runs/porto_p1_time_lambda0p1.log\n?? stage_1/src/preprocessing/\n?? stage_1/tests/test_data_audit.py\n"
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-codebook-ablation",
+      "HEAD": "52b6666e6a65eeee7fbe7ecc7cae8b84548f7ea3",
+      "branch": "refs/heads/exp/hierarchical-codebook-ablation",
+      "name": "HTP-codebook-ablation",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-codebook-ablation-analysis",
+      "HEAD": "32493fdfc2240ae141ba8abd668566bfdb1b07e3",
+      "branch": "refs/heads/analysis/codebook-capacity",
+      "name": "HTP-codebook-ablation-analysis",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-codebook-ablation-precision",
+      "HEAD": "ed97de32bb1aee79de298975a3d194ec84bfc42e",
+      "branch": "refs/heads/analysis/codebook-secondary-precision",
+      "name": "HTP-codebook-ablation-precision",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-codebook-ablation-tuple-supervisor",
+      "HEAD": "b5ef8e928da8aea1d3203958c83723bfa872f1e3",
+      "branch": "refs/heads/analysis/codebook-tuple-supervisor",
+      "name": "HTP-codebook-ablation-tuple-supervisor",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-collapse-timeline",
+      "HEAD": "d76e1481277e4175d2b03cd71cff36cbcb0b259d",
+      "branch": "refs/heads/exp/collapse-timeline",
+      "name": "HTP-collapse-timeline",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-hierarchical-rqvae",
+      "HEAD": "280f83b3e4fda51db95911203368788255fceda3",
+      "branch": "refs/heads/exp/hierarchical-rqvae-gps-grid-road",
+      "name": "HTP-hierarchical-rqvae",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-hierarchical-rqvae-analysis",
+      "HEAD": "f0074bc52f712aa66560bf5f6f8870e47a20d748",
+      "branch": "refs/heads/analysis/hierarchical-rqvae-pilot",
+      "name": "HTP-hierarchical-rqvae-analysis",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-hv-allrecon",
+      "HEAD": "d10c68fbeed62ee05112cb0980efba769c6993a1",
+      "branch": "refs/heads/experiment/hv-allrecon-20260917",
+      "name": "HTP-hv-allrecon",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-hv-gps-scale",
+      "HEAD": "270cfd44784ce11071e6c06ddea02f66f7ad4b96",
+      "branch": "refs/heads/experiment/hv-gps-scale-20260924",
+      "name": "HTP-hv-gps-scale",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-independent-latent-sid",
+      "HEAD": "70b82db195f600e3271030ddb5e6c228e4915f31",
+      "branch": "refs/heads/exp/independent-latent-sid",
+      "name": "HTP-independent-latent-sid",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-independent-latent-sid-analysis",
+      "HEAD": "21af8b9d8222c553610c1a13805682df0c685ed8",
+      "branch": "refs/heads/analysis/independent-latent-sid",
+      "name": "HTP-independent-latent-sid-analysis",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-independent-sid-diagnostics",
+      "HEAD": "21c1f147e9410f2c796e88c7abc3e1565436b491",
+      "branch": "refs/heads/analysis/independent-sid-diagnostics-20260923",
+      "name": "HTP-independent-sid-diagnostics",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-multiview-independent",
+      "HEAD": "96f65dee35054ed0eec1022d7ca81371f29560f7",
+      "branch": "refs/heads/exp/porto-independent-gps-road-grid",
+      "name": "HTP-multiview-independent",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-staged-attribution",
+      "HEAD": "730c2cc5b51003b31e5de49561bee39ca8979a75",
+      "branch": "refs/heads/exp/staged-attribution-gps-road-grid",
+      "name": "HTP-staged-attribution",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-staged-attribution-compact-adapter",
+      "HEAD": "a2ecf31a5a29629ce13f57e7087d39d3df4e1ebf",
+      "branch": "refs/heads/fix/staged-attribution-compact-adapter",
+      "name": "HTP-staged-attribution-compact-adapter",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-staged-attribution-eval-correction",
+      "HEAD": "e7ec3348e2f5db34b200355fd3c5f57bce99e360",
+      "branch": "refs/heads/fix/staged-attribution-eval-correction",
+      "name": "HTP-staged-attribution-eval-correction",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-staged-attribution-integrated",
+      "HEAD": "da3b80e3d9dffe525c67a7722e99387cdb345347",
+      "branch": "refs/heads/exp/staged-attribution-gps-road-grid-integrated",
+      "name": "HTP-staged-attribution-integrated",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-staged-attribution-recovery-1fe",
+      "HEAD": "1fe012ebd56c4f458f3c3f378100996668a6a7f6",
+      "detached": true,
+      "name": "HTP-staged-attribution-recovery-1fe",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-staged-attribution-single-seed",
+      "HEAD": "da3b80e3d9dffe525c67a7722e99387cdb345347",
+      "branch": "refs/heads/fix/staged-attribution-single-seed",
+      "name": "HTP-staged-attribution-single-seed",
+      "status": ""
+    },
+    {
+      "worktree": "/workspace/guozuyu/HTP-staged-attribution-stage2-resource-controls",
+      "HEAD": "8743e8ed38a608e6dd3539fa2fa8bc4166a5f36f",
+      "branch": "refs/heads/feat/staged-attribution-stage2-resource-controls",
+      "name": "HTP-staged-attribution-stage2-resource-controls",
+      "status": ""
+    }
+  ],
+  "refs": [
+    [
+      "refs/heads/analysis/codebook-capacity",
+      "32493fdfc2240ae141ba8abd668566bfdb1b07e3"
+    ],
+    [
+      "refs/heads/analysis/codebook-secondary-precision",
+      "ed97de32bb1aee79de298975a3d194ec84bfc42e"
+    ],
+    [
+      "refs/heads/analysis/codebook-tuple-supervisor",
+      "b5ef8e928da8aea1d3203958c83723bfa872f1e3"
+    ],
+    [
+      "refs/heads/analysis/hierarchical-rqvae-pilot",
+      "f0074bc52f712aa66560bf5f6f8870e47a20d748"
+    ],
+    [
+      "refs/heads/analysis/independent-latent-sid",
+      "21af8b9d8222c553610c1a13805682df0c685ed8"
+    ],
+    [
+      "refs/heads/analysis/independent-sid-diagnostics-20260923",
+      "21c1f147e9410f2c796e88c7abc3e1565436b491"
+    ],
+    [
+      "refs/heads/exp/collapse-timeline",
+      "d76e1481277e4175d2b03cd71cff36cbcb0b259d"
+    ],
+    [
+      "refs/heads/exp/hierarchical-codebook-ablation",
+      "52b6666e6a65eeee7fbe7ecc7cae8b84548f7ea3"
+    ],
+    [
+      "refs/heads/exp/hierarchical-rqvae-gps-grid-road",
+      "280f83b3e4fda51db95911203368788255fceda3"
+    ],
+    [
+      "refs/heads/exp/independent-latent-sid",
+      "70b82db195f600e3271030ddb5e6c228e4915f31"
+    ],
+    [
+      "refs/heads/exp/porto-independent-gps-road-grid",
+      "96f65dee35054ed0eec1022d7ca81371f29560f7"
+    ],
+    [
+      "refs/heads/exp/staged-attribution-gps-road-grid",
+      "730c2cc5b51003b31e5de49561bee39ca8979a75"
+    ],
+    [
+      "refs/heads/exp/staged-attribution-gps-road-grid-integrated",
+      "da3b80e3d9dffe525c67a7722e99387cdb345347"
+    ],
+    [
+      "refs/heads/experiment/hv-allrecon-20260917",
+      "d10c68fbeed62ee05112cb0980efba769c6993a1"
+    ],
+    [
+      "refs/heads/experiment/hv-gps-scale-20260924",
+      "270cfd44784ce11071e6c06ddea02f66f7ad4b96"
+    ],
+    [
+      "refs/heads/feat/staged-attribution-stage2-resource-controls",
+      "8743e8ed38a608e6dd3539fa2fa8bc4166a5f36f"
+    ],
+    [
+      "refs/heads/fix/staged-attribution-compact-adapter",
+      "a2ecf31a5a29629ce13f57e7087d39d3df4e1ebf"
+    ],
+    [
+      "refs/heads/fix/staged-attribution-eval-correction",
+      "e7ec3348e2f5db34b200355fd3c5f57bce99e360"
+    ],
+    [
+      "refs/heads/fix/staged-attribution-single-seed",
+      "da3b80e3d9dffe525c67a7722e99387cdb345347"
+    ],
+    [
+      "refs/heads/main",
+      "1294275d2bed5f9de86269ab285ff5e23828b947"
+    ],
+    [
+      "refs/remotes/origin/HEAD",
+      "66b5f0ccb4b685d5a75729c5ae7e1e8b81b68d75"
+    ],
+    [
+      "refs/remotes/origin/main",
+      "66b5f0ccb4b685d5a75729c5ae7e1e8b81b68d75"
+    ]
+  ],
+  "supplement_files": [
+    {
+      "worktree": "HTP",
+      "path": ".gitignore",
+      "size": 194,
+      "sha256": "4945dfbc02e6aa2d338b81ef35588c351b3d65a0775a0bfd4223a23396c1c961"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/src/preprocessing/data_audit.py",
+      "size": 11339,
+      "sha256": "038512a921d23f5357ee03d28cedc2eb713a5a3253b0a82e4a599d2684c08c16"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/tests/test_data_audit.py",
+      "size": 819,
+      "sha256": "b3d394a9f59b56eb155ef89bcd7cbdea592e854592b4a961e577a0bf91de24cd"
+    }
+  ],
+  "excluded_untracked_files": [
+    {
+      "worktree": "HTP",
+      "path": "stage_1/reports/data_audit.md"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/reports/gate_0_data_audit.json"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/reports/gate_1_report.md"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/reports/preregistration.md"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/reports/rqvae_sampling_pilot.json"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/reports/rqvae_sampling_pilot.md"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/reports/rqvae_sampling_pilot_256_seed42.json"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/reports/rqvae_sampling_pilot_256_seed42.md"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/chengdu_p0_time.log"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/chengdu_p1_time.log"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/chengdu_p1_time_lambda0p1.log"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed8_multiview/chengdu_fixed8_multiview_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed8_multiview/porto_fixed8_multiview_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed8_multiview_smoke/chengdu_fixed8_multiview_seed20260813.json"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed8_multiview_smoke/chengdu_fixed8_multiview_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed8_multiview_smoke_batch32/chengdu_fixed8_multiview_seed20260813.json"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed8_multiview_smoke_batch32/chengdu_fixed8_multiview_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot/chengdu_p0_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot/chengdu_p1_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot/porto_p0_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot/porto_p1_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot_lambda0p001/chengdu_p1_time_seed20260813.json"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot_lambda0p001/chengdu_p1_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot_lambda0p001/porto_p1_time_seed20260813.json"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot_lambda0p001/porto_p1_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot_lambda0p01/chengdu_p1_time_seed20260813.json"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot_lambda0p01/chengdu_p1_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot_lambda0p01/porto_p1_time_seed20260813.json"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot_lambda0p01/porto_p1_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot_lambda0p1/chengdu_p1_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_pilot_lambda0p1/porto_p1_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_smoke/chengdu_p1_time_seed20260813.json"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/p1_fixed_time_smoke/chengdu_p1_time_seed20260813.pt"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/porto_p0_time.log"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/porto_p1_time.log"
+    },
+    {
+      "worktree": "HTP",
+      "path": "stage_1/runs/porto_p1_time_lambda0p1.log"
+    }
+  ],
+  "bundle_sha256": "541192929225b6dda420696d76d7abdca25d083f7b3963720fbcb3321683c9c9",
+  "supplement_sha256": "386616094cbf72af3d206b665c154cebe9e179b8b0b56a08950bd5aa598e3f37"
+}

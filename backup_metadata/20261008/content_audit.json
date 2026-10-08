@@ -1,0 +1,67 @@
+{
+  "status": "passed",
+  "unique_blobs_scanned": 578,
+  "total_blob_bytes": 6396118,
+  "findings": [],
+  "largest_blobs": [
+    {
+      "sha": "58bb1b256d1bdc371ad3b81739633ece25352c1f",
+      "path": "stage_1/reports/hierarchical_rqvae_pilot/final_statistics.json",
+      "bytes": 275193
+    },
+    {
+      "sha": "475030b010b91005b626861cd5f339ee0023d719",
+      "path": "uv.lock",
+      "bytes": 158638
+    },
+    {
+      "sha": "8db790dbba024952502de29ad35dcc988076c067",
+      "path": "stage_1/reports/porto_independent_tokenizers_analysis.json",
+      "bytes": 154218
+    },
+    {
+      "sha": "c28d2b27fd2ab528e20803aaf09708e8d9dfae2a",
+      "path": "docs/plans/independent_latent_sid/results_final_001.json",
+      "bytes": 123403
+    },
+    {
+      "sha": "7d49d68557d4addc31a1c64ea29dd73bc95e18bb",
+      "path": "stage_1/reports/hierarchical_rqvae_pilot/information.json",
+      "bytes": 114369
+    },
+    {
+      "sha": "401235f8db1945cf19ff708d6d4f269acf7db7aa",
+      "path": "stage_1/reports/staged_attribution/implementation_validation_record.md",
+      "bytes": 59898
+    },
+    {
+      "sha": "6b014b9878641d450b6d1a55b9efeeb9fa36f055",
+      "path": "stage_1/reports/staged_attribution/implementation_validation_record.md",
+      "bytes": 56249
+    },
+    {
+      "sha": "d373c17d04992c58bb41931b5989027b4f326e0f",
+      "path": "stage_1/reports/rqvae_sampling_confirmation_1024_seed314159.json",
+      "bytes": 52745
+    },
+    {
+      "sha": "9b61e8ffd898ba41535c81caa524a3e43a920a8d",
+      "path": "stage_1/reports/staged_attribution/implementation_validation_record.md",
+      "bytes": 52681
+    },
+    {
+      "sha": "4a155c1e323529010ad655268b2df2f03e3c5918",
+      "path": "stage_1/reports/staged_attribution/implementation_validation_record.md",
+      "bytes": 49166
+    }
+  ],
+  "checks": [
+    "private_key",
+    "github_token",
+    "aws_access_key",
+    "openai_api_key",
+    "blob_size_under_10_MiB",
+    "model_and_binary_dataset_extensions"
+  ],
+  "limitation": "Pattern audit covers common secret formats and large/model files; this is not a proof of absence of all sensitive content."
+}

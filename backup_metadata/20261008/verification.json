@@ -1,0 +1,158 @@
+{
+  "status": "verified",
+  "archive_sha256": "a594444778c9129ed4b1814554d81090d0510e748a77d24b959e81394be7dabb",
+  "verified_payload_files": 68,
+  "verified_refs": 22,
+  "verified_worktrees": [
+    {
+      "source": "/workspace/guozuyu/HTP",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP",
+      "revision": "1294275d2bed5f9de86269ab285ff5e23828b947",
+      "branch": "refs/heads/main",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-codebook-ablation",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-codebook-ablation",
+      "revision": "52b6666e6a65eeee7fbe7ecc7cae8b84548f7ea3",
+      "branch": "refs/heads/exp/hierarchical-codebook-ablation",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-codebook-ablation-analysis",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-codebook-ablation-analysis",
+      "revision": "32493fdfc2240ae141ba8abd668566bfdb1b07e3",
+      "branch": "refs/heads/analysis/codebook-capacity",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-codebook-ablation-precision",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-codebook-ablation-precision",
+      "revision": "ed97de32bb1aee79de298975a3d194ec84bfc42e",
+      "branch": "refs/heads/analysis/codebook-secondary-precision",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-codebook-ablation-tuple-supervisor",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-codebook-ablation-tuple-supervisor",
+      "revision": "b5ef8e928da8aea1d3203958c83723bfa872f1e3",
+      "branch": "refs/heads/analysis/codebook-tuple-supervisor",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-collapse-timeline",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-collapse-timeline",
+      "revision": "d76e1481277e4175d2b03cd71cff36cbcb0b259d",
+      "branch": "refs/heads/exp/collapse-timeline",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-hierarchical-rqvae",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-hierarchical-rqvae",
+      "revision": "280f83b3e4fda51db95911203368788255fceda3",
+      "branch": "refs/heads/exp/hierarchical-rqvae-gps-grid-road",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-hierarchical-rqvae-analysis",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-hierarchical-rqvae-analysis",
+      "revision": "f0074bc52f712aa66560bf5f6f8870e47a20d748",
+      "branch": "refs/heads/analysis/hierarchical-rqvae-pilot",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-hv-allrecon",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-hv-allrecon",
+      "revision": "d10c68fbeed62ee05112cb0980efba769c6993a1",
+      "branch": "refs/heads/experiment/hv-allrecon-20260917",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-hv-gps-scale",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-hv-gps-scale",
+      "revision": "270cfd44784ce11071e6c06ddea02f66f7ad4b96",
+      "branch": "refs/heads/experiment/hv-gps-scale-20260924",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-independent-latent-sid",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-independent-latent-sid",
+      "revision": "70b82db195f600e3271030ddb5e6c228e4915f31",
+      "branch": "refs/heads/exp/independent-latent-sid",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-independent-latent-sid-analysis",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-independent-latent-sid-analysis",
+      "revision": "21af8b9d8222c553610c1a13805682df0c685ed8",
+      "branch": "refs/heads/analysis/independent-latent-sid",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-independent-sid-diagnostics",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-independent-sid-diagnostics",
+      "revision": "21c1f147e9410f2c796e88c7abc3e1565436b491",
+      "branch": "refs/heads/analysis/independent-sid-diagnostics-20260923",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-multiview-independent",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-multiview-independent",
+      "revision": "96f65dee35054ed0eec1022d7ca81371f29560f7",
+      "branch": "refs/heads/exp/porto-independent-gps-road-grid",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-staged-attribution",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-staged-attribution",
+      "revision": "730c2cc5b51003b31e5de49561bee39ca8979a75",
+      "branch": "refs/heads/exp/staged-attribution-gps-road-grid",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-staged-attribution-compact-adapter",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-staged-attribution-compact-adapter",
+      "revision": "a2ecf31a5a29629ce13f57e7087d39d3df4e1ebf",
+      "branch": "refs/heads/fix/staged-attribution-compact-adapter",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-staged-attribution-eval-correction",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-staged-attribution-eval-correction",
+      "revision": "e7ec3348e2f5db34b200355fd3c5f57bce99e360",
+      "branch": "refs/heads/fix/staged-attribution-eval-correction",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-staged-attribution-integrated",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-staged-attribution-integrated",
+      "revision": "da3b80e3d9dffe525c67a7722e99387cdb345347",
+      "branch": "refs/heads/exp/staged-attribution-gps-road-grid-integrated",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-staged-attribution-recovery-1fe",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-staged-attribution-recovery-1fe",
+      "revision": "1fe012ebd56c4f458f3c3f378100996668a6a7f6",
+      "branch": "detached",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-staged-attribution-single-seed",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-staged-attribution-single-seed",
+      "revision": "da3b80e3d9dffe525c67a7722e99387cdb345347",
+      "branch": "refs/heads/fix/staged-attribution-single-seed",
+      "clean_committed_checkout": true
+    },
+    {
+      "source": "/workspace/guozuyu/HTP-staged-attribution-stage2-resource-controls",
+      "local": "/Users/zuyuguo/Documents/trajectory_decision_motion/backups/3090s/20261008_133122/worktrees/HTP-staged-attribution-stage2-resource-controls",
+      "revision": "8743e8ed38a608e6dd3539fa2fa8bc4166a5f36f",
+      "branch": "refs/heads/feat/staged-attribution-stage2-resource-controls",
+      "clean_committed_checkout": true
+    }
+  ],
+  "verified_supplement_files": 3,
+  "fsck_stdout": "",
+  "note": "Worktree source directories contain committed revisions. Uncommitted files are preserved separately under uncommitted-source; patches under states. No environment or training runs executed."
+}

@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Local datasets and pretrained model weights.
+models/
+traj_data/*/
+
+# Training artifacts.
+logs/**/rqvae/
+logs/**/tensorboard/
+*.safetensors
+*.ckpt
